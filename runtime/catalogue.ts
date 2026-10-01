@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "c718340296aadfab86df695f24d0628fa9ca5bb3373d44a5d7c1c2ded3dc9225";
+export const catalogueSHA256 = "9febac7056fc33f85bbf7283d0ebcc653e5564da47083e492086f343da1460db";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -172,6 +172,10 @@ export const catalogue = freeze({
   {
    "name": "http_peer",
    "identity": "can.std.http_peer@1"
+  },
+  {
+   "name": "native",
+   "identity": "can.std.native@1"
   }
  ],
  "prelude": [
@@ -2809,6 +2813,703 @@ export const catalogue = freeze({
     },
     {
      "name": "response_body_unread",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::session",
+   "identity": "can.std.native@1::session",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::value_handle",
+   "identity": "can.std.native@1::value_handle",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::pending_action",
+   "identity": "can.std.native@1::pending_action",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::gate",
+   "identity": "can.std.native@1::gate",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::fault",
+   "identity": "can.std.native@1::fault",
+   "kind": "opaque",
+   "parameters": [],
+   "fields": [],
+   "leaves": [],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::limits",
+   "identity": "can.std.native@1::limits",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "max_sessions",
+     "type": "int"
+    },
+    {
+     "name": "max_handles_per_session",
+     "type": "int"
+    },
+    {
+     "name": "maxPendingActions",
+     "type": "int"
+    },
+    {
+     "name": "maxObserveEntries",
+     "type": "int"
+    },
+    {
+     "name": "maxObserveBytes",
+     "type": "int"
+    },
+    {
+     "name": "maxGatesPerSession",
+     "type": "int"
+    },
+    {
+     "name": "maxFaultsPerSession",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::deadline",
+   "identity": "can.std.native@1::deadline",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "clock",
+     "type": "str"
+    },
+    {
+     "name": "ms",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::observe_bounds",
+   "identity": "can.std.native@1::observe_bounds",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "maxEntries",
+     "type": "int"
+    },
+    {
+     "name": "maxBytes",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::gate_spec",
+   "identity": "can.std.native@1::gate_spec",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "name",
+     "type": "str"
+    },
+    {
+     "name": "max_waiters",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::bounded_action_ref",
+   "identity": "can.std.native@1::bounded_action_ref",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "action",
+     "type": "native::pending_action"
+    },
+    {
+     "name": "bound",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::inert_literal",
+   "identity": "can.std.native@1::inert_literal",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "tag",
+     "type": "str"
+    },
+    {
+     "name": "hi",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "lo",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "text",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "entries",
+     "type": "option::value<native::entry[]>"
+    },
+    {
+     "name": "descriptor",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::entry",
+   "identity": "can.std.native@1::entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "native::literal_value"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::literal_int",
+   "identity": "can.std.native@1::literal_int",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::literal_text",
+   "identity": "can.std.native@1::literal_text",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::literal_bool",
+   "identity": "can.std.native@1::literal_bool",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "value",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::literal_value",
+   "identity": "can.std.native@1::literal_value",
+   "kind": "variant",
+   "parameters": [],
+   "fields": [],
+   "leaves": [
+    "native::literal_int",
+    "native::literal_text",
+    "native::literal_bool"
+   ],
+   "projections": [],
+   "constructible": false
+  },
+  {
+   "name": "native::inert_facts",
+   "identity": "can.std.native@1::inert_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "observations",
+     "type": "native::observation[]"
+    },
+    {
+     "name": "alias_groups",
+     "type": "option::value<native::alias_group[]>"
+    },
+    {
+     "name": "counters",
+     "type": "option::value<native::observe_counters>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::observation",
+   "identity": "can.std.native@1::observation",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "handle",
+     "type": "str"
+    },
+    {
+     "name": "cell",
+     "type": "str"
+    },
+    {
+     "name": "result",
+     "type": "native::observation_result"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::observation_result",
+   "identity": "can.std.native@1::observation_result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "scalar",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "descriptor",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "bytes",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "cell",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "gap",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "tag",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "hi",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "lo",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "class",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "sign",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "exponent",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "mantissa_hi",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "mantissa_lo",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "lexeme",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "text",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "omitted",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "entries",
+     "type": "option::value<native::tagged_entry[]>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::tagged_entry",
+   "identity": "can.std.native@1::tagged_entry",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "native::tagged_value"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::tagged_value",
+   "identity": "can.std.native@1::tagged_value",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "tag",
+     "type": "str"
+    },
+    {
+     "name": "value",
+     "type": "option::value<bool>"
+    },
+    {
+     "name": "text",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "lexeme",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "hi",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "lo",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "class",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "sign",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "exponent",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "mantissa_hi",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "mantissa_lo",
+     "type": "option::value<int>"
+    },
+    {
+     "name": "gap",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::alias_group",
+   "identity": "can.std.native@1::alias_group",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "cell",
+     "type": "str"
+    },
+    {
+     "name": "handles",
+     "type": "str[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::observe_counters",
+   "identity": "can.std.native@1::observe_counters",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "makes",
+     "type": "int"
+    },
+    {
+     "name": "aliases",
+     "type": "int"
+    },
+    {
+     "name": "observations",
+     "type": "int"
+    },
+    {
+     "name": "explicitReads",
+     "type": "int"
+    },
+    {
+     "name": "sealed",
+     "type": "bool"
+    },
+    {
+     "name": "getterReads",
+     "type": "int"
+    },
+    {
+     "name": "thenCalls",
+     "type": "int"
+    },
+    {
+     "name": "proxyTraps",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::descriptor_or_unknown",
+   "identity": "can.std.native@1::descriptor_or_unknown",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "api",
+     "type": "str"
+    },
+    {
+     "name": "known",
+     "type": "bool"
+    },
+    {
+     "name": "presence",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "descriptor",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::handle_or_pending_action",
+   "identity": "can.std.native@1::handle_or_pending_action",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "settled",
+     "type": "bool"
+    },
+    {
+     "name": "handle",
+     "type": "option::value<native::value_handle>"
+    },
+    {
+     "name": "action",
+     "type": "option::value<native::pending_action>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::settlement_or_pending",
+   "identity": "can.std.native@1::settlement_or_pending",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "settled",
+     "type": "bool"
+    },
+    {
+     "name": "handle",
+     "type": "option::value<native::value_handle>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::release_facts",
+   "identity": "can.std.native@1::release_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "released",
+     "type": "bool"
+    },
+    {
+     "name": "waiters",
+     "type": "int"
+    },
+    {
+     "name": "joined",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::restore_outcome",
+   "identity": "can.std.native@1::restore_outcome",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "restored",
+     "type": "bool"
+    },
+    {
+     "name": "timing",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "native::close_receipt",
+   "identity": "can.std.native@1::close_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "sessionId",
+     "type": "str"
+    },
+    {
+     "name": "released",
+     "type": "int"
+    },
+    {
+     "name": "remaining",
+     "type": "int"
+    },
+    {
+     "name": "forced",
+     "type": "str[]"
+    },
+    {
+     "name": "joined",
+     "type": "bool"
+    },
+    {
+     "name": "cellsReleased",
      "type": "int"
     }
    ],
@@ -20471,6 +21172,1169 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "response_body_unread",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::session",
+    "identity": "can.std.native@1::session",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "native::value_handle",
+    "identity": "can.std.native@1::value_handle",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "native::pending_action",
+    "identity": "can.std.native@1::pending_action",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "native::gate",
+    "identity": "can.std.native@1::gate",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "native::fault",
+    "identity": "can.std.native@1::fault",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "native::limits",
+    "identity": "can.std.native@1::limits",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "max_sessions",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "max_handles_per_session",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxPendingActions",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxObserveEntries",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxObserveBytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxGatesPerSession",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxFaultsPerSession",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::deadline",
+    "identity": "can.std.native@1::deadline",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "clock",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::observe_bounds",
+    "identity": "can.std.native@1::observe_bounds",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "maxEntries",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "maxBytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::gate_spec",
+    "identity": "can.std.native@1::gate_spec",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "max_waiters",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::bounded_action_ref",
+    "identity": "can.std.native@1::bounded_action_ref",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "action",
+        "type": {
+          "name": "native::pending_action",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bound",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::inert_literal",
+    "identity": "can.std.native@1::inert_literal",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "tag",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "hi",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "lo",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "text",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "entries",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "[]",
+              "arguments": [
+                {
+                  "name": "native::entry",
+                  "arguments": null
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "descriptor",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::entry",
+    "identity": "can.std.native@1::entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "native::literal_value",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::literal_int",
+    "identity": "can.std.native@1::literal_int",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::literal_text",
+    "identity": "can.std.native@1::literal_text",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::literal_bool",
+    "identity": "can.std.native@1::literal_bool",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::literal_value",
+    "identity": "can.std.native@1::literal_value",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "native::literal_int",
+        "arguments": null
+      },
+      {
+        "name": "native::literal_text",
+        "arguments": null
+      },
+      {
+        "name": "native::literal_bool",
+        "arguments": null
+      }
+    ]
+  },
+  {
+    "name": "native::inert_facts",
+    "identity": "can.std.native@1::inert_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "observations",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "native::observation",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "alias_groups",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "[]",
+              "arguments": [
+                {
+                  "name": "native::alias_group",
+                  "arguments": null
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "name": "counters",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "native::observe_counters",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::observation",
+    "identity": "can.std.native@1::observation",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "cell",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "result",
+        "type": {
+          "name": "native::observation_result",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::observation_result",
+    "identity": "can.std.native@1::observation_result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "scalar",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "descriptor",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "bytes",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "cell",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "gap",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "tag",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "hi",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "lo",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "class",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "sign",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "exponent",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "mantissa_hi",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "mantissa_lo",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "lexeme",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "text",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "omitted",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "entries",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "[]",
+              "arguments": [
+                {
+                  "name": "native::tagged_entry",
+                  "arguments": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::tagged_entry",
+    "identity": "can.std.native@1::tagged_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "native::tagged_value",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::tagged_value",
+    "identity": "can.std.native@1::tagged_value",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "tag",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "bool",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "text",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "lexeme",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "hi",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "lo",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "class",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "sign",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "exponent",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "mantissa_hi",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "mantissa_lo",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "gap",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::alias_group",
+    "identity": "can.std.native@1::alias_group",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "cell",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handles",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::observe_counters",
+    "identity": "can.std.native@1::observe_counters",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "makes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "aliases",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "observations",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "explicitReads",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "sealed",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "getterReads",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "thenCalls",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "proxyTraps",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::descriptor_or_unknown",
+    "identity": "can.std.native@1::descriptor_or_unknown",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "api",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "known",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "presence",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "descriptor",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::handle_or_pending_action",
+    "identity": "can.std.native@1::handle_or_pending_action",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "settled",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "native::value_handle",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "action",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "native::pending_action",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::settlement_or_pending",
+    "identity": "can.std.native@1::settlement_or_pending",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "settled",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "native::value_handle",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::release_facts",
+    "identity": "can.std.native@1::release_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "released",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "waiters",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "joined",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::restore_outcome",
+    "identity": "can.std.native@1::restore_outcome",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "restored",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "timing",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "outcome",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "native::close_receipt",
+    "identity": "can.std.native@1::close_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "sessionId",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "released",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "remaining",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "forced",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "joined",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "cellsReleased",
         "type": {
           "name": "int",
           "arguments": null

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c718340296aadfab86df695f24d0628fa9ca5bb3373d44a5d7c1c2ded3dc9225.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 9febac7056fc33f85bbf7283d0ebcc653e5564da47083e492086f343da1460db.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -53,6 +53,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - action → can.std.action@1
 - test → can.std.test@1
 - http_peer → can.std.http_peer@1
+- native → can.std.native@1
 
 ## Types
 
@@ -197,6 +198,35 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | http_peer::header_receipt | record |  | int header_count, int header_bytes | true |
 | http_peer::body_chunk_receipt | record |  | int accepted, int body_accepted_total | true |
 | http_peer::request_close_receipt | record |  | int upload_bytes, int response_body_accepted, int response_body_consumed, int response_body_unread | true |
+| native::session | opaque |  |  | false |
+| native::value_handle | opaque |  |  | false |
+| native::pending_action | opaque |  |  | false |
+| native::gate | opaque |  |  | false |
+| native::fault | opaque |  |  | false |
+| native::limits | record |  | int max_sessions, int max_handles_per_session, int maxPendingActions, int maxObserveEntries, int maxObserveBytes, int maxGatesPerSession, int maxFaultsPerSession | true |
+| native::deadline | record |  | str clock, int ms | true |
+| native::observe_bounds | record |  | int maxEntries, int maxBytes | true |
+| native::gate_spec | record |  | str name, int max_waiters | true |
+| native::bounded_action_ref | record |  | native::pending_action action, int bound | true |
+| native::inert_literal | record |  | str tag, option::value&lt;int&gt; hi, option::value&lt;int&gt; lo, option::value&lt;str&gt; text, option::value&lt;native::entry[]&gt; entries, option::value&lt;str&gt; descriptor | true |
+| native::entry | record |  | str key, native::literal_value value | true |
+| native::literal_int | record |  | int value | true |
+| native::literal_text | record |  | str value | true |
+| native::literal_bool | record |  | bool value | true |
+| native::literal_value | variant |  | native::literal_int, native::literal_text, native::literal_bool | false |
+| native::inert_facts | record |  | str kind, native::observation[] observations, option::value&lt;native::alias_group[]&gt; alias_groups, option::value&lt;native::observe_counters&gt; counters | true |
+| native::observation | record |  | str handle, str cell, native::observation_result result | true |
+| native::observation_result | record |  | option::value&lt;str&gt; scalar, option::value&lt;str&gt; descriptor, option::value&lt;int&gt; bytes, option::value&lt;str&gt; cell, option::value&lt;str&gt; gap, option::value&lt;str&gt; tag, option::value&lt;int&gt; hi, option::value&lt;int&gt; lo, option::value&lt;str&gt; class, option::value&lt;int&gt; sign, option::value&lt;int&gt; exponent, option::value&lt;int&gt; mantissa_hi, option::value&lt;int&gt; mantissa_lo, option::value&lt;str&gt; lexeme, option::value&lt;str&gt; text, option::value&lt;int&gt; omitted, option::value&lt;native::tagged_entry[]&gt; entries | true |
+| native::tagged_entry | record |  | str key, native::tagged_value value | true |
+| native::tagged_value | record |  | str tag, option::value&lt;bool&gt; value, option::value&lt;str&gt; text, option::value&lt;str&gt; lexeme, option::value&lt;int&gt; hi, option::value&lt;int&gt; lo, option::value&lt;str&gt; class, option::value&lt;int&gt; sign, option::value&lt;int&gt; exponent, option::value&lt;int&gt; mantissa_hi, option::value&lt;int&gt; mantissa_lo, option::value&lt;str&gt; gap | true |
+| native::alias_group | record |  | str cell, str[] handles | true |
+| native::observe_counters | record |  | int makes, int aliases, int observations, int explicitReads, bool sealed, int getterReads, int thenCalls, int proxyTraps | true |
+| native::descriptor_or_unknown | record |  | str api, bool known, option::value&lt;str&gt; presence, option::value&lt;str&gt; descriptor | true |
+| native::handle_or_pending_action | record |  | bool settled, option::value&lt;native::value_handle&gt; handle, option::value&lt;native::pending_action&gt; action | true |
+| native::settlement_or_pending | record |  | bool settled, option::value&lt;native::value_handle&gt; handle | true |
+| native::release_facts | record |  | bool released, int waiters, bool joined | true |
+| native::restore_outcome | record |  | bool restored, str timing, str outcome | true |
+| native::close_receipt | record |  | str sessionId, int released, int remaining, str[] forced, bool joined, int cellsReleased | true |
 
 ## Domain errors
 
