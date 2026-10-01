@@ -11,17 +11,25 @@ const (
 	dbRecordSettlement       = "can.std.db@1::record_settlement"
 	dbRecordPoisonSettlement = "can.std.db@1::record_poison_settlement"
 	dbRecordCallbackReport   = "can.std.db@1::record_callback_report"
+	dbDispatch               = "can.std.db@1::dispatch"
+	dbRecordDriverSettlement = "can.std.db@1::record_driver_settlement"
+	dbRecordServerAck        = "can.std.db@1::record_server_ack"
+	dbAcquireCancelGrant     = "can.std.db@1::acquire_cancel_grant"
+	dbQuiesceEngine          = "can.std.db@1::quiesce_engine"
 )
 
-// dbVocabularies mirrors the K24/K25 closed vocabularies
-// (tools/runtime/test-services/db-observer/transactions.ts and
-// poison.ts) exactly. The db adapters re-validate at runtime and
-// fail unknown words as db_fault; the static mirror exists so a
-// misspelled word fails at check time with a precise span. Note
-// the poison outcome set has no "unknown": a poison attempt must
-// settle terminally. The NT-I13 db operations carry no
-// closed-vocabulary scalar positions (all names are dynamic;
-// schema tags travel inside arrays).
+// dbVocabularies mirrors the K24/K25/K26 closed vocabularies
+// (tools/runtime/test-services/db-observer/transactions.ts,
+// poison.ts and deadline.ts) exactly. The db adapters re-validate
+// at runtime and fail unknown words as db_fault; the static mirror
+// exists so a misspelled word fails at check time with a precise
+// span. Note the poison outcome set has no "unknown": a poison
+// attempt must settle terminally. The K26 driver-outcome set has
+// no "unknown": the driver must report what it saw. The NT-I13 db
+// operations carry no closed-vocabulary scalar positions (all
+// names are dynamic; schema tags travel inside arrays). The K26
+// family reuses the K24 engine set (per-engine cancel capability
+// is a runtime property, not a new engine word).
 var dbVocabularies = map[string]map[string]bool{
 	"outcome": {
 		"committed":   true,
@@ -41,6 +49,15 @@ var dbVocabularies = map[string]map[string]bool{
 		"success": true,
 		"threw":   true,
 	},
+	"driver_outcome": {
+		"completed": true,
+		"timed-out": true,
+	},
+	"server_effect": {
+		"applied": true,
+		"absent":  true,
+		"unknown": true,
+	},
 }
 
 // dbStaticArity pins the fixed argument count (owner included) of
@@ -49,6 +66,11 @@ var dbStaticArity = map[string]int{
 	dbRecordSettlement:       5,
 	dbRecordPoisonSettlement: 3,
 	dbRecordCallbackReport:   3,
+	dbDispatch:               4,
+	dbRecordDriverSettlement: 4,
+	dbRecordServerAck:        4,
+	dbAcquireCancelGrant:     2,
+	dbQuiesceEngine:          2,
 }
 
 // dbStaticWords pins, per static operation, the argument positions
@@ -59,6 +81,11 @@ var dbStaticWords = map[string]map[int]string{
 	dbRecordSettlement:       {3: "outcome", 4: "engine"},
 	dbRecordPoisonSettlement: {2: "poison_outcome"},
 	dbRecordCallbackReport:   {2: "callback_report"},
+	dbDispatch:               {3: "engine"},
+	dbRecordDriverSettlement: {3: "driver_outcome"},
+	dbRecordServerAck:        {3: "server_effect"},
+	dbAcquireCancelGrant:     {1: "engine"},
+	dbQuiesceEngine:          {1: "engine"},
 }
 
 func dbStaticOperation(identity string) bool {
@@ -66,9 +93,9 @@ func dbStaticOperation(identity string) bool {
 	return ok
 }
 
-// checkDbCall enforces the static half of transaction-settlement
-// admission: outcome and engine must be string literals exactly
-// equal to K24 words (query-key pattern following checkLateCall).
+// checkDbCall enforces the static half of db admission: the
+// pinned positions must be string literals exactly equal to the
+// named K24/K25/K26 words (query-key pattern following checkLateCall).
 // The owner input elides in rows through the existing test-owner
 // disjunct; db:: has no opaque handles of its own, so no new scope
 // disjunct is needed.

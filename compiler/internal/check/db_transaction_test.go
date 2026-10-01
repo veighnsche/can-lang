@@ -5,10 +5,11 @@ import (
 	"testing"
 )
 
-// record_settlement is the only static db operation: outcome and
-// engine must be K24 words. All other db inputs (actors, tokens,
-// namespaces, tables, compiles, ids, statements) stay dynamic and
-// are validated at runtime with precise db_fault failures.
+// record_settlement pins outcome and engine to K24 words. All
+// other db inputs (actors, tokens, namespaces, tables, compiles,
+// ids, statements) stay dynamic and are validated at runtime with
+// precise db_fault failures. The K25/K26 families extend the
+// static operations; see db_poison_test.go and db_deadline_test.go.
 
 func dbSettlementFixture(outcome, engine string) string {
 	stub := "db::settlement_record(\"a1\", \"conn:a1\", \"committed\", \"postgres\", \"sha256:stub\")"
