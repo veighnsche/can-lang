@@ -1,0 +1,322 @@
+package m45edge014base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M45 EDGE-014 "operator commands"
+/// native entry pact.
+/// Source: distribution/README.md
+/// symbol "operator commands"
+/// (L12-24): pinned native command
+/// plus flags plus paths plus harness
+/// staging.
+/// Disposition: rewire (this row owns
+/// the caller pact as reviewable Can
+/// facts; the README stays until the
+/// integrator rewires callers after
+/// each linked row has accepted
+/// proof).
+/// Protects (this file): the native
+/// qualify command (L15) plus harness
+/// deny plus staging plus tallies that
+/// bound its args.
+/// ADAPTATION (noted, plus source
+/// lines): verb pins hold command
+/// spellings; flag pins hold option
+/// spellings; path pins hold arg bytes;
+/// note pins hold staging spellings;
+/// count pins hold ints tallied from
+/// L15 plus file census.
+/// python-verb pins python3 (L15);
+/// qualify-path pins
+/// distribution/qualify.py (L15);
+/// archive-flag pins --archive (L15;
+/// plus L120 plus L123 plus L127);
+/// report-flag pins --report (L15);
+/// archive-arg pins
+/// /absolute/path/bun-darwin-aarch64.zip
+/// (L15; plus L46 plus L94 plus L120);
+/// report-arg pins
+/// /absolute/path/native-capabilities-v1.json
+/// (L15); acquire-note pins upstream.url
+/// (L12); digest-note pins archive and
+/// executable digests (L19); temp-layout
+/// pins temporary versioned layout
+/// (L19); runtime-bun pins runtime/bun
+/// (L20 plus L53); unrelated-dir pins
+/// unrelated directory (L20); empty-home
+/// pins empty home (L21); ambient-note
+/// pins no ambient runtime configuration
+/// (L21); path-deny pins PATH without
+/// Bun (L21); native-flag-count pins int
+/// (2) from L15; native-path-count pins
+/// int (2) from L15; archive-zip-count
+/// pins int (4) file-wide.
+/// Facet map (command then stage order):
+/// python-verb, qualify-path,
+/// archive-flag, report-flag,
+/// archive-arg, report-arg,
+/// acquire-note, digest-note,
+/// temp-layout, runtime-bun,
+/// unrelated-dir, empty-home,
+/// ambient-note, path-deny,
+/// native-flag-count, native-path-count,
+/// archive-zip-count.
+/// The integration roots live in
+/// edge-014-roots-green.can; the report
+/// plus receipt shape lives in
+/// edge-014-run-shape.can.
+/// Variants: none (row lists zero
+/// variants).
+/// Environment: none (row lists zero
+/// gates; no live run now).
+/// Logical gates DOC/SUITE bind at P23;
+/// no live run now.
+/// Timeout 120000ms is the offline
+/// default bound (no run timeout in this
+/// row; binds at P23 like the M31
+/// no-run rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (P23
+/// accept gate unmet).
+/// Intended consumed report: M35
+/// HISTORY-127..131 parsed slices for
+/// the native leg plus a future
+/// qualified integration row (no
+/// qualified report yet; P23 unmet).
+/// Rewire stays blocked; README
+/// intact; no call retired.
+/// Case edge/operator-native-entry
+/// checks: python-verb, qualify-path,
+/// archive-flag, report-flag,
+/// archive-arg, report-arg,
+/// acquire-note, digest-note,
+/// temp-layout, runtime-bun,
+/// unrelated-dir, empty-home,
+/// ambient-note, path-deny,
+/// native-flag-count, native-path-count,
+/// archive-zip-count.
+/// Shared old files intact; retirement
+/// is a later integrator choice.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str python_verb
+    str qualify_path
+    str archive_flag
+    str report_flag
+    str archive_arg
+    str report_arg
+    str acquire_note
+    str digest_note
+    str temp_layout
+    str runtime_bun
+    str unrelated_dir
+    str empty_home
+    str ambient_note
+    str path_deny
+    int native_flag_count
+    int native_path_count
+    int archive_zip_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("edge/operator-native-entry", "default", "", "offline"), "python-verb" => ok "case edge/operator-native-entry variant default root python-verb run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("edge/operator-native-entry", "default", "", "offline"), "python-verb" => ok evidence("python-verb", "true", "true", true, "case edge/operator-native-entry variant default root python-verb run offline")
+        different: false, true, context("edge/operator-native-entry", "default", "", "offline"), "python-verb" => failed{"python-verb"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("edge/operator-native-entry", "default", "", "offline"), "native-flag-count" => ok evidence("native-flag-count", "2", "2", true, "case edge/operator-native-entry variant default root native-flag-count run offline")
+        different: 1, 2, context("edge/operator-native-entry", "default", "", "offline"), "native-flag-count" => failed{"native-flag-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "python3", "python3", context("edge/operator-native-entry", "default", "", "offline"), "python-verb" => ok evidence("python-verb", "python3", "python3", true, "case edge/operator-native-entry variant default root python-verb run offline")
+        different: "python3_2", "python3", context("edge/operator-native-entry", "default", "", "offline"), "python-verb" => failed{"python-verb"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_python_verb: "seed-python-verb-drift" => ok observation("python3_2", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_qualify_path: "seed-qualify-path-drift" => ok observation("python3", "distribution/qualify.py_2", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_archive_flag: "seed-archive-flag-drift" => ok observation("python3", "distribution/qualify.py", "--archive_2", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_report_flag: "seed-report-flag-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report_2", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_archive_arg: "seed-archive-arg-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip_2", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_report_arg: "seed-report-arg-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json_2", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_acquire_note: "seed-acquire-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url_2", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_digest_note: "seed-digest-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests_2", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_temp_layout: "seed-temp-layout-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout_2", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_runtime_bun: "seed-runtime-bun-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun_2", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_unrelated_dir: "seed-unrelated-dir-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory_2", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_empty_home: "seed-empty-home-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home_2", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        seed_ambient_note: "seed-ambient-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration_2", "PATH without Bun", 2, 2, 4)
+        seed_path_deny: "seed-path-deny-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun_2", 2, 2, 4)
+        seed_native_flag_count: "seed-native-flag-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 1, 2, 4)
+        seed_native_path_count: "seed-native-path-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 1, 4)
+        seed_archive_zip_count: "seed-archive-zip-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 3)
+    match variant_id
+        "seed-python-verb-drift" => ok observation("python3_2", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-qualify-path-drift" => ok observation("python3", "distribution/qualify.py_2", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-archive-flag-drift" => ok observation("python3", "distribution/qualify.py", "--archive_2", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-report-flag-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report_2", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-archive-arg-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip_2", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-report-arg-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json_2", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-acquire-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url_2", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-digest-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests_2", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-temp-layout-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout_2", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-runtime-bun-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun_2", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-unrelated-dir-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory_2", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-empty-home-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home_2", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+        "seed-ambient-note-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration_2", "PATH without Bun", 2, 2, 4)
+        "seed-path-deny-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun_2", 2, 2, 4)
+        "seed-native-flag-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 1, 2, 4)
+        "seed-native-path-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 1, 4)
+        "seed-archive-zip-count-drift" => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 3)
+        _ => ok observation("python3", "distribution/qualify.py", "--archive", "--report", "/absolute/path/bun-darwin-aarch64.zip", "/absolute/path/native-capabilities-v1.json", "upstream.url", "archive and executable digests", "temporary versioned layout", "runtime/bun", "unrelated directory", "empty home", "no ambient runtime configuration", "PATH without Bun", 2, 2, 4)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e014: "m45-e014" => ok [check("python-verb", "python verb keeps its spelling"), check("qualify-path", "qualify path keeps its bytes"), check("archive-flag", "archive flag keeps its spelling"), check("report-flag", "report flag keeps its spelling"), check("archive-arg", "archive arg keeps its bytes"), check("report-arg", "report arg keeps its bytes"), check("acquire-note", "acquire note keeps its bytes"), check("digest-note", "digest note keeps its bytes"), check("temp-layout", "temp layout keeps its bytes"), check("runtime-bun", "runtime bun keeps its bytes"), check("unrelated-dir", "unrelated dir keeps its bytes"), check("empty-home", "empty home keeps its spelling"), check("ambient-note", "ambient note keeps its bytes"), check("path-deny", "path deny keeps its bytes"), check("native-flag-count", "two native flags exist"), check("native-path-count", "two native paths exist"), check("archive-zip-count", "four archive zips exist")]
+        other: "nope" => ok []
+    match scope is "m45-e014"
+        false => ok []
+        true => ok [check("python-verb", "python verb keeps its spelling"), check("qualify-path", "qualify path keeps its bytes"), check("archive-flag", "archive flag keeps its spelling"), check("report-flag", "report flag keeps its spelling"), check("archive-arg", "archive arg keeps its bytes"), check("report-arg", "report arg keeps its bytes"), check("acquire-note", "acquire note keeps its bytes"), check("digest-note", "digest note keeps its bytes"), check("temp-layout", "temp layout keeps its bytes"), check("runtime-bun", "runtime bun keeps its bytes"), check("unrelated-dir", "unrelated dir keeps its bytes"), check("empty-home", "empty home keeps its spelling"), check("ambient-note", "ambient note keeps its bytes"), check("path-deny", "path deny keeps its bytes"), check("native-flag-count", "two native flags exist"), check("native-path-count", "two native paths exist"), check("archive-zip-count", "four archive zips exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "edge/operator-native-entry" => ok [expected_check("python-verb", "python3"), expected_check("qualify-path", "distribution/qualify.py"), expected_check("archive-flag", "--archive"), expected_check("report-flag", "--report"), expected_check("archive-arg", "/absolute/path/bun-darwin-aarch64.zip"), expected_check("report-arg", "/absolute/path/native-capabilities-v1.json"), expected_check("acquire-note", "upstream.url"), expected_check("digest-note", "archive and executable digests"), expected_check("temp-layout", "temporary versioned layout"), expected_check("runtime-bun", "runtime/bun"), expected_check("unrelated-dir", "unrelated directory"), expected_check("empty-home", "empty home"), expected_check("ambient-note", "no ambient runtime configuration"), expected_check("path-deny", "PATH without Bun"), expected_check("native-flag-count", "2"), expected_check("native-path-count", "2"), expected_check("archive-zip-count", "4")]
+        unknown: "nope" => ok []
+    match case is "edge/operator-native-entry"
+        false => ok []
+        true => ok [expected_check("python-verb", "python3"), expected_check("qualify-path", "distribution/qualify.py"), expected_check("archive-flag", "--archive"), expected_check("report-flag", "--report"), expected_check("archive-arg", "/absolute/path/bun-darwin-aarch64.zip"), expected_check("report-arg", "/absolute/path/native-capabilities-v1.json"), expected_check("acquire-note", "upstream.url"), expected_check("digest-note", "archive and executable digests"), expected_check("temp-layout", "temporary versioned layout"), expected_check("runtime-bun", "runtime/bun"), expected_check("unrelated-dir", "unrelated directory"), expected_check("empty-home", "empty home"), expected_check("ambient-note", "no ambient runtime configuration"), expected_check("path-deny", "PATH without Bun"), expected_check("native-flag-count", "2"), expected_check("native-path-count", "2"), expected_check("archive-zip-count", "4")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("edge/operator-native-entry", "default", "", "offline") => ok
+        seed_python_verb: context("edge/operator-native-entry", "seed-python-verb-drift", "", "offline") => failed{"python-verb"}
+        seed_qualify_path: context("edge/operator-native-entry", "seed-qualify-path-drift", "", "offline") => failed{"qualify-path"}
+        seed_archive_flag: context("edge/operator-native-entry", "seed-archive-flag-drift", "", "offline") => failed{"archive-flag"}
+        seed_report_flag: context("edge/operator-native-entry", "seed-report-flag-drift", "", "offline") => failed{"report-flag"}
+        seed_archive_arg: context("edge/operator-native-entry", "seed-archive-arg-drift", "", "offline") => failed{"archive-arg"}
+        seed_report_arg: context("edge/operator-native-entry", "seed-report-arg-drift", "", "offline") => failed{"report-arg"}
+        seed_acquire_note: context("edge/operator-native-entry", "seed-acquire-note-drift", "", "offline") => failed{"acquire-note"}
+        seed_digest_note: context("edge/operator-native-entry", "seed-digest-note-drift", "", "offline") => failed{"digest-note"}
+        seed_temp_layout: context("edge/operator-native-entry", "seed-temp-layout-drift", "", "offline") => failed{"temp-layout"}
+        seed_runtime_bun: context("edge/operator-native-entry", "seed-runtime-bun-drift", "", "offline") => failed{"runtime-bun"}
+        seed_unrelated_dir: context("edge/operator-native-entry", "seed-unrelated-dir-drift", "", "offline") => failed{"unrelated-dir"}
+        seed_empty_home: context("edge/operator-native-entry", "seed-empty-home-drift", "", "offline") => failed{"empty-home"}
+        seed_ambient_note: context("edge/operator-native-entry", "seed-ambient-note-drift", "", "offline") => failed{"ambient-note"}
+        seed_path_deny: context("edge/operator-native-entry", "seed-path-deny-drift", "", "offline") => failed{"path-deny"}
+        seed_native_flag_count: context("edge/operator-native-entry", "seed-native-flag-count-drift", "", "offline") => failed{"native-flag-count"}
+        seed_native_path_count: context("edge/operator-native-entry", "seed-native-path-count-drift", "", "offline") => failed{"native-path-count"}
+        seed_archive_zip_count: context("edge/operator-native-entry", "seed-archive-zip-count-drift", "", "offline") => failed{"archive-zip-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.python_verb, "python3", c, "python-verb")
+            failed
+            ok evidence python_verb_evidence => match call require_text(got.qualify_path, "distribution/qualify.py", c, "qualify-path")
+                failed
+                ok evidence qualify_path_evidence => match call require_text(got.archive_flag, "--archive", c, "archive-flag")
+                    failed
+                    ok evidence archive_flag_evidence => match call require_text(got.report_flag, "--report", c, "report-flag")
+                        failed
+                        ok evidence report_flag_evidence => match call require_text(got.archive_arg, "/absolute/path/bun-darwin-aarch64.zip", c, "archive-arg")
+                            failed
+                            ok evidence archive_arg_evidence => match call require_text(got.report_arg, "/absolute/path/native-capabilities-v1.json", c, "report-arg")
+                                failed
+                                ok evidence report_arg_evidence => match call require_text(got.acquire_note, "upstream.url", c, "acquire-note")
+                                    failed
+                                    ok evidence acquire_note_evidence => match call require_text(got.digest_note, "archive and executable digests", c, "digest-note")
+                                        failed
+                                        ok evidence digest_note_evidence => match call require_text(got.temp_layout, "temporary versioned layout", c, "temp-layout")
+                                            failed
+                                            ok evidence temp_layout_evidence => match call require_text(got.runtime_bun, "runtime/bun", c, "runtime-bun")
+                                                failed
+                                                ok evidence runtime_bun_evidence => match call require_text(got.unrelated_dir, "unrelated directory", c, "unrelated-dir")
+                                                    failed
+                                                    ok evidence unrelated_dir_evidence => match call require_text(got.empty_home, "empty home", c, "empty-home")
+                                                        failed
+                                                        ok evidence empty_home_evidence => match call require_text(got.ambient_note, "no ambient runtime configuration", c, "ambient-note")
+                                                            failed
+                                                            ok evidence ambient_note_evidence => match call require_text(got.path_deny, "PATH without Bun", c, "path-deny")
+                                                                failed
+                                                                ok evidence path_deny_evidence => match call require_int(got.native_flag_count, 2, c, "native-flag-count")
+                                                                    failed
+                                                                    ok evidence native_flag_count_evidence => match call require_int(got.native_path_count, 2, c, "native-path-count")
+                                                                        failed
+                                                                        ok evidence native_path_count_evidence => match call require_int(got.archive_zip_count, 4, c, "archive-zip-count")
+                                                                            failed
+                                                                            ok evidence archive_zip_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m45_e014: "m45-e014" => ok test_case("edge/operator-native-entry", ["edge", "m45"], [], 120000, [check_ref("python-verb"), check_ref("qualify-path"), check_ref("archive-flag"), check_ref("report-flag"), check_ref("archive-arg"), check_ref("report-arg"), check_ref("acquire-note"), check_ref("digest-note"), check_ref("temp-layout"), check_ref("runtime-bun"), check_ref("unrelated-dir"), check_ref("empty-home"), check_ref("ambient-note"), check_ref("path-deny"), check_ref("native-flag-count"), check_ref("native-path-count"), check_ref("archive-zip-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m45-e014"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("edge/operator-native-entry", ["edge", "m45"], [], 120000, [check_ref("python-verb"), check_ref("qualify-path"), check_ref("archive-flag"), check_ref("report-flag"), check_ref("archive-arg"), check_ref("report-arg"), check_ref("acquire-note"), check_ref("digest-note"), check_ref("temp-layout"), check_ref("runtime-bun"), check_ref("unrelated-dir"), check_ref("empty-home"), check_ref("ambient-note"), check_ref("path-deny"), check_ref("native-flag-count"), check_ref("native-path-count"), check_ref("archive-zip-count")], callable case_body)
