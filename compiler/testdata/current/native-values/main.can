@@ -1,0 +1,36 @@
+package test_native_values
+    provides []
+    uses [native, option, test]
+fn int native_roundtrip
+    emits {test::invalid_grant}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call native::open(owner, "bun", "observer-a", "run-1", native::limits(1, 8, 8, 64, 65536, 4, 4)) as native::session session
+        call native::describe(session, "api-x") as native::descriptor_or_unknown described
+        call native::make(session, "text", native::inert_literal("text", option::none(), option::none(), option::some("hi"), option::none(), option::none())) as native::value_handle made
+        call native::invoke(session, "op-x", option::none(), [made]) as native::handle_or_pending_action invoked
+        call native::observe(session, [made], "lexeme", native::observe_bounds(64, 65536)) as native::inert_facts seen
+        call native::install_fault(session, "target-a", "throw") as native::fault fault
+        call native::restore(fault) as native::restore_outcome restored
+        call native::close(session, native::deadline("wall-utc", 5000)) as native::close_receipt closed
+        test::invalid_grant
+        ok => do
+            option::value<native::pending_action> act = invoked.action
+            match act
+                option::none => ok 0
+                option::some => match chain
+                    call native::settle(act.value, native::deadline("wall-utc", 5000)) as native::settlement_or_pending settled
+                    call native::allocate_gate(session, native::gate_spec("gate-a", 4), native::bounded_action_ref(act.value, 1)) as native::gate gate
+                    call native::release(gate) as native::release_facts released
+                    ok => ok 1
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
