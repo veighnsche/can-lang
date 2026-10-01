@@ -1,0 +1,248 @@
+package m08core044roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M08 CORE-044 "bundled transport loopback: roots green, 34 staged tests".
+/// Source: tests/integration/transport_test.go symbol
+/// TestBundledTransportLoopback (L13-38).
+/// Related fixtures: the seven staged runtime suites named on the bun test
+/// command line (L26): runtime/test/transport-body.test.ts (5 tests),
+/// runtime/test/transport-request.test.ts (4), runtime/test/transport-owned.test.ts (3),
+/// runtime/test/transport-fetch.test.ts (7), runtime/test/transport-http.test.ts (2),
+/// runtime/test/transport-named.test.ts (8), runtime/test/transport-late.test.ts (5);
+/// total 34. transport-budget.test.ts exists in the tree but is NOT staged
+/// (absent from L26), so it contributes no root here.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): the staged bun run is green with a passed report
+/// carrying exactly 34 tests, grounded per suite in the seven staged
+/// fixtures, with the fail-free verdict present.
+/// Request-prep/fetch/owned/late semantics live in
+/// core-044-transport-semantics.can; the production process shape lives in
+/// core-044-run-shape.can.
+/// Variants: none in this file (default only); the suite variants
+/// (one-attempt, stalled body, redirect, malformed reply, late fault) live
+/// in the transport-semantics file.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec + localhost
+/// bind/outbound; requires can-bun-archive, macos-sandbox-exec. Logical
+/// gates SUITE/WORK/PROC and C/R/N/S/A identities bind at P23/QHTTP; no
+/// live run now. Descriptor timeout 120000ms mirrors the Go 2-minute ctx (L19).
+/// Delegated oracles: DELEGATE-023 (transport-body.test.ts, 5
+/// declarations), DELEGATE-029 (transport-request.test.ts, 4), DELEGATE-028
+/// (transport-owned.test.ts, 3), DELEGATE-024 (transport-fetch.test.ts, 7),
+/// DELEGATE-025 (transport-http.test.ts, 2), DELEGATE-027
+/// (transport-named.test.ts, 8), DELEGATE-026 (transport-late.test.ts, 5);
+/// read-only record, not executed here.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case transport/loopback-roots checks: assert-green, report-passed,
+/// root-count, fixture-name, body-roots, request-roots, owned-roots,
+/// fetch-roots, http-roots, named-roots, late-roots.
+/// Facet map (transport_test.go legs): assert-green pins the staged run
+/// (L29-30: CombinedOutput error nil or "staged transport tests" fatals);
+/// report-passed pins the fail-free verdict (L30: output contains "0 fail"
+/// verbatim); root-count pins exactly 34 staged tests (the Go leg checks
+/// the verdict only, so the count grounds per suite in the fixtures per
+/// the CORE-045 precedent: 5 + 4 + 3 + 7 + 2 + 8 + 5); fixture-name grounds
+/// the pins in the seven staged files (L26: the bun test file args in
+/// order); body-roots pins the body suite (transport-body.test.ts L5/L27/
+/// L51/L64/L75: cap/stall/deadline/bytes/precedence, 5); request-roots pins
+/// the request suite (transport-request.test.ts L11/L31/L52/L88: encoding/
+/// urls/credentials/snapshot, 4); owned-roots pins the owned suite
+/// (transport-owned.test.ts L18/L44/L62: retain/cleanup/drain, 3);
+/// fetch-roots pins the fetch suite (transport-fetch.test.ts L14/L68/L113/
+/// L154/L188/L212/L277: attempt/redirect/stall/deadline/cancel/cap/boxed, 7);
+/// http-roots pins the http suite (transport-http.test.ts L83/L127:
+/// nominal/status-timeout, 2); named-roots pins the named suite
+/// (transport-named.test.ts L138/L168/L250/L327/L419/L473/L542/L605: media/
+/// loopback/bodies/errors/fixtures/content-type/head/leaves, 8); late-roots
+/// pins the late suite (transport-late.test.ts L24/L72/L137/L171/L201:
+/// defect/retain/classified/sync/boxed, 5).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    str fixture_name
+    int body_roots
+    int request_roots
+    int owned_roots
+    int fetch_roots
+    int http_roots
+    int named_roots
+    int late_roots
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("transport/loopback-roots", "default", "", "offline"), "assert-green" => ok "case transport/loopback-roots variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("transport/loopback-roots", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case transport/loopback-roots variant default root assert-green run offline")
+        different: false, true, context("transport/loopback-roots", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 34, 34, context("transport/loopback-roots", "default", "", "offline"), "root-count" => ok evidence("root-count", "34", "34", true, "case transport/loopback-roots variant default root root-count run offline")
+        different: 33, 34, context("transport/loopback-roots", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", context("transport/loopback-roots", "default", "", "offline"), "fixture-name" => ok evidence("fixture-name", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", true, "case transport/loopback-roots variant default root fixture-name run offline")
+        different: "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-budget.test.ts", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", context("transport/loopback-roots", "default", "", "offline"), "fixture-name" => failed{"fixture-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 33, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        seed_fixture_drift: "seed-fixture-drift" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-budget.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        seed_body_loss: "seed-body-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 4, 4, 3, 7, 2, 8, 5)
+        seed_request_loss: "seed-request-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 3, 3, 7, 2, 8, 5)
+        seed_owned_loss: "seed-owned-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 2, 7, 2, 8, 5)
+        seed_fetch_loss: "seed-fetch-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 6, 2, 8, 5)
+        seed_http_loss: "seed-http-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 1, 8, 5)
+        seed_named_loss: "seed-named-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 7, 5)
+        seed_late_loss: "seed-late-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 4)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        "seed-report-red" => ok observation(true, false, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        "seed-root-short" => ok observation(true, true, 33, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        "seed-fixture-drift" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-budget.test.ts", 5, 4, 3, 7, 2, 8, 5)
+        "seed-body-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 4, 4, 3, 7, 2, 8, 5)
+        "seed-request-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 3, 3, 7, 2, 8, 5)
+        "seed-owned-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 2, 7, 2, 8, 5)
+        "seed-fetch-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 6, 2, 8, 5)
+        "seed-http-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 1, 8, 5)
+        "seed-named-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 7, 5)
+        "seed-late-loss" => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 4)
+        _ => ok observation(true, true, 34, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", 5, 4, 3, 7, 2, 8, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m08_044: "m08-044" => ok [check("assert-green", "staged bun test exits 0"), check("report-passed", "combined output reports 0 fail"), check("root-count", "seven suites stage exactly 34 tests"), check("fixture-name", "root pins ground the seven staged suite files"), check("body-roots", "body suite contributes 5 tests (cap/stall/deadline/bytes/precedence)"), check("request-roots", "request suite contributes 4 tests (encoding/urls/credentials/snapshot)"), check("owned-roots", "owned suite contributes 3 tests (retain/cleanup/drain)"), check("fetch-roots", "fetch suite contributes 7 tests (attempt/redirect/stall/deadline/cancel/cap/boxed)"), check("http-roots", "http suite contributes 2 tests (nominal/status-timeout)"), check("named-roots", "named suite contributes 8 tests (media/loopback/bodies/errors/fixtures/content-type/head/leaves)"), check("late-roots", "late suite contributes 5 tests (defect/retain/classified/sync/boxed)")]
+        other: "nope" => ok []
+    match scope is "m08-044"
+        false => ok []
+        true => ok [check("assert-green", "staged bun test exits 0"), check("report-passed", "combined output reports 0 fail"), check("root-count", "seven suites stage exactly 34 tests"), check("fixture-name", "root pins ground the seven staged suite files"), check("body-roots", "body suite contributes 5 tests (cap/stall/deadline/bytes/precedence)"), check("request-roots", "request suite contributes 4 tests (encoding/urls/credentials/snapshot)"), check("owned-roots", "owned suite contributes 3 tests (retain/cleanup/drain)"), check("fetch-roots", "fetch suite contributes 7 tests (attempt/redirect/stall/deadline/cancel/cap/boxed)"), check("http-roots", "http suite contributes 2 tests (nominal/status-timeout)"), check("named-roots", "named suite contributes 8 tests (media/loopback/bodies/errors/fixtures/content-type/head/leaves)"), check("late-roots", "late suite contributes 5 tests (defect/retain/classified/sync/boxed)")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "transport/loopback-roots" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "34"), expected_check("fixture-name", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts"), expected_check("body-roots", "5"), expected_check("request-roots", "4"), expected_check("owned-roots", "3"), expected_check("fetch-roots", "7"), expected_check("http-roots", "2"), expected_check("named-roots", "8"), expected_check("late-roots", "5")]
+        unknown: "nope" => ok []
+    match case is "transport/loopback-roots"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "34"), expected_check("fixture-name", "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts"), expected_check("body-roots", "5"), expected_check("request-roots", "4"), expected_check("owned-roots", "3"), expected_check("fetch-roots", "7"), expected_check("http-roots", "2"), expected_check("named-roots", "8"), expected_check("late-roots", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("transport/loopback-roots", "default", "", "offline") => ok
+        seed_assert_red: context("transport/loopback-roots", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("transport/loopback-roots", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("transport/loopback-roots", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_fixture_drift: context("transport/loopback-roots", "seed-fixture-drift", "", "offline") => failed{"fixture-name"}
+        seed_body_loss: context("transport/loopback-roots", "seed-body-loss", "", "offline") => failed{"body-roots"}
+        seed_request_loss: context("transport/loopback-roots", "seed-request-loss", "", "offline") => failed{"request-roots"}
+        seed_owned_loss: context("transport/loopback-roots", "seed-owned-loss", "", "offline") => failed{"owned-roots"}
+        seed_fetch_loss: context("transport/loopback-roots", "seed-fetch-loss", "", "offline") => failed{"fetch-roots"}
+        seed_http_loss: context("transport/loopback-roots", "seed-http-loss", "", "offline") => failed{"http-roots"}
+        seed_named_loss: context("transport/loopback-roots", "seed-named-loss", "", "offline") => failed{"named-roots"}
+        seed_late_loss: context("transport/loopback-roots", "seed-late-loss", "", "offline") => failed{"late-roots"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_green_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence report_passed_evidence => match call require_int(got.root_count, 34, c, "root-count")
+                    failed
+                    ok evidence root_count_evidence => match call require_text(got.fixture_name, "transport-body.test.ts, transport-request.test.ts, transport-owned.test.ts, transport-fetch.test.ts, transport-http.test.ts, transport-named.test.ts, transport-late.test.ts", c, "fixture-name")
+                        failed
+                        ok evidence fixture_name_evidence => match call require_int(got.body_roots, 5, c, "body-roots")
+                            failed
+                            ok evidence body_roots_evidence => match call require_int(got.request_roots, 4, c, "request-roots")
+                                failed
+                                ok evidence request_roots_evidence => match call require_int(got.owned_roots, 3, c, "owned-roots")
+                                    failed
+                                    ok evidence owned_roots_evidence => match call require_int(got.fetch_roots, 7, c, "fetch-roots")
+                                        failed
+                                        ok evidence fetch_roots_evidence => match call require_int(got.http_roots, 2, c, "http-roots")
+                                            failed
+                                            ok evidence http_roots_evidence => match call require_int(got.named_roots, 8, c, "named-roots")
+                                                failed
+                                                ok evidence named_roots_evidence => match call require_int(got.late_roots, 5, c, "late-roots")
+                                                    failed
+                                                    ok evidence late_roots_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m08_044: "m08-044" => ok test_case("transport/loopback-roots", ["transport", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("body-roots"), check_ref("request-roots"), check_ref("owned-roots"), check_ref("fetch-roots"), check_ref("http-roots"), check_ref("named-roots"), check_ref("late-roots")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m08-044"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("transport/loopback-roots", ["transport", "m08"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("fixture-name"), check_ref("body-roots"), check_ref("request-roots"), check_ref("owned-roots"), check_ref("fetch-roots"), check_ref("http-roots"), check_ref("named-roots"), check_ref("late-roots")], callable case_body)
