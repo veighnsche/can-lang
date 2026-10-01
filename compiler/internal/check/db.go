@@ -8,17 +8,20 @@ import (
 )
 
 const (
-	dbRecordSettlement = "can.std.db@1::record_settlement"
+	dbRecordSettlement       = "can.std.db@1::record_settlement"
+	dbRecordPoisonSettlement = "can.std.db@1::record_poison_settlement"
+	dbRecordCallbackReport   = "can.std.db@1::record_callback_report"
 )
 
-// dbVocabularies mirrors the K24 closed vocabularies
-// (tools/runtime/test-services/db-observer/transactions.ts)
-// exactly. The db-transaction adapter re-validates at runtime
-// and fails unknown words as db_fault; the static mirror exists
-// so a misspelled word fails at check time with a precise span.
-// The NT-I13 db operations carry no closed-vocabulary scalar
-// positions (all names are dynamic; schema tags travel inside
-// arrays), so record_settlement is the only static db operation.
+// dbVocabularies mirrors the K24/K25 closed vocabularies
+// (tools/runtime/test-services/db-observer/transactions.ts and
+// poison.ts) exactly. The db adapters re-validate at runtime and
+// fail unknown words as db_fault; the static mirror exists so a
+// misspelled word fails at check time with a precise span. Note
+// the poison outcome set has no "unknown": a poison attempt must
+// settle terminally. The NT-I13 db operations carry no
+// closed-vocabulary scalar positions (all names are dynamic;
+// schema tags travel inside arrays).
 var dbVocabularies = map[string]map[string]bool{
 	"outcome": {
 		"committed":   true,
@@ -30,20 +33,32 @@ var dbVocabularies = map[string]map[string]bool{
 		"sqlite":   true,
 		"mysql":    true,
 	},
+	"poison_outcome": {
+		"rolled-back": true,
+		"committed":   true,
+	},
+	"callback_report": {
+		"success": true,
+		"threw":   true,
+	},
 }
 
 // dbStaticArity pins the fixed argument count (owner included) of
 // every db operation carrying a closed vocabulary.
 var dbStaticArity = map[string]int{
-	dbRecordSettlement: 5,
+	dbRecordSettlement:       5,
+	dbRecordPoisonSettlement: 3,
+	dbRecordCallbackReport:   3,
 }
 
 // dbStaticWords pins, per static operation, the argument positions
 // (0-based, owner included) that must be string literals from the
-// named K24 vocabulary. Actors, tokens, compiles and ids stay
-// dynamic.
+// named K24/K25 vocabulary. Actors, tokens, attempts, compiles
+// and ids stay dynamic.
 var dbStaticWords = map[string]map[int]string{
-	dbRecordSettlement: {3: "outcome", 4: "engine"},
+	dbRecordSettlement:       {3: "outcome", 4: "engine"},
+	dbRecordPoisonSettlement: {2: "poison_outcome"},
+	dbRecordCallbackReport:   {2: "callback_report"},
 }
 
 func dbStaticOperation(identity string) bool {
