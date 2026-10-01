@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "00f83a8a1a0a9cf12a4f30717a000c3f5a7a094d3ce3346a22b96f49c2895761";
+export const catalogueSHA256 = "c6fc7d1e0e6f07950fc511781142b07fd9d7dac8fb036cd331d1d70509b86fe1";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -19041,6 +19041,99 @@ export const catalogue = freeze({
    "assertion": "supplied",
    "refs": [
     "NT-I11"
+   ]
+  },
+  {
+   "name": "c::parse_module",
+   "identity": "can.std.c@1::parse_module",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "source",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "c::parsed_module",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.split",
+     "String.prototype.trim",
+     "RegExp.prototype.exec",
+     "RegExp.prototype.test",
+     "Array.prototype.join"
+    ],
+    "adapter": "Parse import/export/dynamic-import/body shapes line by line (K04 parseModule); report verbatim source slices.",
+    "task": "NT-I02"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I02"
+   ]
+  },
+  {
+   "name": "c::check_module",
+   "identity": "can.std.c@1::check_module",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "manifest",
+     "type": "c::manifest"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "module_path",
+     "type": "str"
+    },
+    {
+     "name": "source",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str[]",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "String.prototype.split",
+     "String.prototype.startsWith",
+     "String.prototype.slice",
+     "String.prototype.indexOf",
+     "Array.prototype.includes",
+     "Map",
+     "Set",
+     "RegExp"
+    ],
+    "adapter": "Classify edges against the manifest, enforce one shared runtime root and per-kind fixed-edge/body/export shapes (K04 checkModule); return problem strings, empty when seam-clean.",
+    "task": "NT-I02"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I02"
    ]
   }
  ],

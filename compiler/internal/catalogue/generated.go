@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "00f83a8a1a0a9cf12a4f30717a000c3f5a7a094d3ce3346a22b96f49c2895761"
+const GeneratedSourceSHA256 = "c6fc7d1e0e6f07950fc511781142b07fd9d7dac8fb036cd331d1d70509b86fe1"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -811,3 +811,5 @@ const OpDescriptorKillChild = "descriptor::kill_child"
 const OpDescriptorReleaseLaunch = "descriptor::release_launch"
 const OpDescriptorReadFacts = "descriptor::read_facts"
 const OpDescriptorExpectedAck = "descriptor::expected_ack"
+const OpCParseModule = "c::parse_module"
+const OpCCheckModule = "c::check_module"

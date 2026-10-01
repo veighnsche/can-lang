@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 00f83a8a1a0a9cf12a4f30717a000c3f5a7a094d3ce3346a22b96f49c2895761.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c6fc7d1e0e6f07950fc511781142b07fd9d7dac8fb036cd331d1d70509b86fe1.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -758,6 +758,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | descriptor::release_launch | test::owner owner, descriptor::launch launch → descriptor::report | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Decide clean release: offered, accepted, clean EOF, reaped exit 0, live identity, lease clauses, no orphan. Not-clean is a decision, not an error. | supplied | NT-I11 / NT-I11 |
 | descriptor::read_facts | test::owner owner, descriptor::launch launch → descriptor::facts | {test::stale_handle} |  | JSON.stringify, JSON.parse | Copy the current separate per-process facts without blocking; no fact implies any other. | supplied | NT-I11 / NT-I11 |
 | descriptor::expected_ack | test::owner owner, descriptor::launch launch → int[] | {test::stale_handle} |  | JSON.stringify, JSON.parse | Return the exact encoded status frame the owner expects for this launch (opID + env digest binding). | supplied | NT-I11 / NT-I11 |
+| c::parse_module | test::owner owner, str source → c::parsed_module | {test::stale_handle} |  | String.prototype.split, String.prototype.trim, RegExp.prototype.exec, RegExp.prototype.test, Array.prototype.join | Parse import/export/dynamic-import/body shapes line by line (K04 parseModule); report verbatim source slices. | supplied | NT-I02 / NT-I02 |
+| c::check_module | test::owner owner, c::manifest manifest, str kind, str module_path, str source → str[] | {test::stale_handle} |  | String.prototype.split, String.prototype.startsWith, String.prototype.slice, String.prototype.indexOf, Array.prototype.includes, Map, Set, RegExp | Classify edges against the manifest, enforce one shared runtime root and per-kind fixed-edge/body/export shapes (K04 checkModule); return problem strings, empty when seam-clean. | supplied | NT-I02 / NT-I02 |
 
 ## Native declaration profiles
 
