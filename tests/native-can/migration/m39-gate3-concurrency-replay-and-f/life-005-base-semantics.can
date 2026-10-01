@@ -1,0 +1,359 @@
+package m39life005base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M39 LIFE-005 TestGate3Concurrency
+/// revision plus identical races.
+/// Source: tests/integration/gate3_matrix_test.go
+/// symbol TestGate3Concurrency (L1232-1471) plus
+/// race helper span (L1194-1224) plus race port
+/// (L69): eight distinct ops racing one base
+/// revision must land one 200 plus seven 409s,
+/// and six identical ops must converge to one
+/// shared effect with byte-identical 200s after
+/// at most one 503 slip. Disposition: migrate
+/// (this row owns the race pacts as reviewable
+/// Can facts; the old go check stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence). Protects (this file): facet one
+/// (L1283-1319): one winner plus seven conflicts
+/// on one base revision, plus facet two
+/// (L1321-1361): six identical racers converging
+/// to one shared effect. ADAPTATION (recorded,
+/// with source lines): path pins hold the save
+/// URL; login pins hold the racing login; op pins
+/// hold op id heads; guard pins hold want lines;
+/// note pins hold case notes; tag pins hold leaf
+/// tags; count pins hold ints tallied from loops
+/// plus guards.
+/// Pin lines: race-save-path L1250, race-session
+/// L1264, distinct-op-prefix L1287,
+/// distinct-want-guard L1300, distinct-note
+/// L1306, distinct-tag L1306, identical-op L1327,
+/// identical-want-guard L1332, converge-guard
+/// L1339, differ-guard L1345, identical-note
+/// L1348, distinct-race-size L1286,
+/// distinct-winner-status L1294,
+/// distinct-conflict-status L1297,
+/// distinct-winner-count L1303,
+/// distinct-conflict-count L1303,
+/// distinct-winner-revision L1308,
+/// distinct-ledger-rows L1316,
+/// identical-race-size L1326, identical-ok-status
+/// L1331, identical-transient-status L1331,
+/// identical-revision L1350,
+/// identical-ledger-rows L1358.
+/// Facet map (leg order): race-save-path,
+/// race-session, distinct-op-prefix,
+/// distinct-want-guard, distinct-note,
+/// distinct-tag, identical-op,
+/// identical-want-guard, converge-guard,
+/// differ-guard, identical-note,
+/// distinct-race-size, distinct-winner-status,
+/// distinct-conflict-status,
+/// distinct-winner-count,
+/// distinct-conflict-count,
+/// distinct-winner-revision,
+/// distinct-ledger-rows, identical-race-size,
+/// identical-ok-status,
+/// identical-transient-status,
+/// identical-revision, identical-ledger-rows.
+/// Siblings: revision plus identical races live
+/// in life-005-base-semantics.can; membership
+/// plus flap legs live in
+/// life-005-roots-green.can; barrier plus harness
+/// shape lives in life-005-run-shape.can.
+/// Variants: eight distinct, six identical,
+/// membership absent plus restored plus flapping;
+/// default plus seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus a staged
+/// bundle plus cut-off homes plus loopback plus
+/// disposable SQLite (row lists three gates; bind
+/// at P23; no live run now).
+/// Logical gates HTTP plus DB plus D1 plus D2
+/// bind at P23 plus QHTTP plus QD1 plus QD2; no
+/// live run now.
+/// Timeout 120000ms is the offline default bound
+/// (the live fourteen minute hold is pinned in
+/// the run slice; binds at P23 like the M38
+/// no-run rows).
+/// Delegated oracles: none. Execution credit: NOT
+/// claimed (P23 plus QHTTP plus QD1 plus QD2
+/// accept gates unmet).
+/// Case life/concurrency-races checks:
+/// race-save-path, race-session,
+/// distinct-op-prefix, distinct-want-guard,
+/// distinct-note, distinct-tag, identical-op,
+/// identical-want-guard, converge-guard,
+/// differ-guard, identical-note,
+/// distinct-race-size, distinct-winner-status,
+/// distinct-conflict-status,
+/// distinct-winner-count,
+/// distinct-conflict-count,
+/// distinct-winner-revision,
+/// distinct-ledger-rows, identical-race-size,
+/// identical-ok-status,
+/// identical-transient-status,
+/// identical-revision, identical-ledger-rows.
+/// Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str race_save_path
+    str race_session
+    str distinct_op_prefix
+    str distinct_want_guard
+    str distinct_note
+    str distinct_tag
+    str identical_op
+    str identical_want_guard
+    str converge_guard
+    str differ_guard
+    str identical_note
+    int distinct_race_size
+    int distinct_winner_status
+    int distinct_conflict_status
+    int distinct_winner_count
+    int distinct_conflict_count
+    int distinct_winner_revision
+    int distinct_ledger_rows
+    int identical_race_size
+    int identical_ok_status
+    int identical_transient_status
+    int identical_revision
+    int identical_ledger_rows
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/concurrency-races", "default", "", "offline"), "race-save-path" => ok "case life/concurrency-races variant default root race-save-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/concurrency-races", "default", "", "offline"), "race-save-path" => ok evidence("race-save-path", "true", "true", true, "case life/concurrency-races variant default root race-save-path run offline")
+        different: false, true, context("life/concurrency-races", "default", "", "offline"), "race-save-path" => failed{"race-save-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 8, 8, context("life/concurrency-races", "default", "", "offline"), "distinct-race-size" => ok evidence("distinct-race-size", "8", "8", true, "case life/concurrency-races variant default root distinct-race-size run offline")
+        different: 7, 8, context("life/concurrency-races", "default", "", "offline"), "distinct-race-size" => failed{"distinct-race-size"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/api/tenants/1/invoices/7", "/api/tenants/1/invoices/7", context("life/concurrency-races", "default", "", "offline"), "race-save-path" => ok evidence("race-save-path", "/api/tenants/1/invoices/7", "/api/tenants/1/invoices/7", true, "case life/concurrency-races variant default root race-save-path run offline")
+        different: "/api/tenants/1/invoices/7_2", "/api/tenants/1/invoices/7", context("life/concurrency-races", "default", "", "offline"), "race-save-path" => failed{"race-save-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_race_save_path: "seed-race-save-path-drift" => ok observation("/api/tenants/1/invoices/7_2", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_race_session: "seed-race-session-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice_2", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_op_prefix: "seed-distinct-op-prefix-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r_2", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_want_guard: "seed-distinct-want-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else_2", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_note: "seed-distinct-note-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner_2", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_tag: "seed-distinct-tag-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved_2", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_identical_op: "seed-identical-op-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same_2", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_identical_want_guard: "seed-identical-want-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry_2", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_converge_guard: "seed-converge-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200_2", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_differ_guard: "seed-differ-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes_2", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_identical_note: "seed-identical-note-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race_2", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_race_size: "seed-distinct-race-size-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 7, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_winner_status: "seed-distinct-winner-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 199, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_conflict_status: "seed-distinct-conflict-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 408, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_winner_count: "seed-distinct-winner-count-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 0, 7, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_conflict_count: "seed-distinct-conflict-count-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 6, 2, 1, 6, 200, 503, 3, 2)
+        seed_distinct_winner_revision: "seed-distinct-winner-revision-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 1, 1, 6, 200, 503, 3, 2)
+        seed_distinct_ledger_rows: "seed-distinct-ledger-rows-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 0, 6, 200, 503, 3, 2)
+        seed_identical_race_size: "seed-identical-race-size-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 5, 200, 503, 3, 2)
+        seed_identical_ok_status: "seed-identical-ok-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 199, 503, 3, 2)
+        seed_identical_transient_status: "seed-identical-transient-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 502, 3, 2)
+        seed_identical_revision: "seed-identical-revision-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 2, 2)
+        seed_identical_ledger_rows: "seed-identical-ledger-rows-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 1)
+    match variant_id
+        "seed-race-save-path-drift" => ok observation("/api/tenants/1/invoices/7_2", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-race-session-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice_2", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-op-prefix-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r_2", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-want-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else_2", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-note-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner_2", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-tag-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved_2", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-identical-op-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same_2", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-identical-want-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry_2", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-converge-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200_2", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-differ-guard-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes_2", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-identical-note-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race_2", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-race-size-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 7, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-winner-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 199, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-conflict-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 408, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-winner-count-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 0, 7, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-conflict-count-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 6, 2, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-winner-revision-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 1, 1, 6, 200, 503, 3, 2)
+        "seed-distinct-ledger-rows-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 0, 6, 200, 503, 3, 2)
+        "seed-identical-race-size-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 5, 200, 503, 3, 2)
+        "seed-identical-ok-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 199, 503, 3, 2)
+        "seed-identical-transient-status-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 502, 3, 2)
+        "seed-identical-revision-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 2, 2)
+        "seed-identical-ledger-rows-drift" => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 1)
+        _ => ok observation("/api/tenants/1/invoices/7", "tok-alice", "op-r", "want 200 once and 409 else", "revision race winner", "invoice_contract::grid_saved", "op-same", "want 200 or one 503 retry", "identical converge: %d %s, want 200", "identical race converged to differing bytes", "identical race", 8, 200, 409, 1, 7, 2, 1, 6, 200, 503, 3, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l005: "m39-l005" => ok [check("race-save-path", "race saves hit the invoice path"), check("race-session", "race saves ride the alice login"), check("distinct-op-prefix", "distinct legs keep the op-r head"), check("distinct-want-guard", "distinct legs allow 200 once plus 409 else"), check("distinct-note", "winner leg keeps its note"), check("distinct-tag", "winner leg lands grid_saved"), check("identical-op", "shared legs keep the op-same id"), check("identical-want-guard", "shared legs allow 200 or one 503 retry"), check("converge-guard", "shared legs reconverge at 200"), check("differ-guard", "shared legs land byte-identical"), check("identical-note", "shared leg keeps its note"), check("distinct-race-size", "eight distinct racers exist"), check("distinct-winner-status", "winner lands 200"), check("distinct-conflict-status", "losers land 409"), check("distinct-winner-count", "one winner exists"), check("distinct-conflict-count", "seven conflicts exist"), check("distinct-winner-revision", "winner lands revision two"), check("distinct-ledger-rows", "one ledger row exists"), check("identical-race-size", "six shared racers exist"), check("identical-ok-status", "shared landings land 200"), check("identical-transient-status", "shared slip lands 503 once"), check("identical-revision", "shared effect lands revision three"), check("identical-ledger-rows", "two ledger rows exist")]
+        other: "nope" => ok []
+    match scope is "m39-l005"
+        false => ok []
+        true => ok [check("race-save-path", "race saves hit the invoice path"), check("race-session", "race saves ride the alice login"), check("distinct-op-prefix", "distinct legs keep the op-r head"), check("distinct-want-guard", "distinct legs allow 200 once plus 409 else"), check("distinct-note", "winner leg keeps its note"), check("distinct-tag", "winner leg lands grid_saved"), check("identical-op", "shared legs keep the op-same id"), check("identical-want-guard", "shared legs allow 200 or one 503 retry"), check("converge-guard", "shared legs reconverge at 200"), check("differ-guard", "shared legs land byte-identical"), check("identical-note", "shared leg keeps its note"), check("distinct-race-size", "eight distinct racers exist"), check("distinct-winner-status", "winner lands 200"), check("distinct-conflict-status", "losers land 409"), check("distinct-winner-count", "one winner exists"), check("distinct-conflict-count", "seven conflicts exist"), check("distinct-winner-revision", "winner lands revision two"), check("distinct-ledger-rows", "one ledger row exists"), check("identical-race-size", "six shared racers exist"), check("identical-ok-status", "shared landings land 200"), check("identical-transient-status", "shared slip lands 503 once"), check("identical-revision", "shared effect lands revision three"), check("identical-ledger-rows", "two ledger rows exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/concurrency-races" => ok [expected_check("race-save-path", "/api/tenants/1/invoices/7"), expected_check("race-session", "tok-alice"), expected_check("distinct-op-prefix", "op-r"), expected_check("distinct-want-guard", "want 200 once and 409 else"), expected_check("distinct-note", "revision race winner"), expected_check("distinct-tag", "invoice_contract::grid_saved"), expected_check("identical-op", "op-same"), expected_check("identical-want-guard", "want 200 or one 503 retry"), expected_check("converge-guard", "identical converge: %d %s, want 200"), expected_check("differ-guard", "identical race converged to differing bytes"), expected_check("identical-note", "identical race"), expected_check("distinct-race-size", "8"), expected_check("distinct-winner-status", "200"), expected_check("distinct-conflict-status", "409"), expected_check("distinct-winner-count", "1"), expected_check("distinct-conflict-count", "7"), expected_check("distinct-winner-revision", "2"), expected_check("distinct-ledger-rows", "1"), expected_check("identical-race-size", "6"), expected_check("identical-ok-status", "200"), expected_check("identical-transient-status", "503"), expected_check("identical-revision", "3"), expected_check("identical-ledger-rows", "2")]
+        unknown: "nope" => ok []
+    match case is "life/concurrency-races"
+        false => ok []
+        true => ok [expected_check("race-save-path", "/api/tenants/1/invoices/7"), expected_check("race-session", "tok-alice"), expected_check("distinct-op-prefix", "op-r"), expected_check("distinct-want-guard", "want 200 once and 409 else"), expected_check("distinct-note", "revision race winner"), expected_check("distinct-tag", "invoice_contract::grid_saved"), expected_check("identical-op", "op-same"), expected_check("identical-want-guard", "want 200 or one 503 retry"), expected_check("converge-guard", "identical converge: %d %s, want 200"), expected_check("differ-guard", "identical race converged to differing bytes"), expected_check("identical-note", "identical race"), expected_check("distinct-race-size", "8"), expected_check("distinct-winner-status", "200"), expected_check("distinct-conflict-status", "409"), expected_check("distinct-winner-count", "1"), expected_check("distinct-conflict-count", "7"), expected_check("distinct-winner-revision", "2"), expected_check("distinct-ledger-rows", "1"), expected_check("identical-race-size", "6"), expected_check("identical-ok-status", "200"), expected_check("identical-transient-status", "503"), expected_check("identical-revision", "3"), expected_check("identical-ledger-rows", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/concurrency-races", "default", "", "offline") => ok
+        seed_race_save_path: context("life/concurrency-races", "seed-race-save-path-drift", "", "offline") => failed{"race-save-path"}
+        seed_race_session: context("life/concurrency-races", "seed-race-session-drift", "", "offline") => failed{"race-session"}
+        seed_distinct_op_prefix: context("life/concurrency-races", "seed-distinct-op-prefix-drift", "", "offline") => failed{"distinct-op-prefix"}
+        seed_distinct_want_guard: context("life/concurrency-races", "seed-distinct-want-guard-drift", "", "offline") => failed{"distinct-want-guard"}
+        seed_distinct_note: context("life/concurrency-races", "seed-distinct-note-drift", "", "offline") => failed{"distinct-note"}
+        seed_distinct_tag: context("life/concurrency-races", "seed-distinct-tag-drift", "", "offline") => failed{"distinct-tag"}
+        seed_identical_op: context("life/concurrency-races", "seed-identical-op-drift", "", "offline") => failed{"identical-op"}
+        seed_identical_want_guard: context("life/concurrency-races", "seed-identical-want-guard-drift", "", "offline") => failed{"identical-want-guard"}
+        seed_converge_guard: context("life/concurrency-races", "seed-converge-guard-drift", "", "offline") => failed{"converge-guard"}
+        seed_differ_guard: context("life/concurrency-races", "seed-differ-guard-drift", "", "offline") => failed{"differ-guard"}
+        seed_identical_note: context("life/concurrency-races", "seed-identical-note-drift", "", "offline") => failed{"identical-note"}
+        seed_distinct_race_size: context("life/concurrency-races", "seed-distinct-race-size-drift", "", "offline") => failed{"distinct-race-size"}
+        seed_distinct_winner_status: context("life/concurrency-races", "seed-distinct-winner-status-drift", "", "offline") => failed{"distinct-winner-status"}
+        seed_distinct_conflict_status: context("life/concurrency-races", "seed-distinct-conflict-status-drift", "", "offline") => failed{"distinct-conflict-status"}
+        seed_distinct_winner_count: context("life/concurrency-races", "seed-distinct-winner-count-drift", "", "offline") => failed{"distinct-winner-count"}
+        seed_distinct_conflict_count: context("life/concurrency-races", "seed-distinct-conflict-count-drift", "", "offline") => failed{"distinct-conflict-count"}
+        seed_distinct_winner_revision: context("life/concurrency-races", "seed-distinct-winner-revision-drift", "", "offline") => failed{"distinct-winner-revision"}
+        seed_distinct_ledger_rows: context("life/concurrency-races", "seed-distinct-ledger-rows-drift", "", "offline") => failed{"distinct-ledger-rows"}
+        seed_identical_race_size: context("life/concurrency-races", "seed-identical-race-size-drift", "", "offline") => failed{"identical-race-size"}
+        seed_identical_ok_status: context("life/concurrency-races", "seed-identical-ok-status-drift", "", "offline") => failed{"identical-ok-status"}
+        seed_identical_transient_status: context("life/concurrency-races", "seed-identical-transient-status-drift", "", "offline") => failed{"identical-transient-status"}
+        seed_identical_revision: context("life/concurrency-races", "seed-identical-revision-drift", "", "offline") => failed{"identical-revision"}
+        seed_identical_ledger_rows: context("life/concurrency-races", "seed-identical-ledger-rows-drift", "", "offline") => failed{"identical-ledger-rows"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.race_save_path, "/api/tenants/1/invoices/7", c, "race-save-path")
+            failed
+            ok evidence race_save_path_evidence => match call require_text(got.race_session, "tok-alice", c, "race-session")
+                failed
+                ok evidence race_session_evidence => match call require_text(got.distinct_op_prefix, "op-r", c, "distinct-op-prefix")
+                    failed
+                    ok evidence distinct_op_prefix_evidence => match call require_text(got.distinct_want_guard, "want 200 once and 409 else", c, "distinct-want-guard")
+                        failed
+                        ok evidence distinct_want_guard_evidence => match call require_text(got.distinct_note, "revision race winner", c, "distinct-note")
+                            failed
+                            ok evidence distinct_note_evidence => match call require_text(got.distinct_tag, "invoice_contract::grid_saved", c, "distinct-tag")
+                                failed
+                                ok evidence distinct_tag_evidence => match call require_text(got.identical_op, "op-same", c, "identical-op")
+                                    failed
+                                    ok evidence identical_op_evidence => match call require_text(got.identical_want_guard, "want 200 or one 503 retry", c, "identical-want-guard")
+                                        failed
+                                        ok evidence identical_want_guard_evidence => match call require_text(got.converge_guard, "identical converge: %d %s, want 200", c, "converge-guard")
+                                            failed
+                                            ok evidence converge_guard_evidence => match call require_text(got.differ_guard, "identical race converged to differing bytes", c, "differ-guard")
+                                                failed
+                                                ok evidence differ_guard_evidence => match call require_text(got.identical_note, "identical race", c, "identical-note")
+                                                    failed
+                                                    ok evidence identical_note_evidence => match call require_int(got.distinct_race_size, 8, c, "distinct-race-size")
+                                                        failed
+                                                        ok evidence distinct_race_size_evidence => match call require_int(got.distinct_winner_status, 200, c, "distinct-winner-status")
+                                                            failed
+                                                            ok evidence distinct_winner_status_evidence => match call require_int(got.distinct_conflict_status, 409, c, "distinct-conflict-status")
+                                                                failed
+                                                                ok evidence distinct_conflict_status_evidence => match call require_int(got.distinct_winner_count, 1, c, "distinct-winner-count")
+                                                                    failed
+                                                                    ok evidence distinct_winner_count_evidence => match call require_int(got.distinct_conflict_count, 7, c, "distinct-conflict-count")
+                                                                        failed
+                                                                        ok evidence distinct_conflict_count_evidence => match call require_int(got.distinct_winner_revision, 2, c, "distinct-winner-revision")
+                                                                            failed
+                                                                            ok evidence distinct_winner_revision_evidence => match call require_int(got.distinct_ledger_rows, 1, c, "distinct-ledger-rows")
+                                                                                failed
+                                                                                ok evidence distinct_ledger_rows_evidence => match call require_int(got.identical_race_size, 6, c, "identical-race-size")
+                                                                                    failed
+                                                                                    ok evidence identical_race_size_evidence => match call require_int(got.identical_ok_status, 200, c, "identical-ok-status")
+                                                                                        failed
+                                                                                        ok evidence identical_ok_status_evidence => match call require_int(got.identical_transient_status, 503, c, "identical-transient-status")
+                                                                                            failed
+                                                                                            ok evidence identical_transient_status_evidence => match call require_int(got.identical_revision, 3, c, "identical-revision")
+                                                                                                failed
+                                                                                                ok evidence identical_revision_evidence => match call require_int(got.identical_ledger_rows, 2, c, "identical-ledger-rows")
+                                                                                                    failed
+                                                                                                    ok evidence identical_ledger_rows_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l005: "m39-l005" => ok test_case("life/concurrency-races", ["life", "m39"], [], 120000, [check_ref("race-save-path"), check_ref("race-session"), check_ref("distinct-op-prefix"), check_ref("distinct-want-guard"), check_ref("distinct-note"), check_ref("distinct-tag"), check_ref("identical-op"), check_ref("identical-want-guard"), check_ref("converge-guard"), check_ref("differ-guard"), check_ref("identical-note"), check_ref("distinct-race-size"), check_ref("distinct-winner-status"), check_ref("distinct-conflict-status"), check_ref("distinct-winner-count"), check_ref("distinct-conflict-count"), check_ref("distinct-winner-revision"), check_ref("distinct-ledger-rows"), check_ref("identical-race-size"), check_ref("identical-ok-status"), check_ref("identical-transient-status"), check_ref("identical-revision"), check_ref("identical-ledger-rows")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m39-l005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/concurrency-races", ["life", "m39"], [], 120000, [check_ref("race-save-path"), check_ref("race-session"), check_ref("distinct-op-prefix"), check_ref("distinct-want-guard"), check_ref("distinct-note"), check_ref("distinct-tag"), check_ref("identical-op"), check_ref("identical-want-guard"), check_ref("converge-guard"), check_ref("differ-guard"), check_ref("identical-note"), check_ref("distinct-race-size"), check_ref("distinct-winner-status"), check_ref("distinct-conflict-status"), check_ref("distinct-winner-count"), check_ref("distinct-conflict-count"), check_ref("distinct-winner-revision"), check_ref("distinct-ledger-rows"), check_ref("identical-race-size"), check_ref("identical-ok-status"), check_ref("identical-transient-status"), check_ref("identical-revision"), check_ref("identical-ledger-rows")], callable case_body)

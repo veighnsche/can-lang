@@ -1,0 +1,434 @@
+package m39life005roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M39 LIFE-005 TestGate3Concurrency
+/// membership plus flap legs.
+/// Source: tests/integration/gate3_matrix_test.go
+/// symbol TestGate3Concurrency (L1232-1471) plus
+/// race helper span (L1194-1224) plus race port
+/// (L69): removing the alice row must deny saves
+/// plus loads at 403 without disclosure,
+/// restoring it must admit a save, and a
+/// membership flap racing eight saves must permit
+/// at most one coherent authorized commit with
+/// matching ledger plus revision while a fresh op
+/// on the landed revision commits. Disposition:
+/// migrate (this row owns the membership pacts as
+/// reviewable Can facts; the old go check stays
+/// until the integrator retires it after every
+/// linked row, variant, environment and control
+/// has accepted evidence). Protects (this file):
+/// facet three (L1363-1391): denial without
+/// disclosure plus restore, plus facet four
+/// (L1393-1469): flap race coherence plus the
+/// fresh-op recovery control. ADAPTATION
+/// (recorded, with source lines): call pins hold
+/// membership mutation calls; op pins hold op
+/// ids; note pins hold case notes; tag pins hold
+/// leaf tags; guard pins hold want plus
+/// disclosure lines; mode pins hold flap modes;
+/// count pins hold ints tallied from loops plus
+/// guards.
+/// Pin lines: unmember-call L1365, unmembered-op
+/// L1366, unmembered-save-note L1370,
+/// unmembered-save-tag L1370,
+/// unmembered-save-guard L1372,
+/// unmembered-load-note L1378,
+/// unmembered-load-tag L1378, member-call L1382,
+/// restored-op L1383, restored-note L1387,
+/// restored-tag L1387, flap-mode-off L1400,
+/// flap-mode-on L1400, flap-op-prefix L1411,
+/// flap-denial-note L1427, flap-denial-guard
+/// L1429, flap-conflict-note L1432,
+/// flap-conflict-tag L1432, flap-race-guard
+/// L1434, flap-winner-note L1442, fresh-op L1461,
+/// post-flap-note L1465, denied-status L1367,
+/// denied-value-fields L1371, restored-status
+/// L1384, restored-revision L1389, flap-rounds
+/// L1399, flap-modes L1400, flap-race-size L1410,
+/// flap-conflict-status L1431, flap-max-commits
+/// L1437, flap-winner-revision L1444,
+/// flap-quiet-revision L1448, flap-base-ledger
+/// L1452.
+/// Facet map (leg order): unmember-call,
+/// unmembered-op, unmembered-save-note,
+/// unmembered-save-tag, unmembered-save-guard,
+/// unmembered-load-note, unmembered-load-tag,
+/// member-call, restored-op, restored-note,
+/// restored-tag, flap-mode-off, flap-mode-on,
+/// flap-op-prefix, flap-denial-note,
+/// flap-denial-guard, flap-conflict-note,
+/// flap-conflict-tag, flap-race-guard,
+/// flap-winner-note, fresh-op, post-flap-note,
+/// denied-status, denied-value-fields,
+/// restored-status, restored-revision,
+/// flap-rounds, flap-modes, flap-race-size,
+/// flap-conflict-status, flap-max-commits,
+/// flap-winner-revision, flap-quiet-revision,
+/// flap-base-ledger.
+/// Siblings: revision plus identical races live
+/// in life-005-base-semantics.can; membership
+/// plus flap legs live in
+/// life-005-roots-green.can; barrier plus harness
+/// shape lives in life-005-run-shape.can.
+/// Variants: eight distinct, six identical,
+/// membership absent plus restored plus flapping;
+/// default plus seeded drifts only here.
+/// Environment: CAN_BUN_ARCHIVE plus a staged
+/// bundle plus cut-off homes plus loopback plus
+/// disposable SQLite (row lists three gates; bind
+/// at P23; no live run now).
+/// Logical gates HTTP plus DB plus D1 plus D2
+/// bind at P23 plus QHTTP plus QD1 plus QD2; no
+/// live run now.
+/// Timeout 120000ms is the offline default bound
+/// (the live fourteen minute hold is pinned in
+/// the run slice; binds at P23 like the M38
+/// no-run rows).
+/// Delegated oracles: none. Execution credit: NOT
+/// claimed (P23 plus QHTTP plus QD1 plus QD2
+/// accept gates unmet).
+/// Case life/concurrency-membership checks:
+/// unmember-call, unmembered-op,
+/// unmembered-save-note, unmembered-save-tag,
+/// unmembered-save-guard, unmembered-load-note,
+/// unmembered-load-tag, member-call, restored-op,
+/// restored-note, restored-tag, flap-mode-off,
+/// flap-mode-on, flap-op-prefix,
+/// flap-denial-note, flap-denial-guard,
+/// flap-conflict-note, flap-conflict-tag,
+/// flap-race-guard, flap-winner-note, fresh-op,
+/// post-flap-note, denied-status,
+/// denied-value-fields, restored-status,
+/// restored-revision, flap-rounds, flap-modes,
+/// flap-race-size, flap-conflict-status,
+/// flap-max-commits, flap-winner-revision,
+/// flap-quiet-revision, flap-base-ledger.
+/// Shared old files untouched; retirement is a
+/// later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str unmember_call
+    str unmembered_op
+    str unmembered_save_note
+    str unmembered_save_tag
+    str unmembered_save_guard
+    str unmembered_load_note
+    str unmembered_load_tag
+    str member_call
+    str restored_op
+    str restored_note
+    str restored_tag
+    str flap_mode_off
+    str flap_mode_on
+    str flap_op_prefix
+    str flap_denial_note
+    str flap_denial_guard
+    str flap_conflict_note
+    str flap_conflict_tag
+    str flap_race_guard
+    str flap_winner_note
+    str fresh_op
+    str post_flap_note
+    int denied_status
+    int denied_value_fields
+    int restored_status
+    int restored_revision
+    int flap_rounds
+    int flap_modes
+    int flap_race_size
+    int flap_conflict_status
+    int flap_max_commits
+    int flap_winner_revision
+    int flap_quiet_revision
+    int flap_base_ledger
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/concurrency-membership", "default", "", "offline"), "unmember-call" => ok "case life/concurrency-membership variant default root unmember-call run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/concurrency-membership", "default", "", "offline"), "unmember-call" => ok evidence("unmember-call", "true", "true", true, "case life/concurrency-membership variant default root unmember-call run offline")
+        different: false, true, context("life/concurrency-membership", "default", "", "offline"), "unmember-call" => failed{"unmember-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 403, 403, context("life/concurrency-membership", "default", "", "offline"), "denied-status" => ok evidence("denied-status", "403", "403", true, "case life/concurrency-membership variant default root denied-status run offline")
+        different: 402, 403, context("life/concurrency-membership", "default", "", "offline"), "denied-status" => failed{"denied-status"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "db, \"alice\", \"1\", false", "db, \"alice\", \"1\", false", context("life/concurrency-membership", "default", "", "offline"), "unmember-call" => ok evidence("unmember-call", "db, \"alice\", \"1\", false", "db, \"alice\", \"1\", false", true, "case life/concurrency-membership variant default root unmember-call run offline")
+        different: "db, \"alice\", \"1\", false_2", "db, \"alice\", \"1\", false", context("life/concurrency-membership", "default", "", "offline"), "unmember-call" => failed{"unmember-call"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmember_call: "seed-unmember-call-drift" => ok observation("db, \"alice\", \"1\", false_2", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_op: "seed-unmembered-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1_2", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_save_note: "seed-unmembered-save-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save_2", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_save_tag: "seed-unmembered-save-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden_2", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_save_guard: "seed-unmembered-save-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches_2", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_load_note: "seed-unmembered-load-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load_2", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_unmembered_load_tag: "seed-unmembered-load-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden_2", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_member_call: "seed-member-call-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true_2", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_restored_op: "seed-restored-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2_2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_restored_note: "seed-restored-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save_2", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_restored_tag: "seed-restored-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved_2", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_mode_off: "seed-flap-mode-off-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember_2", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_mode_on: "seed-flap-mode-on-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member_2", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_op_prefix: "seed-flap-op-prefix-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f_2", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_denial_note: "seed-flap-denial-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial _2", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_denial_guard: "seed-flap-denial-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches_2", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_conflict_note: "seed-flap-conflict-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict _2", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_conflict_tag: "seed-flap-conflict-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict_2", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_race_guard: "seed-flap-race-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409_2", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_winner_note: "seed-flap-winner-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner_2", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_fresh_op: "seed-fresh-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh_2", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_post_flap_note: "seed-post-flap-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save_2", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_denied_status: "seed-denied-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 402, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_denied_value_fields: "seed-denied-value-fields-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 1, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_restored_status: "seed-restored-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 199, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_restored_revision: "seed-restored-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 3, 4, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_rounds: "seed-flap-rounds-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 3, 2, 8, 409, 1, 5, 4, 3)
+        seed_flap_modes: "seed-flap-modes-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 1, 8, 409, 1, 5, 4, 3)
+        seed_flap_race_size: "seed-flap-race-size-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 7, 409, 1, 5, 4, 3)
+        seed_flap_conflict_status: "seed-flap-conflict-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 408, 1, 5, 4, 3)
+        seed_flap_max_commits: "seed-flap-max-commits-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 0, 5, 4, 3)
+        seed_flap_winner_revision: "seed-flap-winner-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 4, 4, 3)
+        seed_flap_quiet_revision: "seed-flap-quiet-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 3, 3)
+        seed_flap_base_ledger: "seed-flap-base-ledger-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 2)
+    match variant_id
+        "seed-unmember-call-drift" => ok observation("db, \"alice\", \"1\", false_2", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1_2", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-save-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save_2", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-save-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden_2", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-save-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches_2", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-load-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load_2", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-unmembered-load-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden_2", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-member-call-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true_2", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-restored-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2_2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-restored-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save_2", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-restored-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved_2", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-mode-off-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember_2", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-mode-on-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member_2", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-op-prefix-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f_2", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-denial-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial _2", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-denial-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches_2", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-conflict-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict _2", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-conflict-tag-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict_2", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-race-guard-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409_2", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-winner-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner_2", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-fresh-op-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh_2", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-post-flap-note-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save_2", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-denied-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 402, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-denied-value-fields-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 1, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-restored-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 199, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-restored-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 3, 4, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-rounds-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 3, 2, 8, 409, 1, 5, 4, 3)
+        "seed-flap-modes-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 1, 8, 409, 1, 5, 4, 3)
+        "seed-flap-race-size-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 7, 409, 1, 5, 4, 3)
+        "seed-flap-conflict-status-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 408, 1, 5, 4, 3)
+        "seed-flap-max-commits-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 0, 5, 4, 3)
+        "seed-flap-winner-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 4, 4, 3)
+        "seed-flap-quiet-revision-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 3, 3)
+        "seed-flap-base-ledger-drift" => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 2)
+        _ => ok observation("db, \"alice\", \"1\", false", "op-u1", "unmembered save", "invoice_contract::grid_forbidden", "unmembered save value %+v discloses or mismatches", "unmembered load", "invoice_contract::grid_load_forbidden", "db, \"alice\", \"1\", true", "op-u2", "restored save", "invoice_contract::grid_saved", "unmember", "member", "op-f", "flap denial ", "flap denial value %+v discloses or mismatches", "flap conflict ", "invoice_contract::grid_conflict", "want 200, 403 or 409", "flap winner", "op-fresh", "post-flap save", 403, 2, 200, 4, 4, 2, 8, 409, 1, 5, 4, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l005: "m39-l005" => ok [check("unmember-call", "removal drops the alice row"), check("unmembered-op", "denied leg keeps op-u1"), check("unmembered-save-note", "denied save keeps its note"), check("unmembered-save-tag", "denied save lands grid_forbidden"), check("unmembered-save-guard", "denied save hides its reason"), check("unmembered-load-note", "denied load keeps its note"), check("unmembered-load-tag", "denied load lands grid_load_forbidden"), check("member-call", "restore adds the alice row"), check("restored-op", "restored leg keeps op-u2"), check("restored-note", "restored save keeps its note"), check("restored-tag", "restored save lands grid_saved"), check("flap-mode-off", "flap opens with unmember"), check("flap-mode-on", "flap closes with member"), check("flap-op-prefix", "flap legs keep the op-f head"), check("flap-denial-note", "flap denial keeps its note head"), check("flap-denial-guard", "flap denial hides its reason"), check("flap-conflict-note", "flap conflict keeps its note head"), check("flap-conflict-tag", "flap conflict lands grid_conflict"), check("flap-race-guard", "flap legs allow 200, 403 or 409"), check("flap-winner-note", "flap winner keeps its note"), check("fresh-op", "fresh leg keeps op-fresh"), check("post-flap-note", "fresh save keeps its note"), check("denied-status", "denied legs land 403"), check("denied-value-fields", "denied value holds two fields"), check("restored-status", "restored save lands 200"), check("restored-revision", "restored save lands revision four"), check("flap-rounds", "four flap rounds exist"), check("flap-modes", "two flap modes exist"), check("flap-race-size", "eight flap racers exist"), check("flap-conflict-status", "flap conflicts land 409"), check("flap-max-commits", "flap commits at most one"), check("flap-winner-revision", "flap winner lands revision five"), check("flap-quiet-revision", "quiet flap holds revision four"), check("flap-base-ledger", "flap ledger opens at three rows")]
+        other: "nope" => ok []
+    match scope is "m39-l005"
+        false => ok []
+        true => ok [check("unmember-call", "removal drops the alice row"), check("unmembered-op", "denied leg keeps op-u1"), check("unmembered-save-note", "denied save keeps its note"), check("unmembered-save-tag", "denied save lands grid_forbidden"), check("unmembered-save-guard", "denied save hides its reason"), check("unmembered-load-note", "denied load keeps its note"), check("unmembered-load-tag", "denied load lands grid_load_forbidden"), check("member-call", "restore adds the alice row"), check("restored-op", "restored leg keeps op-u2"), check("restored-note", "restored save keeps its note"), check("restored-tag", "restored save lands grid_saved"), check("flap-mode-off", "flap opens with unmember"), check("flap-mode-on", "flap closes with member"), check("flap-op-prefix", "flap legs keep the op-f head"), check("flap-denial-note", "flap denial keeps its note head"), check("flap-denial-guard", "flap denial hides its reason"), check("flap-conflict-note", "flap conflict keeps its note head"), check("flap-conflict-tag", "flap conflict lands grid_conflict"), check("flap-race-guard", "flap legs allow 200, 403 or 409"), check("flap-winner-note", "flap winner keeps its note"), check("fresh-op", "fresh leg keeps op-fresh"), check("post-flap-note", "fresh save keeps its note"), check("denied-status", "denied legs land 403"), check("denied-value-fields", "denied value holds two fields"), check("restored-status", "restored save lands 200"), check("restored-revision", "restored save lands revision four"), check("flap-rounds", "four flap rounds exist"), check("flap-modes", "two flap modes exist"), check("flap-race-size", "eight flap racers exist"), check("flap-conflict-status", "flap conflicts land 409"), check("flap-max-commits", "flap commits at most one"), check("flap-winner-revision", "flap winner lands revision five"), check("flap-quiet-revision", "quiet flap holds revision four"), check("flap-base-ledger", "flap ledger opens at three rows")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/concurrency-membership" => ok [expected_check("unmember-call", "db, \"alice\", \"1\", false"), expected_check("unmembered-op", "op-u1"), expected_check("unmembered-save-note", "unmembered save"), expected_check("unmembered-save-tag", "invoice_contract::grid_forbidden"), expected_check("unmembered-save-guard", "unmembered save value %+v discloses or mismatches"), expected_check("unmembered-load-note", "unmembered load"), expected_check("unmembered-load-tag", "invoice_contract::grid_load_forbidden"), expected_check("member-call", "db, \"alice\", \"1\", true"), expected_check("restored-op", "op-u2"), expected_check("restored-note", "restored save"), expected_check("restored-tag", "invoice_contract::grid_saved"), expected_check("flap-mode-off", "unmember"), expected_check("flap-mode-on", "member"), expected_check("flap-op-prefix", "op-f"), expected_check("flap-denial-note", "flap denial "), expected_check("flap-denial-guard", "flap denial value %+v discloses or mismatches"), expected_check("flap-conflict-note", "flap conflict "), expected_check("flap-conflict-tag", "invoice_contract::grid_conflict"), expected_check("flap-race-guard", "want 200, 403 or 409"), expected_check("flap-winner-note", "flap winner"), expected_check("fresh-op", "op-fresh"), expected_check("post-flap-note", "post-flap save"), expected_check("denied-status", "403"), expected_check("denied-value-fields", "2"), expected_check("restored-status", "200"), expected_check("restored-revision", "4"), expected_check("flap-rounds", "4"), expected_check("flap-modes", "2"), expected_check("flap-race-size", "8"), expected_check("flap-conflict-status", "409"), expected_check("flap-max-commits", "1"), expected_check("flap-winner-revision", "5"), expected_check("flap-quiet-revision", "4"), expected_check("flap-base-ledger", "3")]
+        unknown: "nope" => ok []
+    match case is "life/concurrency-membership"
+        false => ok []
+        true => ok [expected_check("unmember-call", "db, \"alice\", \"1\", false"), expected_check("unmembered-op", "op-u1"), expected_check("unmembered-save-note", "unmembered save"), expected_check("unmembered-save-tag", "invoice_contract::grid_forbidden"), expected_check("unmembered-save-guard", "unmembered save value %+v discloses or mismatches"), expected_check("unmembered-load-note", "unmembered load"), expected_check("unmembered-load-tag", "invoice_contract::grid_load_forbidden"), expected_check("member-call", "db, \"alice\", \"1\", true"), expected_check("restored-op", "op-u2"), expected_check("restored-note", "restored save"), expected_check("restored-tag", "invoice_contract::grid_saved"), expected_check("flap-mode-off", "unmember"), expected_check("flap-mode-on", "member"), expected_check("flap-op-prefix", "op-f"), expected_check("flap-denial-note", "flap denial "), expected_check("flap-denial-guard", "flap denial value %+v discloses or mismatches"), expected_check("flap-conflict-note", "flap conflict "), expected_check("flap-conflict-tag", "invoice_contract::grid_conflict"), expected_check("flap-race-guard", "want 200, 403 or 409"), expected_check("flap-winner-note", "flap winner"), expected_check("fresh-op", "op-fresh"), expected_check("post-flap-note", "post-flap save"), expected_check("denied-status", "403"), expected_check("denied-value-fields", "2"), expected_check("restored-status", "200"), expected_check("restored-revision", "4"), expected_check("flap-rounds", "4"), expected_check("flap-modes", "2"), expected_check("flap-race-size", "8"), expected_check("flap-conflict-status", "409"), expected_check("flap-max-commits", "1"), expected_check("flap-winner-revision", "5"), expected_check("flap-quiet-revision", "4"), expected_check("flap-base-ledger", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/concurrency-membership", "default", "", "offline") => ok
+        seed_unmember_call: context("life/concurrency-membership", "seed-unmember-call-drift", "", "offline") => failed{"unmember-call"}
+        seed_unmembered_op: context("life/concurrency-membership", "seed-unmembered-op-drift", "", "offline") => failed{"unmembered-op"}
+        seed_unmembered_save_note: context("life/concurrency-membership", "seed-unmembered-save-note-drift", "", "offline") => failed{"unmembered-save-note"}
+        seed_unmembered_save_tag: context("life/concurrency-membership", "seed-unmembered-save-tag-drift", "", "offline") => failed{"unmembered-save-tag"}
+        seed_unmembered_save_guard: context("life/concurrency-membership", "seed-unmembered-save-guard-drift", "", "offline") => failed{"unmembered-save-guard"}
+        seed_unmembered_load_note: context("life/concurrency-membership", "seed-unmembered-load-note-drift", "", "offline") => failed{"unmembered-load-note"}
+        seed_unmembered_load_tag: context("life/concurrency-membership", "seed-unmembered-load-tag-drift", "", "offline") => failed{"unmembered-load-tag"}
+        seed_member_call: context("life/concurrency-membership", "seed-member-call-drift", "", "offline") => failed{"member-call"}
+        seed_restored_op: context("life/concurrency-membership", "seed-restored-op-drift", "", "offline") => failed{"restored-op"}
+        seed_restored_note: context("life/concurrency-membership", "seed-restored-note-drift", "", "offline") => failed{"restored-note"}
+        seed_restored_tag: context("life/concurrency-membership", "seed-restored-tag-drift", "", "offline") => failed{"restored-tag"}
+        seed_flap_mode_off: context("life/concurrency-membership", "seed-flap-mode-off-drift", "", "offline") => failed{"flap-mode-off"}
+        seed_flap_mode_on: context("life/concurrency-membership", "seed-flap-mode-on-drift", "", "offline") => failed{"flap-mode-on"}
+        seed_flap_op_prefix: context("life/concurrency-membership", "seed-flap-op-prefix-drift", "", "offline") => failed{"flap-op-prefix"}
+        seed_flap_denial_note: context("life/concurrency-membership", "seed-flap-denial-note-drift", "", "offline") => failed{"flap-denial-note"}
+        seed_flap_denial_guard: context("life/concurrency-membership", "seed-flap-denial-guard-drift", "", "offline") => failed{"flap-denial-guard"}
+        seed_flap_conflict_note: context("life/concurrency-membership", "seed-flap-conflict-note-drift", "", "offline") => failed{"flap-conflict-note"}
+        seed_flap_conflict_tag: context("life/concurrency-membership", "seed-flap-conflict-tag-drift", "", "offline") => failed{"flap-conflict-tag"}
+        seed_flap_race_guard: context("life/concurrency-membership", "seed-flap-race-guard-drift", "", "offline") => failed{"flap-race-guard"}
+        seed_flap_winner_note: context("life/concurrency-membership", "seed-flap-winner-note-drift", "", "offline") => failed{"flap-winner-note"}
+        seed_fresh_op: context("life/concurrency-membership", "seed-fresh-op-drift", "", "offline") => failed{"fresh-op"}
+        seed_post_flap_note: context("life/concurrency-membership", "seed-post-flap-note-drift", "", "offline") => failed{"post-flap-note"}
+        seed_denied_status: context("life/concurrency-membership", "seed-denied-status-drift", "", "offline") => failed{"denied-status"}
+        seed_denied_value_fields: context("life/concurrency-membership", "seed-denied-value-fields-drift", "", "offline") => failed{"denied-value-fields"}
+        seed_restored_status: context("life/concurrency-membership", "seed-restored-status-drift", "", "offline") => failed{"restored-status"}
+        seed_restored_revision: context("life/concurrency-membership", "seed-restored-revision-drift", "", "offline") => failed{"restored-revision"}
+        seed_flap_rounds: context("life/concurrency-membership", "seed-flap-rounds-drift", "", "offline") => failed{"flap-rounds"}
+        seed_flap_modes: context("life/concurrency-membership", "seed-flap-modes-drift", "", "offline") => failed{"flap-modes"}
+        seed_flap_race_size: context("life/concurrency-membership", "seed-flap-race-size-drift", "", "offline") => failed{"flap-race-size"}
+        seed_flap_conflict_status: context("life/concurrency-membership", "seed-flap-conflict-status-drift", "", "offline") => failed{"flap-conflict-status"}
+        seed_flap_max_commits: context("life/concurrency-membership", "seed-flap-max-commits-drift", "", "offline") => failed{"flap-max-commits"}
+        seed_flap_winner_revision: context("life/concurrency-membership", "seed-flap-winner-revision-drift", "", "offline") => failed{"flap-winner-revision"}
+        seed_flap_quiet_revision: context("life/concurrency-membership", "seed-flap-quiet-revision-drift", "", "offline") => failed{"flap-quiet-revision"}
+        seed_flap_base_ledger: context("life/concurrency-membership", "seed-flap-base-ledger-drift", "", "offline") => failed{"flap-base-ledger"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.unmember_call, "db, \"alice\", \"1\", false", c, "unmember-call")
+            failed
+            ok evidence unmember_call_evidence => match call require_text(got.unmembered_op, "op-u1", c, "unmembered-op")
+                failed
+                ok evidence unmembered_op_evidence => match call require_text(got.unmembered_save_note, "unmembered save", c, "unmembered-save-note")
+                    failed
+                    ok evidence unmembered_save_note_evidence => match call require_text(got.unmembered_save_tag, "invoice_contract::grid_forbidden", c, "unmembered-save-tag")
+                        failed
+                        ok evidence unmembered_save_tag_evidence => match call require_text(got.unmembered_save_guard, "unmembered save value %+v discloses or mismatches", c, "unmembered-save-guard")
+                            failed
+                            ok evidence unmembered_save_guard_evidence => match call require_text(got.unmembered_load_note, "unmembered load", c, "unmembered-load-note")
+                                failed
+                                ok evidence unmembered_load_note_evidence => match call require_text(got.unmembered_load_tag, "invoice_contract::grid_load_forbidden", c, "unmembered-load-tag")
+                                    failed
+                                    ok evidence unmembered_load_tag_evidence => match call require_text(got.member_call, "db, \"alice\", \"1\", true", c, "member-call")
+                                        failed
+                                        ok evidence member_call_evidence => match call require_text(got.restored_op, "op-u2", c, "restored-op")
+                                            failed
+                                            ok evidence restored_op_evidence => match call require_text(got.restored_note, "restored save", c, "restored-note")
+                                                failed
+                                                ok evidence restored_note_evidence => match call require_text(got.restored_tag, "invoice_contract::grid_saved", c, "restored-tag")
+                                                    failed
+                                                    ok evidence restored_tag_evidence => match call require_text(got.flap_mode_off, "unmember", c, "flap-mode-off")
+                                                        failed
+                                                        ok evidence flap_mode_off_evidence => match call require_text(got.flap_mode_on, "member", c, "flap-mode-on")
+                                                            failed
+                                                            ok evidence flap_mode_on_evidence => match call require_text(got.flap_op_prefix, "op-f", c, "flap-op-prefix")
+                                                                failed
+                                                                ok evidence flap_op_prefix_evidence => match call require_text(got.flap_denial_note, "flap denial ", c, "flap-denial-note")
+                                                                    failed
+                                                                    ok evidence flap_denial_note_evidence => match call require_text(got.flap_denial_guard, "flap denial value %+v discloses or mismatches", c, "flap-denial-guard")
+                                                                        failed
+                                                                        ok evidence flap_denial_guard_evidence => match call require_text(got.flap_conflict_note, "flap conflict ", c, "flap-conflict-note")
+                                                                            failed
+                                                                            ok evidence flap_conflict_note_evidence => match call require_text(got.flap_conflict_tag, "invoice_contract::grid_conflict", c, "flap-conflict-tag")
+                                                                                failed
+                                                                                ok evidence flap_conflict_tag_evidence => match call require_text(got.flap_race_guard, "want 200, 403 or 409", c, "flap-race-guard")
+                                                                                    failed
+                                                                                    ok evidence flap_race_guard_evidence => match call require_text(got.flap_winner_note, "flap winner", c, "flap-winner-note")
+                                                                                        failed
+                                                                                        ok evidence flap_winner_note_evidence => match call require_text(got.fresh_op, "op-fresh", c, "fresh-op")
+                                                                                            failed
+                                                                                            ok evidence fresh_op_evidence => match call require_text(got.post_flap_note, "post-flap save", c, "post-flap-note")
+                                                                                                failed
+                                                                                                ok evidence post_flap_note_evidence => match call require_int(got.denied_status, 403, c, "denied-status")
+                                                                                                    failed
+                                                                                                    ok evidence denied_status_evidence => match call require_int(got.denied_value_fields, 2, c, "denied-value-fields")
+                                                                                                        failed
+                                                                                                        ok evidence denied_value_fields_evidence => match call require_int(got.restored_status, 200, c, "restored-status")
+                                                                                                            failed
+                                                                                                            ok evidence restored_status_evidence => match call require_int(got.restored_revision, 4, c, "restored-revision")
+                                                                                                                failed
+                                                                                                                ok evidence restored_revision_evidence => match call require_int(got.flap_rounds, 4, c, "flap-rounds")
+                                                                                                                    failed
+                                                                                                                    ok evidence flap_rounds_evidence => match call require_int(got.flap_modes, 2, c, "flap-modes")
+                                                                                                                        failed
+                                                                                                                        ok evidence flap_modes_evidence => match call require_int(got.flap_race_size, 8, c, "flap-race-size")
+                                                                                                                            failed
+                                                                                                                            ok evidence flap_race_size_evidence => match call require_int(got.flap_conflict_status, 409, c, "flap-conflict-status")
+                                                                                                                                failed
+                                                                                                                                ok evidence flap_conflict_status_evidence => match call require_int(got.flap_max_commits, 1, c, "flap-max-commits")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence flap_max_commits_evidence => match call require_int(got.flap_winner_revision, 5, c, "flap-winner-revision")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence flap_winner_revision_evidence => match call require_int(got.flap_quiet_revision, 4, c, "flap-quiet-revision")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence flap_quiet_revision_evidence => match call require_int(got.flap_base_ledger, 3, c, "flap-base-ledger")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence flap_base_ledger_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m39_l005: "m39-l005" => ok test_case("life/concurrency-membership", ["life", "m39"], [], 120000, [check_ref("unmember-call"), check_ref("unmembered-op"), check_ref("unmembered-save-note"), check_ref("unmembered-save-tag"), check_ref("unmembered-save-guard"), check_ref("unmembered-load-note"), check_ref("unmembered-load-tag"), check_ref("member-call"), check_ref("restored-op"), check_ref("restored-note"), check_ref("restored-tag"), check_ref("flap-mode-off"), check_ref("flap-mode-on"), check_ref("flap-op-prefix"), check_ref("flap-denial-note"), check_ref("flap-denial-guard"), check_ref("flap-conflict-note"), check_ref("flap-conflict-tag"), check_ref("flap-race-guard"), check_ref("flap-winner-note"), check_ref("fresh-op"), check_ref("post-flap-note"), check_ref("denied-status"), check_ref("denied-value-fields"), check_ref("restored-status"), check_ref("restored-revision"), check_ref("flap-rounds"), check_ref("flap-modes"), check_ref("flap-race-size"), check_ref("flap-conflict-status"), check_ref("flap-max-commits"), check_ref("flap-winner-revision"), check_ref("flap-quiet-revision"), check_ref("flap-base-ledger")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m39-l005"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/concurrency-membership", ["life", "m39"], [], 120000, [check_ref("unmember-call"), check_ref("unmembered-op"), check_ref("unmembered-save-note"), check_ref("unmembered-save-tag"), check_ref("unmembered-save-guard"), check_ref("unmembered-load-note"), check_ref("unmembered-load-tag"), check_ref("member-call"), check_ref("restored-op"), check_ref("restored-note"), check_ref("restored-tag"), check_ref("flap-mode-off"), check_ref("flap-mode-on"), check_ref("flap-op-prefix"), check_ref("flap-denial-note"), check_ref("flap-denial-guard"), check_ref("flap-conflict-note"), check_ref("flap-conflict-tag"), check_ref("flap-race-guard"), check_ref("flap-winner-note"), check_ref("fresh-op"), check_ref("post-flap-note"), check_ref("denied-status"), check_ref("denied-value-fields"), check_ref("restored-status"), check_ref("restored-revision"), check_ref("flap-rounds"), check_ref("flap-modes"), check_ref("flap-race-size"), check_ref("flap-conflict-status"), check_ref("flap-max-commits"), check_ref("flap-winner-revision"), check_ref("flap-quiet-revision"), check_ref("flap-base-ledger")], callable case_body)
