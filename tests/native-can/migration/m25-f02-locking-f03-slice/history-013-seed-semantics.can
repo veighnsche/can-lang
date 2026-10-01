@@ -1,0 +1,277 @@
+package m25history013seed
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M25 HISTORY-013 "f03-live-driver.ts: descriptor table build".
+/// Source: tests/integration/testdata/sql/f03-live-driver.ts symbol
+/// f03-live-driver.ts (L92-140 descriptor table, L287-293/L479-480
+/// declare sites, L278-283 fixture DDL); executed by
+/// tests/integration/sql_f03_test.go.
+/// Disposition: migrate (this row ports f03-live-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the runtime-style descriptor table build:
+/// the nine descriptor names in table order, the postgres/mysql
+/// version stamps, the two dialect pins, the empty declare owner,
+/// and the three fixture DDL table names.
+/// ADAPTATION (recorded, with source lines): version pins mirror the
+/// per-entry version literals (170007 x7 PG at L97-127, 80011 x2
+/// MySQL at L132/137); dialect pins mirror the per-entry dialect
+/// literals; owner pins the L93 empty-string table key; DDL pins
+/// mirror the CREATE TABLE names (L281-283), not full statements.
+/// Facet map (f03-live-driver.ts legs): desc-delivery-by-id pins
+/// delivery_by_id (L94); desc-delivery-insert pins delivery_insert
+/// (L99); desc-gen-insert pins gen_insert (L104); desc-gen-one pins
+/// gen_by_payload_one (L109); desc-money-insert pins money_insert
+/// (L114); desc-money-by-id pins money_by_id (L119); desc-money-wide
+/// pins money_wide (L124); desc-my-insert pins my_gen_insert (L129);
+/// desc-my-last-id pins my_gen_by_last_id (L134); pg-version pins
+/// 170007 (L97); mysql-version pins 80011 (L132); pg-dialect pins
+/// postgresql (L95); mysql-dialect pins mysql (L130);
+/// declare-owner pins the empty owner (L93); ddl-deliveries/
+/// ddl-gen/ddl-money pin f03_deliveries/f03_gen/f03_money
+/// (L281-283).
+/// The roots-green pin lives in history-013-roots-green.can; the
+/// invocation/run shape lives in history-013-run-shape.can.
+/// Variants: none (single live scenario; row lists none).
+/// Environment: disposable databases named by CAN_TEST_POSTGRES_URL
+/// (required) and CAN_TEST_MYSQL_URL (optional); requires
+/// can-test-postgres-url and bun; sqlite legs run in memory.
+/// Logical gates SUITE/CAN/DB/WORK and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 240000ms mirrors the Go 4-minute ctx
+/// (sql_f03_test.go L45).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/f03-seed checks: desc-delivery-by-id,
+/// desc-delivery-insert, desc-gen-insert, desc-gen-one,
+/// desc-money-insert, desc-money-by-id, desc-money-wide,
+/// desc-my-insert, desc-my-last-id, pg-version, mysql-version,
+/// pg-dialect, mysql-dialect, declare-owner, ddl-deliveries,
+/// ddl-gen, ddl-money.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str desc_delivery_by_id
+    str desc_delivery_insert
+    str desc_gen_insert
+    str desc_gen_one
+    str desc_money_insert
+    str desc_money_by_id
+    str desc_money_wide
+    str desc_my_insert
+    str desc_my_last_id
+    int pg_version
+    int mysql_version
+    str pg_dialect
+    str mysql_dialect
+    str declare_owner
+    str ddl_deliveries
+    str ddl_gen
+    str ddl_money
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/f03-seed", "default", "", "offline"), "desc-delivery-by-id" => ok "case history/f03-seed variant default root desc-delivery-by-id run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/f03-seed", "default", "", "offline"), "desc-delivery-by-id" => ok evidence("desc-delivery-by-id", "true", "true", true, "case history/f03-seed variant default root desc-delivery-by-id run offline")
+        different: false, true, context("history/f03-seed", "default", "", "offline"), "desc-delivery-by-id" => failed{"desc-delivery-by-id"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 170007, 170007, context("history/f03-seed", "default", "", "offline"), "pg-version" => ok evidence("pg-version", "170007", "170007", true, "case history/f03-seed variant default root pg-version run offline")
+        different: 170008, 170007, context("history/f03-seed", "default", "", "offline"), "pg-version" => failed{"pg-version"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "delivery_by_id", "delivery_by_id", context("history/f03-seed", "default", "", "offline"), "desc-delivery-by-id" => ok evidence("desc-delivery-by-id", "delivery_by_id", "delivery_by_id", true, "case history/f03-seed variant default root desc-delivery-by-id run offline")
+        different: "delivery_by_ids", "delivery_by_id", context("history/f03-seed", "default", "", "offline"), "desc-delivery-by-id" => failed{"desc-delivery-by-id"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_delivery_by_id: "seed-desc-delivery-by-id-drift" => ok observation("delivery_by_ids", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_delivery_insert: "seed-desc-delivery-insert-drift" => ok observation("delivery_by_id", "delivery_inserts", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_gen_insert: "seed-desc-gen-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_inserts", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_gen_one: "seed-desc-gen-one-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_two", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_money_insert: "seed-desc-money-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_inserts", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_money_by_id: "seed-desc-money-by-id-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_ids", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_money_wide: "seed-desc-money-wide-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wides", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_my_insert: "seed-desc-my-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_inserts", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_desc_my_last_id: "seed-desc-my-last-id-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_ids", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_pg_version: "seed-pg-version-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170008, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_mysql_version: "seed-mysql-version-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80012, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_pg_dialect: "seed-pg-dialect-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgres", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_mysql_dialect: "seed-mysql-dialect-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysqls", "", "f03_deliveries", "f03_gen", "f03_money")
+        seed_declare_owner: "seed-declare-owner-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "app", "f03_deliveries", "f03_gen", "f03_money")
+        seed_ddl_deliveries: "seed-ddl-deliveries-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliverie", "f03_gen", "f03_money")
+        seed_ddl_gen: "seed-ddl-gen-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gens", "f03_money")
+        seed_ddl_money: "seed-ddl-money-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_moneys")
+    match variant_id
+        "seed-desc-delivery-by-id-drift" => ok observation("delivery_by_ids", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-delivery-insert-drift" => ok observation("delivery_by_id", "delivery_inserts", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-gen-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_inserts", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-gen-one-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_two", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-money-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_inserts", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-money-by-id-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_ids", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-money-wide-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wides", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-my-insert-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_inserts", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-desc-my-last-id-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_ids", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-pg-version-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170008, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-mysql-version-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80012, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-pg-dialect-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgres", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-mysql-dialect-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysqls", "", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-declare-owner-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "app", "f03_deliveries", "f03_gen", "f03_money")
+        "seed-ddl-deliveries-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliverie", "f03_gen", "f03_money")
+        "seed-ddl-gen-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gens", "f03_money")
+        "seed-ddl-money-drift" => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_moneys")
+        _ => ok observation("delivery_by_id", "delivery_insert", "gen_insert", "gen_by_payload_one", "money_insert", "money_by_id", "money_wide", "my_gen_insert", "my_gen_by_last_id", 170007, 80011, "postgresql", "mysql", "", "f03_deliveries", "f03_gen", "f03_money")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok [check("desc-delivery-by-id", "by-id descriptor is delivery_by_id"), check("desc-delivery-insert", "delivery insert descriptor is delivery_insert"), check("desc-gen-insert", "gen insert descriptor is gen_insert"), check("desc-gen-one", "gen one descriptor is gen_by_payload_one"), check("desc-money-insert", "money insert descriptor is money_insert"), check("desc-money-by-id", "money by-id descriptor is money_by_id"), check("desc-money-wide", "money wide descriptor is money_wide"), check("desc-my-insert", "mysql insert descriptor is my_gen_insert"), check("desc-my-last-id", "mysql last-id descriptor is my_gen_by_last_id"), check("pg-version", "postgres descriptors carry version 170007"), check("mysql-version", "mysql descriptors carry version 80011"), check("pg-dialect", "postgres descriptors use the postgresql dialect"), check("mysql-dialect", "mysql descriptors use the mysql dialect"), check("declare-owner", "descriptors declare under the empty owner"), check("ddl-deliveries", "fixture creates f03_deliveries"), check("ddl-gen", "fixture creates f03_gen"), check("ddl-money", "fixture creates f03_money")]
+        other: "nope" => ok []
+    match scope is "m25-h013"
+        false => ok []
+        true => ok [check("desc-delivery-by-id", "by-id descriptor is delivery_by_id"), check("desc-delivery-insert", "delivery insert descriptor is delivery_insert"), check("desc-gen-insert", "gen insert descriptor is gen_insert"), check("desc-gen-one", "gen one descriptor is gen_by_payload_one"), check("desc-money-insert", "money insert descriptor is money_insert"), check("desc-money-by-id", "money by-id descriptor is money_by_id"), check("desc-money-wide", "money wide descriptor is money_wide"), check("desc-my-insert", "mysql insert descriptor is my_gen_insert"), check("desc-my-last-id", "mysql last-id descriptor is my_gen_by_last_id"), check("pg-version", "postgres descriptors carry version 170007"), check("mysql-version", "mysql descriptors carry version 80011"), check("pg-dialect", "postgres descriptors use the postgresql dialect"), check("mysql-dialect", "mysql descriptors use the mysql dialect"), check("declare-owner", "descriptors declare under the empty owner"), check("ddl-deliveries", "fixture creates f03_deliveries"), check("ddl-gen", "fixture creates f03_gen"), check("ddl-money", "fixture creates f03_money")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/f03-seed" => ok [expected_check("desc-delivery-by-id", "delivery_by_id"), expected_check("desc-delivery-insert", "delivery_insert"), expected_check("desc-gen-insert", "gen_insert"), expected_check("desc-gen-one", "gen_by_payload_one"), expected_check("desc-money-insert", "money_insert"), expected_check("desc-money-by-id", "money_by_id"), expected_check("desc-money-wide", "money_wide"), expected_check("desc-my-insert", "my_gen_insert"), expected_check("desc-my-last-id", "my_gen_by_last_id"), expected_check("pg-version", "170007"), expected_check("mysql-version", "80011"), expected_check("pg-dialect", "postgresql"), expected_check("mysql-dialect", "mysql"), expected_check("declare-owner", ""), expected_check("ddl-deliveries", "f03_deliveries"), expected_check("ddl-gen", "f03_gen"), expected_check("ddl-money", "f03_money")]
+        unknown: "nope" => ok []
+    match case is "history/f03-seed"
+        false => ok []
+        true => ok [expected_check("desc-delivery-by-id", "delivery_by_id"), expected_check("desc-delivery-insert", "delivery_insert"), expected_check("desc-gen-insert", "gen_insert"), expected_check("desc-gen-one", "gen_by_payload_one"), expected_check("desc-money-insert", "money_insert"), expected_check("desc-money-by-id", "money_by_id"), expected_check("desc-money-wide", "money_wide"), expected_check("desc-my-insert", "my_gen_insert"), expected_check("desc-my-last-id", "my_gen_by_last_id"), expected_check("pg-version", "170007"), expected_check("mysql-version", "80011"), expected_check("pg-dialect", "postgresql"), expected_check("mysql-dialect", "mysql"), expected_check("declare-owner", ""), expected_check("ddl-deliveries", "f03_deliveries"), expected_check("ddl-gen", "f03_gen"), expected_check("ddl-money", "f03_money")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/f03-seed", "default", "", "offline") => ok
+        seed_desc_delivery_by_id: context("history/f03-seed", "seed-desc-delivery-by-id-drift", "", "offline") => failed{"desc-delivery-by-id"}
+        seed_desc_delivery_insert: context("history/f03-seed", "seed-desc-delivery-insert-drift", "", "offline") => failed{"desc-delivery-insert"}
+        seed_desc_gen_insert: context("history/f03-seed", "seed-desc-gen-insert-drift", "", "offline") => failed{"desc-gen-insert"}
+        seed_desc_gen_one: context("history/f03-seed", "seed-desc-gen-one-drift", "", "offline") => failed{"desc-gen-one"}
+        seed_desc_money_insert: context("history/f03-seed", "seed-desc-money-insert-drift", "", "offline") => failed{"desc-money-insert"}
+        seed_desc_money_by_id: context("history/f03-seed", "seed-desc-money-by-id-drift", "", "offline") => failed{"desc-money-by-id"}
+        seed_desc_money_wide: context("history/f03-seed", "seed-desc-money-wide-drift", "", "offline") => failed{"desc-money-wide"}
+        seed_desc_my_insert: context("history/f03-seed", "seed-desc-my-insert-drift", "", "offline") => failed{"desc-my-insert"}
+        seed_desc_my_last_id: context("history/f03-seed", "seed-desc-my-last-id-drift", "", "offline") => failed{"desc-my-last-id"}
+        seed_pg_version: context("history/f03-seed", "seed-pg-version-drift", "", "offline") => failed{"pg-version"}
+        seed_mysql_version: context("history/f03-seed", "seed-mysql-version-drift", "", "offline") => failed{"mysql-version"}
+        seed_pg_dialect: context("history/f03-seed", "seed-pg-dialect-drift", "", "offline") => failed{"pg-dialect"}
+        seed_mysql_dialect: context("history/f03-seed", "seed-mysql-dialect-drift", "", "offline") => failed{"mysql-dialect"}
+        seed_declare_owner: context("history/f03-seed", "seed-declare-owner-drift", "", "offline") => failed{"declare-owner"}
+        seed_ddl_deliveries: context("history/f03-seed", "seed-ddl-deliveries-drift", "", "offline") => failed{"ddl-deliveries"}
+        seed_ddl_gen: context("history/f03-seed", "seed-ddl-gen-drift", "", "offline") => failed{"ddl-gen"}
+        seed_ddl_money: context("history/f03-seed", "seed-ddl-money-drift", "", "offline") => failed{"ddl-money"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.desc_delivery_by_id, "delivery_by_id", c, "desc-delivery-by-id")
+            failed
+            ok evidence desc_delivery_by_id_evidence => match call require_text(got.desc_delivery_insert, "delivery_insert", c, "desc-delivery-insert")
+                failed
+                ok evidence desc_delivery_insert_evidence => match call require_text(got.desc_gen_insert, "gen_insert", c, "desc-gen-insert")
+                    failed
+                    ok evidence desc_gen_insert_evidence => match call require_text(got.desc_gen_one, "gen_by_payload_one", c, "desc-gen-one")
+                        failed
+                        ok evidence desc_gen_one_evidence => match call require_text(got.desc_money_insert, "money_insert", c, "desc-money-insert")
+                            failed
+                            ok evidence desc_money_insert_evidence => match call require_text(got.desc_money_by_id, "money_by_id", c, "desc-money-by-id")
+                                failed
+                                ok evidence desc_money_by_id_evidence => match call require_text(got.desc_money_wide, "money_wide", c, "desc-money-wide")
+                                    failed
+                                    ok evidence desc_money_wide_evidence => match call require_text(got.desc_my_insert, "my_gen_insert", c, "desc-my-insert")
+                                        failed
+                                        ok evidence desc_my_insert_evidence => match call require_text(got.desc_my_last_id, "my_gen_by_last_id", c, "desc-my-last-id")
+                                            failed
+                                            ok evidence desc_my_last_id_evidence => match call require_int(got.pg_version, 170007, c, "pg-version")
+                                                failed
+                                                ok evidence pg_version_evidence => match call require_int(got.mysql_version, 80011, c, "mysql-version")
+                                                    failed
+                                                    ok evidence mysql_version_evidence => match call require_text(got.pg_dialect, "postgresql", c, "pg-dialect")
+                                                        failed
+                                                        ok evidence pg_dialect_evidence => match call require_text(got.mysql_dialect, "mysql", c, "mysql-dialect")
+                                                            failed
+                                                            ok evidence mysql_dialect_evidence => match call require_text(got.declare_owner, "", c, "declare-owner")
+                                                                failed
+                                                                ok evidence declare_owner_evidence => match call require_text(got.ddl_deliveries, "f03_deliveries", c, "ddl-deliveries")
+                                                                    failed
+                                                                    ok evidence ddl_deliveries_evidence => match call require_text(got.ddl_gen, "f03_gen", c, "ddl-gen")
+                                                                        failed
+                                                                        ok evidence ddl_gen_evidence => match call require_text(got.ddl_money, "f03_money", c, "ddl-money")
+                                                                            failed
+                                                                            ok evidence ddl_money_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok test_case("history/f03-seed", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("desc-delivery-by-id"), check_ref("desc-delivery-insert"), check_ref("desc-gen-insert"), check_ref("desc-gen-one"), check_ref("desc-money-insert"), check_ref("desc-money-by-id"), check_ref("desc-money-wide"), check_ref("desc-my-insert"), check_ref("desc-my-last-id"), check_ref("pg-version"), check_ref("mysql-version"), check_ref("pg-dialect"), check_ref("mysql-dialect"), check_ref("declare-owner"), check_ref("ddl-deliveries"), check_ref("ddl-gen"), check_ref("ddl-money")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m25-h013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/f03-seed", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("desc-delivery-by-id"), check_ref("desc-delivery-insert"), check_ref("desc-gen-insert"), check_ref("desc-gen-one"), check_ref("desc-money-insert"), check_ref("desc-money-by-id"), check_ref("desc-money-wide"), check_ref("desc-my-insert"), check_ref("desc-my-last-id"), check_ref("pg-version"), check_ref("mysql-version"), check_ref("pg-dialect"), check_ref("mysql-dialect"), check_ref("declare-owner"), check_ref("ddl-deliveries"), check_ref("ddl-gen"), check_ref("ddl-money")], callable case_body)

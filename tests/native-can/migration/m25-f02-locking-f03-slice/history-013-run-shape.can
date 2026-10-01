@@ -1,0 +1,423 @@
+package m25history013run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M25 HISTORY-013 "f03-live-driver.ts: invocation and race".
+/// Source: tests/integration/testdata/sql/f03-live-driver.ts symbol
+/// f03-live-driver.ts (L37-52 env legs, L276-277 version leg,
+/// L376-424 race leg, L426-456 encoding legs, L522-532 sqlite leg,
+/// L554-557 harness leg); executed by
+/// tests/integration/sql_f03_test.go.
+/// Disposition: migrate (this row ports f03-live-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the invocation shape (env gates, refusals,
+/// placeholder, exit), the server-version split, the lookup-first
+/// race decisions with exact ids/digest/states/code, the blessed
+/// encoding fixtures with exact values, the sqlite shape, and the
+/// seven report section keys.
+/// ADAPTATION (recorded, with source lines): url-scheme pins the
+/// startsWith needle (L43); db pins mirror the replace literals
+/// (L47/L51); version pins mirror the split/slice literals (L277);
+/// int64 pins use the digit strings (the driver binds bigint
+/// literals at L448/454-455, pinned here as str); enc-note pins the
+/// doc note verbatim (L427); race states pin verbatim (L393/403/405).
+/// Facet map (f03-live-driver.ts legs): env-pg-gate pins
+/// CAN_TEST_POSTGRES_URL (L37); env-my-gate pins CAN_TEST_MYSQL_URL
+/// (L38); unset-db pins the L40 message; url-scheme pins postgres
+/// (L43); url-refusal pins the L44 message; db-placeholder pins
+/// <db> (L47); db-name pins can_f03 (L47); error-exit pins 1
+/// (L41/L45/L556); env-pg-key pins F03_PG (L142); env-my-key pins
+/// F03_MY (L143); version-split pins the space needle (L277);
+/// version-words pins 2 (L277); report-version-key pins
+/// serverVersion (L277); race-writers pins 8 (L381); race-id pins
+/// race (L389); race-digest pins race-digest (L393); race-accepted
+/// pins accepted (L405); race-duplicate pins duplicate (L393);
+/// race-conflict pins conflict (L393); race-lost pins lost-race
+/// (L403); race-code pins 25P02 (L384); race-winner-key pins
+/// winner_digest (L422); writers-key pins writers (L421/L513);
+/// enc-minor pins 1099 (L427); enc-recorded pins 1727222400000
+/// (L439); enc-audit pins 1727222500000 (L445); enc-max pins the
+/// max digits (L454); enc-min pins the min digits (L455); enc-note
+/// pins the unicode note (L427); sqlite-memory pins :memory: (L523);
+/// sqlite-version-key pins version (L529); report-returning-key pins
+/// returning_native (L317); report-vocab-key pins error_vocab
+/// (L345); report-aborted-key pins aborted_txn (L374);
+/// report-lookup-key pins lookup_first (L420); report-encodings-key
+/// pins encodings (L456); report-mysql-key pins mysql (L461);
+/// report-sqlite-key pins sqlite (L529).
+/// Seed semantics live in history-013-seed-semantics.can; the
+/// roots-green pin lives in history-013-roots-green.can.
+/// Variants: mysql leg runs only when CAN_TEST_MYSQL_URL is set
+/// (else skipped:no-mysql-url); PG/sqlite legs always run.
+/// Environment: disposable databases named by CAN_TEST_POSTGRES_URL
+/// (required) and CAN_TEST_MYSQL_URL (optional); requires
+/// can-test-postgres-url and bun; sqlite legs run in memory.
+/// Logical gates SUITE/CAN/DB/WORK and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 240000ms mirrors the Go 4-minute ctx
+/// (sql_f03_test.go L45).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/f03-run checks: env-pg-gate, env-my-gate, unset-db,
+/// url-scheme, url-refusal, db-placeholder, db-name, error-exit,
+/// env-pg-key, env-my-key, version-split, version-words,
+/// report-version-key, race-writers, race-id, race-digest,
+/// race-accepted, race-duplicate, race-conflict, race-lost,
+/// race-code, race-winner-key, writers-key, enc-minor, enc-recorded,
+/// enc-audit, enc-max, enc-min, enc-note, sqlite-memory,
+/// sqlite-version-key, report-returning-key, report-vocab-key,
+/// report-aborted-key, report-lookup-key, report-encodings-key,
+/// report-mysql-key, report-sqlite-key.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str env_pg_gate
+    str env_my_gate
+    str unset_db
+    str url_scheme
+    str url_refusal
+    str db_placeholder
+    str db_name
+    int error_exit
+    str env_pg_key
+    str env_my_key
+    str version_split
+    int version_words
+    str report_version_key
+    int race_writers
+    str race_id
+    str race_digest
+    str race_accepted
+    str race_duplicate
+    str race_conflict
+    str race_lost
+    str race_code
+    str race_winner_key
+    str writers_key
+    int enc_minor
+    int enc_recorded
+    int enc_audit
+    str enc_max
+    str enc_min
+    str enc_note
+    str sqlite_memory
+    str sqlite_version_key
+    str report_returning_key
+    str report_vocab_key
+    str report_aborted_key
+    str report_lookup_key
+    str report_encodings_key
+    str report_mysql_key
+    str report_sqlite_key
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/f03-run", "default", "", "offline"), "env-pg-gate" => ok "case history/f03-run variant default root env-pg-gate run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/f03-run", "default", "", "offline"), "env-pg-gate" => ok evidence("env-pg-gate", "true", "true", true, "case history/f03-run variant default root env-pg-gate run offline")
+        different: false, true, context("history/f03-run", "default", "", "offline"), "env-pg-gate" => failed{"env-pg-gate"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/f03-run", "default", "", "offline"), "error-exit" => ok evidence("error-exit", "1", "1", true, "case history/f03-run variant default root error-exit run offline")
+        different: 0, 1, context("history/f03-run", "default", "", "offline"), "error-exit" => failed{"error-exit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", context("history/f03-run", "default", "", "offline"), "env-pg-gate" => ok evidence("env-pg-gate", "CAN_TEST_POSTGRES_URL", "CAN_TEST_POSTGRES_URL", true, "case history/f03-run variant default root env-pg-gate run offline")
+        different: "CAN_TEST_POSTGRES_URL2", "CAN_TEST_POSTGRES_URL", context("history/f03-run", "default", "", "offline"), "env-pg-gate" => failed{"env-pg-gate"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_env_pg_gate: "seed-env-pg-gate-drift" => ok observation("CAN_TEST_POSTGRES_URL2", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_env_my_gate: "seed-env-my-gate-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL2", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_unset_db: "seed-unset-db-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the shared test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_url_scheme: "seed-url-scheme-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "mysql", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_url_refusal: "seed-url-refusal-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres live URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_db_placeholder: "seed-db-placeholder-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<database>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_db_name: "seed-db-name-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f031", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_error_exit: "seed-error-exit-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 0, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_env_pg_key: "seed-env-pg-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PGS", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_env_my_key: "seed-env-my-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MYS", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_version_split: "seed-version-split-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", "  ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_version_words: "seed-version-words-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 3, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_report_version_key: "seed-report-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverversion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_writers: "seed-race-writers-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 9, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_id: "seed-race-id-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "races", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_digest: "seed-race-digest-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digests", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_accepted: "seed-race-accepted-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted2", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_duplicate: "seed-race-duplicate-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicates", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_conflict: "seed-race-conflict-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflicts", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_lost: "seed-race-lost-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-races", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_code: "seed-race-code-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P03", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_race_winner_key: "seed-race-winner-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digests", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_writers_key: "seed-writers-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writer", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_minor: "seed-enc-minor-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1100, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_recorded: "seed-enc-recorded-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400001, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_audit: "seed-enc-audit-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500001, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_max: "seed-enc-max-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775808", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_min: "seed-enc-min-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775807", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_enc_note: "seed-enc-note-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"!", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_sqlite_memory: "seed-sqlite-memory-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:2", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_sqlite_version_key: "seed-sqlite-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "versions", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_report_returning_key: "seed-report-returning-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_natives", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_report_vocab_key: "seed-report-vocab-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocabs", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_report_aborted_key: "seed-report-aborted-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txns", "lookup_first", "encodings", "mysql", "sqlite")
+        seed_report_lookup_key: "seed-report-lookup-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_firsts", "encodings", "mysql", "sqlite")
+        seed_report_encodings_key: "seed-report-encodings-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encoding", "mysql", "sqlite")
+        seed_report_mysql_key: "seed-report-mysql-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysqls", "sqlite")
+        seed_report_sqlite_key: "seed-report-sqlite-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlites")
+    match variant_id
+        "seed-env-pg-gate-drift" => ok observation("CAN_TEST_POSTGRES_URL2", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-env-my-gate-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL2", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-unset-db-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the shared test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-url-scheme-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "mysql", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-url-refusal-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres live URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-db-placeholder-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<database>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-db-name-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f031", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-error-exit-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 0, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-env-pg-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PGS", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-env-my-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MYS", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-version-split-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", "  ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-version-words-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 3, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-report-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverversion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-writers-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 9, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-id-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "races", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-digest-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digests", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-accepted-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted2", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-duplicate-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicates", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-conflict-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflicts", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-lost-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-races", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-code-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P03", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-race-winner-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digests", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-writers-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writer", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-minor-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1100, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-recorded-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400001, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-audit-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500001, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-max-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775808", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-min-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775807", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-enc-note-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"!", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-sqlite-memory-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:2", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-sqlite-version-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "versions", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-report-returning-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_natives", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-report-vocab-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocabs", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-report-aborted-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txns", "lookup_first", "encodings", "mysql", "sqlite")
+        "seed-report-lookup-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_firsts", "encodings", "mysql", "sqlite")
+        "seed-report-encodings-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encoding", "mysql", "sqlite")
+        "seed-report-mysql-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysqls", "sqlite")
+        "seed-report-sqlite-key-drift" => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlites")
+        _ => ok observation("CAN_TEST_POSTGRES_URL", "CAN_TEST_MYSQL_URL", "set CAN_TEST_POSTGRES_URL to the disposable test database", "postgres", "refusing non-postgres test URL", "<db>", "can_f03", 1, "F03_PG", "F03_MY", " ", 2, "serverVersion", 8, "race", "race-digest", "accepted", "duplicate", "conflict", "lost-race", "25P02", "winner_digest", "writers", 1099, 1727222400000, 1727222500000, "9223372036854775807", "-9223372036854775808", "café ☃ \"quoted\"", ":memory:", "version", "returning_native", "error_vocab", "aborted_txn", "lookup_first", "encodings", "mysql", "sqlite")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok [check("env-pg-gate", "database url reads CAN_TEST_POSTGRES_URL"), check("env-my-gate", "mysql url reads CAN_TEST_MYSQL_URL"), check("unset-db", "unset database url refuses with the gate message"), check("url-scheme", "database url must start with postgres"), check("url-refusal", "non-postgres url refuses"), check("db-placeholder", "provision template selects the db placeholder"), check("db-name", "placeholder selects can_f03"), check("error-exit", "failure exits 1"), check("env-pg-key", "pool env key is F03_PG"), check("env-my-key", "mysql pool env key is F03_MY"), check("version-split", "server version splits on a space"), check("version-words", "server version keeps 2 words"), check("report-version-key", "report carries serverVersion"), check("race-writers", "lookup first runs 8 writers"), check("race-id", "race writers share delivery race"), check("race-digest", "race winner carries race-digest"), check("race-accepted", "race commit records accepted"), check("race-duplicate", "same digest records duplicate"), check("race-conflict", "other digest records conflict"), check("race-lost", "failed insert records lost-race"), check("race-code", "race watches for 25P02"), check("race-winner-key", "race pins the winner_digest key"), check("writers-key", "race and mapping pin the writers key"), check("enc-minor", "money fixture prices 1099 minor"), check("enc-recorded", "recorded ms pins the epoch fixture"), check("enc-audit", "audit ms pins the epoch fixture"), check("enc-max", "int64 edge pins the max digits"), check("enc-min", "int64 edge pins the min digits"), check("enc-note", "json doc pins the unicode note"), check("sqlite-memory", "sqlite runs in memory"), check("sqlite-version-key", "sqlite pins the version key"), check("report-returning-key", "report carries returning_native"), check("report-vocab-key", "report carries error_vocab"), check("report-aborted-key", "report carries aborted_txn"), check("report-lookup-key", "report carries lookup_first"), check("report-encodings-key", "report carries encodings"), check("report-mysql-key", "report carries mysql"), check("report-sqlite-key", "report carries sqlite")]
+        other: "nope" => ok []
+    match scope is "m25-h013"
+        false => ok []
+        true => ok [check("env-pg-gate", "database url reads CAN_TEST_POSTGRES_URL"), check("env-my-gate", "mysql url reads CAN_TEST_MYSQL_URL"), check("unset-db", "unset database url refuses with the gate message"), check("url-scheme", "database url must start with postgres"), check("url-refusal", "non-postgres url refuses"), check("db-placeholder", "provision template selects the db placeholder"), check("db-name", "placeholder selects can_f03"), check("error-exit", "failure exits 1"), check("env-pg-key", "pool env key is F03_PG"), check("env-my-key", "mysql pool env key is F03_MY"), check("version-split", "server version splits on a space"), check("version-words", "server version keeps 2 words"), check("report-version-key", "report carries serverVersion"), check("race-writers", "lookup first runs 8 writers"), check("race-id", "race writers share delivery race"), check("race-digest", "race winner carries race-digest"), check("race-accepted", "race commit records accepted"), check("race-duplicate", "same digest records duplicate"), check("race-conflict", "other digest records conflict"), check("race-lost", "failed insert records lost-race"), check("race-code", "race watches for 25P02"), check("race-winner-key", "race pins the winner_digest key"), check("writers-key", "race and mapping pin the writers key"), check("enc-minor", "money fixture prices 1099 minor"), check("enc-recorded", "recorded ms pins the epoch fixture"), check("enc-audit", "audit ms pins the epoch fixture"), check("enc-max", "int64 edge pins the max digits"), check("enc-min", "int64 edge pins the min digits"), check("enc-note", "json doc pins the unicode note"), check("sqlite-memory", "sqlite runs in memory"), check("sqlite-version-key", "sqlite pins the version key"), check("report-returning-key", "report carries returning_native"), check("report-vocab-key", "report carries error_vocab"), check("report-aborted-key", "report carries aborted_txn"), check("report-lookup-key", "report carries lookup_first"), check("report-encodings-key", "report carries encodings"), check("report-mysql-key", "report carries mysql"), check("report-sqlite-key", "report carries sqlite")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/f03-run" => ok [expected_check("env-pg-gate", "CAN_TEST_POSTGRES_URL"), expected_check("env-my-gate", "CAN_TEST_MYSQL_URL"), expected_check("unset-db", "set CAN_TEST_POSTGRES_URL to the disposable test database"), expected_check("url-scheme", "postgres"), expected_check("url-refusal", "refusing non-postgres test URL"), expected_check("db-placeholder", "<db>"), expected_check("db-name", "can_f03"), expected_check("error-exit", "1"), expected_check("env-pg-key", "F03_PG"), expected_check("env-my-key", "F03_MY"), expected_check("version-split", " "), expected_check("version-words", "2"), expected_check("report-version-key", "serverVersion"), expected_check("race-writers", "8"), expected_check("race-id", "race"), expected_check("race-digest", "race-digest"), expected_check("race-accepted", "accepted"), expected_check("race-duplicate", "duplicate"), expected_check("race-conflict", "conflict"), expected_check("race-lost", "lost-race"), expected_check("race-code", "25P02"), expected_check("race-winner-key", "winner_digest"), expected_check("writers-key", "writers"), expected_check("enc-minor", "1099"), expected_check("enc-recorded", "1727222400000"), expected_check("enc-audit", "1727222500000"), expected_check("enc-max", "9223372036854775807"), expected_check("enc-min", "-9223372036854775808"), expected_check("enc-note", "café ☃ \"quoted\""), expected_check("sqlite-memory", ":memory:"), expected_check("sqlite-version-key", "version"), expected_check("report-returning-key", "returning_native"), expected_check("report-vocab-key", "error_vocab"), expected_check("report-aborted-key", "aborted_txn"), expected_check("report-lookup-key", "lookup_first"), expected_check("report-encodings-key", "encodings"), expected_check("report-mysql-key", "mysql"), expected_check("report-sqlite-key", "sqlite")]
+        unknown: "nope" => ok []
+    match case is "history/f03-run"
+        false => ok []
+        true => ok [expected_check("env-pg-gate", "CAN_TEST_POSTGRES_URL"), expected_check("env-my-gate", "CAN_TEST_MYSQL_URL"), expected_check("unset-db", "set CAN_TEST_POSTGRES_URL to the disposable test database"), expected_check("url-scheme", "postgres"), expected_check("url-refusal", "refusing non-postgres test URL"), expected_check("db-placeholder", "<db>"), expected_check("db-name", "can_f03"), expected_check("error-exit", "1"), expected_check("env-pg-key", "F03_PG"), expected_check("env-my-key", "F03_MY"), expected_check("version-split", " "), expected_check("version-words", "2"), expected_check("report-version-key", "serverVersion"), expected_check("race-writers", "8"), expected_check("race-id", "race"), expected_check("race-digest", "race-digest"), expected_check("race-accepted", "accepted"), expected_check("race-duplicate", "duplicate"), expected_check("race-conflict", "conflict"), expected_check("race-lost", "lost-race"), expected_check("race-code", "25P02"), expected_check("race-winner-key", "winner_digest"), expected_check("writers-key", "writers"), expected_check("enc-minor", "1099"), expected_check("enc-recorded", "1727222400000"), expected_check("enc-audit", "1727222500000"), expected_check("enc-max", "9223372036854775807"), expected_check("enc-min", "-9223372036854775808"), expected_check("enc-note", "café ☃ \"quoted\""), expected_check("sqlite-memory", ":memory:"), expected_check("sqlite-version-key", "version"), expected_check("report-returning-key", "returning_native"), expected_check("report-vocab-key", "error_vocab"), expected_check("report-aborted-key", "aborted_txn"), expected_check("report-lookup-key", "lookup_first"), expected_check("report-encodings-key", "encodings"), expected_check("report-mysql-key", "mysql"), expected_check("report-sqlite-key", "sqlite")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/f03-run", "default", "", "offline") => ok
+        seed_env_pg_gate: context("history/f03-run", "seed-env-pg-gate-drift", "", "offline") => failed{"env-pg-gate"}
+        seed_env_my_gate: context("history/f03-run", "seed-env-my-gate-drift", "", "offline") => failed{"env-my-gate"}
+        seed_unset_db: context("history/f03-run", "seed-unset-db-drift", "", "offline") => failed{"unset-db"}
+        seed_url_scheme: context("history/f03-run", "seed-url-scheme-drift", "", "offline") => failed{"url-scheme"}
+        seed_url_refusal: context("history/f03-run", "seed-url-refusal-drift", "", "offline") => failed{"url-refusal"}
+        seed_db_placeholder: context("history/f03-run", "seed-db-placeholder-drift", "", "offline") => failed{"db-placeholder"}
+        seed_db_name: context("history/f03-run", "seed-db-name-drift", "", "offline") => failed{"db-name"}
+        seed_error_exit: context("history/f03-run", "seed-error-exit-drift", "", "offline") => failed{"error-exit"}
+        seed_env_pg_key: context("history/f03-run", "seed-env-pg-key-drift", "", "offline") => failed{"env-pg-key"}
+        seed_env_my_key: context("history/f03-run", "seed-env-my-key-drift", "", "offline") => failed{"env-my-key"}
+        seed_version_split: context("history/f03-run", "seed-version-split-drift", "", "offline") => failed{"version-split"}
+        seed_version_words: context("history/f03-run", "seed-version-words-drift", "", "offline") => failed{"version-words"}
+        seed_report_version_key: context("history/f03-run", "seed-report-version-key-drift", "", "offline") => failed{"report-version-key"}
+        seed_race_writers: context("history/f03-run", "seed-race-writers-drift", "", "offline") => failed{"race-writers"}
+        seed_race_id: context("history/f03-run", "seed-race-id-drift", "", "offline") => failed{"race-id"}
+        seed_race_digest: context("history/f03-run", "seed-race-digest-drift", "", "offline") => failed{"race-digest"}
+        seed_race_accepted: context("history/f03-run", "seed-race-accepted-drift", "", "offline") => failed{"race-accepted"}
+        seed_race_duplicate: context("history/f03-run", "seed-race-duplicate-drift", "", "offline") => failed{"race-duplicate"}
+        seed_race_conflict: context("history/f03-run", "seed-race-conflict-drift", "", "offline") => failed{"race-conflict"}
+        seed_race_lost: context("history/f03-run", "seed-race-lost-drift", "", "offline") => failed{"race-lost"}
+        seed_race_code: context("history/f03-run", "seed-race-code-drift", "", "offline") => failed{"race-code"}
+        seed_race_winner_key: context("history/f03-run", "seed-race-winner-key-drift", "", "offline") => failed{"race-winner-key"}
+        seed_writers_key: context("history/f03-run", "seed-writers-key-drift", "", "offline") => failed{"writers-key"}
+        seed_enc_minor: context("history/f03-run", "seed-enc-minor-drift", "", "offline") => failed{"enc-minor"}
+        seed_enc_recorded: context("history/f03-run", "seed-enc-recorded-drift", "", "offline") => failed{"enc-recorded"}
+        seed_enc_audit: context("history/f03-run", "seed-enc-audit-drift", "", "offline") => failed{"enc-audit"}
+        seed_enc_max: context("history/f03-run", "seed-enc-max-drift", "", "offline") => failed{"enc-max"}
+        seed_enc_min: context("history/f03-run", "seed-enc-min-drift", "", "offline") => failed{"enc-min"}
+        seed_enc_note: context("history/f03-run", "seed-enc-note-drift", "", "offline") => failed{"enc-note"}
+        seed_sqlite_memory: context("history/f03-run", "seed-sqlite-memory-drift", "", "offline") => failed{"sqlite-memory"}
+        seed_sqlite_version_key: context("history/f03-run", "seed-sqlite-version-key-drift", "", "offline") => failed{"sqlite-version-key"}
+        seed_report_returning_key: context("history/f03-run", "seed-report-returning-key-drift", "", "offline") => failed{"report-returning-key"}
+        seed_report_vocab_key: context("history/f03-run", "seed-report-vocab-key-drift", "", "offline") => failed{"report-vocab-key"}
+        seed_report_aborted_key: context("history/f03-run", "seed-report-aborted-key-drift", "", "offline") => failed{"report-aborted-key"}
+        seed_report_lookup_key: context("history/f03-run", "seed-report-lookup-key-drift", "", "offline") => failed{"report-lookup-key"}
+        seed_report_encodings_key: context("history/f03-run", "seed-report-encodings-key-drift", "", "offline") => failed{"report-encodings-key"}
+        seed_report_mysql_key: context("history/f03-run", "seed-report-mysql-key-drift", "", "offline") => failed{"report-mysql-key"}
+        seed_report_sqlite_key: context("history/f03-run", "seed-report-sqlite-key-drift", "", "offline") => failed{"report-sqlite-key"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.env_pg_gate, "CAN_TEST_POSTGRES_URL", c, "env-pg-gate")
+            failed
+            ok evidence env_pg_gate_evidence => match call require_text(got.env_my_gate, "CAN_TEST_MYSQL_URL", c, "env-my-gate")
+                failed
+                ok evidence env_my_gate_evidence => match call require_text(got.unset_db, "set CAN_TEST_POSTGRES_URL to the disposable test database", c, "unset-db")
+                    failed
+                    ok evidence unset_db_evidence => match call require_text(got.url_scheme, "postgres", c, "url-scheme")
+                        failed
+                        ok evidence url_scheme_evidence => match call require_text(got.url_refusal, "refusing non-postgres test URL", c, "url-refusal")
+                            failed
+                            ok evidence url_refusal_evidence => match call require_text(got.db_placeholder, "<db>", c, "db-placeholder")
+                                failed
+                                ok evidence db_placeholder_evidence => match call require_text(got.db_name, "can_f03", c, "db-name")
+                                    failed
+                                    ok evidence db_name_evidence => match call require_int(got.error_exit, 1, c, "error-exit")
+                                        failed
+                                        ok evidence error_exit_evidence => match call require_text(got.env_pg_key, "F03_PG", c, "env-pg-key")
+                                            failed
+                                            ok evidence env_pg_key_evidence => match call require_text(got.env_my_key, "F03_MY", c, "env-my-key")
+                                                failed
+                                                ok evidence env_my_key_evidence => match call require_text(got.version_split, " ", c, "version-split")
+                                                    failed
+                                                    ok evidence version_split_evidence => match call require_int(got.version_words, 2, c, "version-words")
+                                                        failed
+                                                        ok evidence version_words_evidence => match call require_text(got.report_version_key, "serverVersion", c, "report-version-key")
+                                                            failed
+                                                            ok evidence report_version_key_evidence => match call require_int(got.race_writers, 8, c, "race-writers")
+                                                                failed
+                                                                ok evidence race_writers_evidence => match call require_text(got.race_id, "race", c, "race-id")
+                                                                    failed
+                                                                    ok evidence race_id_evidence => match call require_text(got.race_digest, "race-digest", c, "race-digest")
+                                                                        failed
+                                                                        ok evidence race_digest_evidence => match call require_text(got.race_accepted, "accepted", c, "race-accepted")
+                                                                            failed
+                                                                            ok evidence race_accepted_evidence => match call require_text(got.race_duplicate, "duplicate", c, "race-duplicate")
+                                                                                failed
+                                                                                ok evidence race_duplicate_evidence => match call require_text(got.race_conflict, "conflict", c, "race-conflict")
+                                                                                    failed
+                                                                                    ok evidence race_conflict_evidence => match call require_text(got.race_lost, "lost-race", c, "race-lost")
+                                                                                        failed
+                                                                                        ok evidence race_lost_evidence => match call require_text(got.race_code, "25P02", c, "race-code")
+                                                                                            failed
+                                                                                            ok evidence race_code_evidence => match call require_text(got.race_winner_key, "winner_digest", c, "race-winner-key")
+                                                                                                failed
+                                                                                                ok evidence race_winner_key_evidence => match call require_text(got.writers_key, "writers", c, "writers-key")
+                                                                                                    failed
+                                                                                                    ok evidence writers_key_evidence => match call require_int(got.enc_minor, 1099, c, "enc-minor")
+                                                                                                        failed
+                                                                                                        ok evidence enc_minor_evidence => match call require_int(got.enc_recorded, 1727222400000, c, "enc-recorded")
+                                                                                                            failed
+                                                                                                            ok evidence enc_recorded_evidence => match call require_int(got.enc_audit, 1727222500000, c, "enc-audit")
+                                                                                                                failed
+                                                                                                                ok evidence enc_audit_evidence => match call require_text(got.enc_max, "9223372036854775807", c, "enc-max")
+                                                                                                                    failed
+                                                                                                                    ok evidence enc_max_evidence => match call require_text(got.enc_min, "-9223372036854775808", c, "enc-min")
+                                                                                                                        failed
+                                                                                                                        ok evidence enc_min_evidence => match call require_text(got.enc_note, "café ☃ \"quoted\"", c, "enc-note")
+                                                                                                                            failed
+                                                                                                                            ok evidence enc_note_evidence => match call require_text(got.sqlite_memory, ":memory:", c, "sqlite-memory")
+                                                                                                                                failed
+                                                                                                                                ok evidence sqlite_memory_evidence => match call require_text(got.sqlite_version_key, "version", c, "sqlite-version-key")
+                                                                                                                                    failed
+                                                                                                                                    ok evidence sqlite_version_key_evidence => match call require_text(got.report_returning_key, "returning_native", c, "report-returning-key")
+                                                                                                                                        failed
+                                                                                                                                        ok evidence report_returning_key_evidence => match call require_text(got.report_vocab_key, "error_vocab", c, "report-vocab-key")
+                                                                                                                                            failed
+                                                                                                                                            ok evidence report_vocab_key_evidence => match call require_text(got.report_aborted_key, "aborted_txn", c, "report-aborted-key")
+                                                                                                                                                failed
+                                                                                                                                                ok evidence report_aborted_key_evidence => match call require_text(got.report_lookup_key, "lookup_first", c, "report-lookup-key")
+                                                                                                                                                    failed
+                                                                                                                                                    ok evidence report_lookup_key_evidence => match call require_text(got.report_encodings_key, "encodings", c, "report-encodings-key")
+                                                                                                                                                        failed
+                                                                                                                                                        ok evidence report_encodings_key_evidence => match call require_text(got.report_mysql_key, "mysql", c, "report-mysql-key")
+                                                                                                                                                            failed
+                                                                                                                                                            ok evidence report_mysql_key_evidence => match call require_text(got.report_sqlite_key, "sqlite", c, "report-sqlite-key")
+                                                                                                                                                                failed
+                                                                                                                                                                ok evidence report_sqlite_key_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok test_case("history/f03-run", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("env-pg-gate"), check_ref("env-my-gate"), check_ref("unset-db"), check_ref("url-scheme"), check_ref("url-refusal"), check_ref("db-placeholder"), check_ref("db-name"), check_ref("error-exit"), check_ref("env-pg-key"), check_ref("env-my-key"), check_ref("version-split"), check_ref("version-words"), check_ref("report-version-key"), check_ref("race-writers"), check_ref("race-id"), check_ref("race-digest"), check_ref("race-accepted"), check_ref("race-duplicate"), check_ref("race-conflict"), check_ref("race-lost"), check_ref("race-code"), check_ref("race-winner-key"), check_ref("writers-key"), check_ref("enc-minor"), check_ref("enc-recorded"), check_ref("enc-audit"), check_ref("enc-max"), check_ref("enc-min"), check_ref("enc-note"), check_ref("sqlite-memory"), check_ref("sqlite-version-key"), check_ref("report-returning-key"), check_ref("report-vocab-key"), check_ref("report-aborted-key"), check_ref("report-lookup-key"), check_ref("report-encodings-key"), check_ref("report-mysql-key"), check_ref("report-sqlite-key")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m25-h013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/f03-run", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("env-pg-gate"), check_ref("env-my-gate"), check_ref("unset-db"), check_ref("url-scheme"), check_ref("url-refusal"), check_ref("db-placeholder"), check_ref("db-name"), check_ref("error-exit"), check_ref("env-pg-key"), check_ref("env-my-key"), check_ref("version-split"), check_ref("version-words"), check_ref("report-version-key"), check_ref("race-writers"), check_ref("race-id"), check_ref("race-digest"), check_ref("race-accepted"), check_ref("race-duplicate"), check_ref("race-conflict"), check_ref("race-lost"), check_ref("race-code"), check_ref("race-winner-key"), check_ref("writers-key"), check_ref("enc-minor"), check_ref("enc-recorded"), check_ref("enc-audit"), check_ref("enc-max"), check_ref("enc-min"), check_ref("enc-note"), check_ref("sqlite-memory"), check_ref("sqlite-version-key"), check_ref("report-returning-key"), check_ref("report-vocab-key"), check_ref("report-aborted-key"), check_ref("report-lookup-key"), check_ref("report-encodings-key"), check_ref("report-mysql-key"), check_ref("report-sqlite-key")], callable case_body)

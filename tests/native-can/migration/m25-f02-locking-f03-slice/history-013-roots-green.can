@@ -1,0 +1,363 @@
+package m25history013roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M25 HISTORY-013 "f03-live-driver.ts: returning, vocab, abort".
+/// Source: tests/integration/testdata/sql/f03-live-driver.ts symbol
+/// f03-live-driver.ts (L178-179 leaves, L295-374 PG legs, L458-520
+/// MySQL leg); executed by tests/integration/sql_f03_test.go.
+/// Disposition: migrate (this row ports f03-live-driver.ts to ordinary
+/// Can functions; the old TS script stays until the integrator retires
+/// it after every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the raw PG RETURNING report keys and the
+/// conflict rejection shape, the four error-vocabulary keys with
+/// the absent/wide lookup ids, the abort/replay keys with the
+/// poison/replay delivery ids and commit/rollback leaves, and the
+/// MySQL skip/admit decisions with writer count and mapping keys.
+/// ADAPTATION (recorded, with source lines): key pins mirror the
+/// report-field names (returning./vocab./aborted./mysql.); id pins
+/// mirror the exact lookup/insert literals (424242 at L328, 7 at
+/// L339/342, d0 at L303/308/324/352, d1 at L365); mysql-writers
+/// mirrors K (L494); admitted/skipped pin the verbatim decision
+/// literals (L461/L470).
+/// Facet map (f03-live-driver.ts legs): single-rows-key pins
+/// single_rows (L299); single-id-type-key pins single_id_type
+/// (L300); multi-rows-key pins multi_rows (L302);
+/// conflict-first-key pins conflict_first_rows (L305);
+/// conflict-repeat-key pins conflict_repeat_rows (L306);
+/// conflict-unexpected pins unexpected-ok (L309); rejected-key pins
+/// rejected (L312); errno-key pins errno (L313); constraint-key pins
+/// constraint (L314); vocab-duplicate-key pins duplicate_insert
+/// (L326); vocab-absent-key pins absent_one (L330);
+/// vocab-two-row-key pins two_row_one (L336); vocab-wide-key pins
+/// wide_decode (L344); absent-id pins 424242 (L328); wide-id pins 7
+/// (L339); abort-first-key pins first_outcome (L354);
+/// abort-followup-key pins followup_outcome (L358); abort-txn-key
+/// pins txn_outcome (L361); replay-key pins replay_ok (L373);
+/// abort-poison-id pins d0 (L352); replay-id pins d1 (L365);
+/// commit-leaf pins app::sql_commit_leaf (L178); rollback-leaf pins
+/// app::sql_rollback_leaf (L179); mysql-skipped pins
+/// skipped:no-mysql-url (L461); mysql-admitted pins admitted (L470);
+/// mysql-writers pins 8 (L494); insert-returning-key pins
+/// insert_returning (L512); mapping-all-own-key pins all_own_row
+/// (L513); mapping-ids-key pins distinct_ids (L513).
+/// Seed semantics live in history-013-seed-semantics.can; the
+/// invocation/run shape lives in history-013-run-shape.can.
+/// Variants: mysql leg runs only when CAN_TEST_MYSQL_URL is set
+/// (else skipped:no-mysql-url); PG legs always run.
+/// Environment: disposable databases named by CAN_TEST_POSTGRES_URL
+/// (required) and CAN_TEST_MYSQL_URL (optional); requires
+/// can-test-postgres-url and bun; sqlite legs run in memory.
+/// Logical gates SUITE/CAN/DB/WORK and C/R/N/S/A identities bind at
+/// P23; no live run now. Accept gates P23/QD1/QD2 are unmet.
+/// Descriptor timeout 240000ms mirrors the Go 4-minute ctx
+/// (sql_f03_test.go L45).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QD2 unmet).
+/// Case history/f03-roots checks: single-rows-key,
+/// single-id-type-key, multi-rows-key, conflict-first-key,
+/// conflict-repeat-key, conflict-unexpected, rejected-key,
+/// errno-key, constraint-key, vocab-duplicate-key, vocab-absent-key,
+/// vocab-two-row-key, vocab-wide-key, absent-id, wide-id,
+/// abort-first-key, abort-followup-key, abort-txn-key, replay-key,
+/// abort-poison-id, replay-id, commit-leaf, rollback-leaf,
+/// mysql-skipped, mysql-admitted, mysql-writers,
+/// insert-returning-key, mapping-all-own-key, mapping-ids-key.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str single_rows_key
+    str single_id_type_key
+    str multi_rows_key
+    str conflict_first_key
+    str conflict_repeat_key
+    str conflict_unexpected
+    str rejected_key
+    str errno_key
+    str constraint_key
+    str vocab_duplicate_key
+    str vocab_absent_key
+    str vocab_two_row_key
+    str vocab_wide_key
+    int absent_id
+    int wide_id
+    str abort_first_key
+    str abort_followup_key
+    str abort_txn_key
+    str replay_key
+    str abort_poison_id
+    str replay_id
+    str commit_leaf
+    str rollback_leaf
+    str mysql_skipped
+    str mysql_admitted
+    int mysql_writers
+    str insert_returning_key
+    str mapping_all_own_key
+    str mapping_ids_key
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/f03-roots", "default", "", "offline"), "single-rows-key" => ok "case history/f03-roots variant default root single-rows-key run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/f03-roots", "default", "", "offline"), "single-rows-key" => ok evidence("single-rows-key", "true", "true", true, "case history/f03-roots variant default root single-rows-key run offline")
+        different: false, true, context("history/f03-roots", "default", "", "offline"), "single-rows-key" => failed{"single-rows-key"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 424242, 424242, context("history/f03-roots", "default", "", "offline"), "absent-id" => ok evidence("absent-id", "424242", "424242", true, "case history/f03-roots variant default root absent-id run offline")
+        different: 424243, 424242, context("history/f03-roots", "default", "", "offline"), "absent-id" => failed{"absent-id"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "single_rows", "single_rows", context("history/f03-roots", "default", "", "offline"), "single-rows-key" => ok evidence("single-rows-key", "single_rows", "single_rows", true, "case history/f03-roots variant default root single-rows-key run offline")
+        different: "single_row", "single_rows", context("history/f03-roots", "default", "", "offline"), "single-rows-key" => failed{"single-rows-key"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_single_rows_key: "seed-single-rows-key-drift" => ok observation("single_row", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_single_id_type_key: "seed-single-id-type-key-drift" => ok observation("single_rows", "single_id_types", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_multi_rows_key: "seed-multi-rows-key-drift" => ok observation("single_rows", "single_id_type", "multi_row", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_conflict_first_key: "seed-conflict-first-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_row", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_conflict_repeat_key: "seed-conflict-repeat-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_row", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_conflict_unexpected: "seed-conflict-unexpected-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok2", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_rejected_key: "seed-rejected-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected2", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_errno_key: "seed-errno-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errnos", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_constraint_key: "seed-constraint-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraints", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_vocab_duplicate_key: "seed-vocab-duplicate-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_inserts", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_vocab_absent_key: "seed-vocab-absent-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_ones", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_vocab_two_row_key: "seed-vocab-two-row-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_ones", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_vocab_wide_key: "seed-vocab-wide-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decodes", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_absent_id: "seed-absent-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424243, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_wide_id: "seed-wide-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 8, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_abort_first_key: "seed-abort-first-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcomes", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_abort_followup_key: "seed-abort-followup-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcomes", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_abort_txn_key: "seed-abort-txn-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcomes", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_replay_key: "seed-replay-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_oks", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_abort_poison_id: "seed-abort-poison-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d00", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_replay_id: "seed-replay-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d11", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_commit_leaf: "seed-commit-leaf-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leafs", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_rollback_leaf: "seed-rollback-leaf-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leafs", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_mysql_skipped: "seed-mysql-skipped-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-urls", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_mysql_admitted: "seed-mysql-admitted-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted2", 8, "insert_returning", "all_own_row", "distinct_ids")
+        seed_mysql_writers: "seed-mysql-writers-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 9, "insert_returning", "all_own_row", "distinct_ids")
+        seed_insert_returning_key: "seed-insert-returning-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returnings", "all_own_row", "distinct_ids")
+        seed_mapping_all_own_key: "seed-mapping-all-own-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_rows", "distinct_ids")
+        seed_mapping_ids_key: "seed-mapping-ids-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_id")
+    match variant_id
+        "seed-single-rows-key-drift" => ok observation("single_row", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-single-id-type-key-drift" => ok observation("single_rows", "single_id_types", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-multi-rows-key-drift" => ok observation("single_rows", "single_id_type", "multi_row", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-conflict-first-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_row", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-conflict-repeat-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_row", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-conflict-unexpected-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok2", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-rejected-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected2", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-errno-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errnos", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-constraint-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraints", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-vocab-duplicate-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_inserts", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-vocab-absent-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_ones", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-vocab-two-row-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_ones", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-vocab-wide-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decodes", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-absent-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424243, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-wide-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 8, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-abort-first-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcomes", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-abort-followup-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcomes", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-abort-txn-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcomes", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-replay-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_oks", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-abort-poison-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d00", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-replay-id-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d11", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-commit-leaf-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leafs", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-rollback-leaf-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leafs", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-mysql-skipped-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-urls", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-mysql-admitted-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted2", 8, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-mysql-writers-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 9, "insert_returning", "all_own_row", "distinct_ids")
+        "seed-insert-returning-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returnings", "all_own_row", "distinct_ids")
+        "seed-mapping-all-own-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_rows", "distinct_ids")
+        "seed-mapping-ids-key-drift" => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_id")
+        _ => ok observation("single_rows", "single_id_type", "multi_rows", "conflict_first_rows", "conflict_repeat_rows", "unexpected-ok", "rejected", "errno", "constraint", "duplicate_insert", "absent_one", "two_row_one", "wide_decode", 424242, 7, "first_outcome", "followup_outcome", "txn_outcome", "replay_ok", "d0", "d1", "app::sql_commit_leaf", "app::sql_rollback_leaf", "skipped:no-mysql-url", "admitted", 8, "insert_returning", "all_own_row", "distinct_ids")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok [check("single-rows-key", "native leg pins the single_rows key"), check("single-id-type-key", "native leg pins the single_id_type key"), check("multi-rows-key", "native leg pins the multi_rows key"), check("conflict-first-key", "native leg pins the conflict_first_rows key"), check("conflict-repeat-key", "native leg pins the conflict_repeat_rows key"), check("conflict-unexpected", "repeat insert without conflict guard is unexpected-ok"), check("rejected-key", "conflict rejection pins the rejected key"), check("errno-key", "conflict rejection pins the errno key"), check("constraint-key", "conflict rejection pins the constraint key"), check("vocab-duplicate-key", "vocab pins the duplicate_insert key"), check("vocab-absent-key", "vocab pins the absent_one key"), check("vocab-two-row-key", "vocab pins the two_row_one key"), check("vocab-wide-key", "vocab pins the wide_decode key"), check("absent-id", "absent one looks up id 424242"), check("wide-id", "wide decode reads id 7"), check("abort-first-key", "aborted leg pins the first_outcome key"), check("abort-followup-key", "aborted leg pins the followup_outcome key"), check("abort-txn-key", "aborted leg pins the txn_outcome key"), check("replay-key", "replay leg pins the replay_ok key"), check("abort-poison-id", "poison insert reuses delivery d0"), check("replay-id", "replay insert uses delivery d1"), check("commit-leaf", "commit leaf is app sql commit leaf"), check("rollback-leaf", "rollback leaf is app sql rollback leaf"), check("mysql-skipped", "missing mysql url skips the mysql leg"), check("mysql-admitted", "mysql insert returning would read admitted"), check("mysql-writers", "mysql mapping runs 8 writers"), check("insert-returning-key", "mysql pins the insert_returning key"), check("mapping-all-own-key", "mysql mapping pins the all_own_row key"), check("mapping-ids-key", "mysql mapping pins the distinct_ids key")]
+        other: "nope" => ok []
+    match scope is "m25-h013"
+        false => ok []
+        true => ok [check("single-rows-key", "native leg pins the single_rows key"), check("single-id-type-key", "native leg pins the single_id_type key"), check("multi-rows-key", "native leg pins the multi_rows key"), check("conflict-first-key", "native leg pins the conflict_first_rows key"), check("conflict-repeat-key", "native leg pins the conflict_repeat_rows key"), check("conflict-unexpected", "repeat insert without conflict guard is unexpected-ok"), check("rejected-key", "conflict rejection pins the rejected key"), check("errno-key", "conflict rejection pins the errno key"), check("constraint-key", "conflict rejection pins the constraint key"), check("vocab-duplicate-key", "vocab pins the duplicate_insert key"), check("vocab-absent-key", "vocab pins the absent_one key"), check("vocab-two-row-key", "vocab pins the two_row_one key"), check("vocab-wide-key", "vocab pins the wide_decode key"), check("absent-id", "absent one looks up id 424242"), check("wide-id", "wide decode reads id 7"), check("abort-first-key", "aborted leg pins the first_outcome key"), check("abort-followup-key", "aborted leg pins the followup_outcome key"), check("abort-txn-key", "aborted leg pins the txn_outcome key"), check("replay-key", "replay leg pins the replay_ok key"), check("abort-poison-id", "poison insert reuses delivery d0"), check("replay-id", "replay insert uses delivery d1"), check("commit-leaf", "commit leaf is app sql commit leaf"), check("rollback-leaf", "rollback leaf is app sql rollback leaf"), check("mysql-skipped", "missing mysql url skips the mysql leg"), check("mysql-admitted", "mysql insert returning would read admitted"), check("mysql-writers", "mysql mapping runs 8 writers"), check("insert-returning-key", "mysql pins the insert_returning key"), check("mapping-all-own-key", "mysql mapping pins the all_own_row key"), check("mapping-ids-key", "mysql mapping pins the distinct_ids key")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/f03-roots" => ok [expected_check("single-rows-key", "single_rows"), expected_check("single-id-type-key", "single_id_type"), expected_check("multi-rows-key", "multi_rows"), expected_check("conflict-first-key", "conflict_first_rows"), expected_check("conflict-repeat-key", "conflict_repeat_rows"), expected_check("conflict-unexpected", "unexpected-ok"), expected_check("rejected-key", "rejected"), expected_check("errno-key", "errno"), expected_check("constraint-key", "constraint"), expected_check("vocab-duplicate-key", "duplicate_insert"), expected_check("vocab-absent-key", "absent_one"), expected_check("vocab-two-row-key", "two_row_one"), expected_check("vocab-wide-key", "wide_decode"), expected_check("absent-id", "424242"), expected_check("wide-id", "7"), expected_check("abort-first-key", "first_outcome"), expected_check("abort-followup-key", "followup_outcome"), expected_check("abort-txn-key", "txn_outcome"), expected_check("replay-key", "replay_ok"), expected_check("abort-poison-id", "d0"), expected_check("replay-id", "d1"), expected_check("commit-leaf", "app::sql_commit_leaf"), expected_check("rollback-leaf", "app::sql_rollback_leaf"), expected_check("mysql-skipped", "skipped:no-mysql-url"), expected_check("mysql-admitted", "admitted"), expected_check("mysql-writers", "8"), expected_check("insert-returning-key", "insert_returning"), expected_check("mapping-all-own-key", "all_own_row"), expected_check("mapping-ids-key", "distinct_ids")]
+        unknown: "nope" => ok []
+    match case is "history/f03-roots"
+        false => ok []
+        true => ok [expected_check("single-rows-key", "single_rows"), expected_check("single-id-type-key", "single_id_type"), expected_check("multi-rows-key", "multi_rows"), expected_check("conflict-first-key", "conflict_first_rows"), expected_check("conflict-repeat-key", "conflict_repeat_rows"), expected_check("conflict-unexpected", "unexpected-ok"), expected_check("rejected-key", "rejected"), expected_check("errno-key", "errno"), expected_check("constraint-key", "constraint"), expected_check("vocab-duplicate-key", "duplicate_insert"), expected_check("vocab-absent-key", "absent_one"), expected_check("vocab-two-row-key", "two_row_one"), expected_check("vocab-wide-key", "wide_decode"), expected_check("absent-id", "424242"), expected_check("wide-id", "7"), expected_check("abort-first-key", "first_outcome"), expected_check("abort-followup-key", "followup_outcome"), expected_check("abort-txn-key", "txn_outcome"), expected_check("replay-key", "replay_ok"), expected_check("abort-poison-id", "d0"), expected_check("replay-id", "d1"), expected_check("commit-leaf", "app::sql_commit_leaf"), expected_check("rollback-leaf", "app::sql_rollback_leaf"), expected_check("mysql-skipped", "skipped:no-mysql-url"), expected_check("mysql-admitted", "admitted"), expected_check("mysql-writers", "8"), expected_check("insert-returning-key", "insert_returning"), expected_check("mapping-all-own-key", "all_own_row"), expected_check("mapping-ids-key", "distinct_ids")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/f03-roots", "default", "", "offline") => ok
+        seed_single_rows_key: context("history/f03-roots", "seed-single-rows-key-drift", "", "offline") => failed{"single-rows-key"}
+        seed_single_id_type_key: context("history/f03-roots", "seed-single-id-type-key-drift", "", "offline") => failed{"single-id-type-key"}
+        seed_multi_rows_key: context("history/f03-roots", "seed-multi-rows-key-drift", "", "offline") => failed{"multi-rows-key"}
+        seed_conflict_first_key: context("history/f03-roots", "seed-conflict-first-key-drift", "", "offline") => failed{"conflict-first-key"}
+        seed_conflict_repeat_key: context("history/f03-roots", "seed-conflict-repeat-key-drift", "", "offline") => failed{"conflict-repeat-key"}
+        seed_conflict_unexpected: context("history/f03-roots", "seed-conflict-unexpected-drift", "", "offline") => failed{"conflict-unexpected"}
+        seed_rejected_key: context("history/f03-roots", "seed-rejected-key-drift", "", "offline") => failed{"rejected-key"}
+        seed_errno_key: context("history/f03-roots", "seed-errno-key-drift", "", "offline") => failed{"errno-key"}
+        seed_constraint_key: context("history/f03-roots", "seed-constraint-key-drift", "", "offline") => failed{"constraint-key"}
+        seed_vocab_duplicate_key: context("history/f03-roots", "seed-vocab-duplicate-key-drift", "", "offline") => failed{"vocab-duplicate-key"}
+        seed_vocab_absent_key: context("history/f03-roots", "seed-vocab-absent-key-drift", "", "offline") => failed{"vocab-absent-key"}
+        seed_vocab_two_row_key: context("history/f03-roots", "seed-vocab-two-row-key-drift", "", "offline") => failed{"vocab-two-row-key"}
+        seed_vocab_wide_key: context("history/f03-roots", "seed-vocab-wide-key-drift", "", "offline") => failed{"vocab-wide-key"}
+        seed_absent_id: context("history/f03-roots", "seed-absent-id-drift", "", "offline") => failed{"absent-id"}
+        seed_wide_id: context("history/f03-roots", "seed-wide-id-drift", "", "offline") => failed{"wide-id"}
+        seed_abort_first_key: context("history/f03-roots", "seed-abort-first-key-drift", "", "offline") => failed{"abort-first-key"}
+        seed_abort_followup_key: context("history/f03-roots", "seed-abort-followup-key-drift", "", "offline") => failed{"abort-followup-key"}
+        seed_abort_txn_key: context("history/f03-roots", "seed-abort-txn-key-drift", "", "offline") => failed{"abort-txn-key"}
+        seed_replay_key: context("history/f03-roots", "seed-replay-key-drift", "", "offline") => failed{"replay-key"}
+        seed_abort_poison_id: context("history/f03-roots", "seed-abort-poison-id-drift", "", "offline") => failed{"abort-poison-id"}
+        seed_replay_id: context("history/f03-roots", "seed-replay-id-drift", "", "offline") => failed{"replay-id"}
+        seed_commit_leaf: context("history/f03-roots", "seed-commit-leaf-drift", "", "offline") => failed{"commit-leaf"}
+        seed_rollback_leaf: context("history/f03-roots", "seed-rollback-leaf-drift", "", "offline") => failed{"rollback-leaf"}
+        seed_mysql_skipped: context("history/f03-roots", "seed-mysql-skipped-drift", "", "offline") => failed{"mysql-skipped"}
+        seed_mysql_admitted: context("history/f03-roots", "seed-mysql-admitted-drift", "", "offline") => failed{"mysql-admitted"}
+        seed_mysql_writers: context("history/f03-roots", "seed-mysql-writers-drift", "", "offline") => failed{"mysql-writers"}
+        seed_insert_returning_key: context("history/f03-roots", "seed-insert-returning-key-drift", "", "offline") => failed{"insert-returning-key"}
+        seed_mapping_all_own_key: context("history/f03-roots", "seed-mapping-all-own-key-drift", "", "offline") => failed{"mapping-all-own-key"}
+        seed_mapping_ids_key: context("history/f03-roots", "seed-mapping-ids-key-drift", "", "offline") => failed{"mapping-ids-key"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.single_rows_key, "single_rows", c, "single-rows-key")
+            failed
+            ok evidence single_rows_key_evidence => match call require_text(got.single_id_type_key, "single_id_type", c, "single-id-type-key")
+                failed
+                ok evidence single_id_type_key_evidence => match call require_text(got.multi_rows_key, "multi_rows", c, "multi-rows-key")
+                    failed
+                    ok evidence multi_rows_key_evidence => match call require_text(got.conflict_first_key, "conflict_first_rows", c, "conflict-first-key")
+                        failed
+                        ok evidence conflict_first_key_evidence => match call require_text(got.conflict_repeat_key, "conflict_repeat_rows", c, "conflict-repeat-key")
+                            failed
+                            ok evidence conflict_repeat_key_evidence => match call require_text(got.conflict_unexpected, "unexpected-ok", c, "conflict-unexpected")
+                                failed
+                                ok evidence conflict_unexpected_evidence => match call require_text(got.rejected_key, "rejected", c, "rejected-key")
+                                    failed
+                                    ok evidence rejected_key_evidence => match call require_text(got.errno_key, "errno", c, "errno-key")
+                                        failed
+                                        ok evidence errno_key_evidence => match call require_text(got.constraint_key, "constraint", c, "constraint-key")
+                                            failed
+                                            ok evidence constraint_key_evidence => match call require_text(got.vocab_duplicate_key, "duplicate_insert", c, "vocab-duplicate-key")
+                                                failed
+                                                ok evidence vocab_duplicate_key_evidence => match call require_text(got.vocab_absent_key, "absent_one", c, "vocab-absent-key")
+                                                    failed
+                                                    ok evidence vocab_absent_key_evidence => match call require_text(got.vocab_two_row_key, "two_row_one", c, "vocab-two-row-key")
+                                                        failed
+                                                        ok evidence vocab_two_row_key_evidence => match call require_text(got.vocab_wide_key, "wide_decode", c, "vocab-wide-key")
+                                                            failed
+                                                            ok evidence vocab_wide_key_evidence => match call require_int(got.absent_id, 424242, c, "absent-id")
+                                                                failed
+                                                                ok evidence absent_id_evidence => match call require_int(got.wide_id, 7, c, "wide-id")
+                                                                    failed
+                                                                    ok evidence wide_id_evidence => match call require_text(got.abort_first_key, "first_outcome", c, "abort-first-key")
+                                                                        failed
+                                                                        ok evidence abort_first_key_evidence => match call require_text(got.abort_followup_key, "followup_outcome", c, "abort-followup-key")
+                                                                            failed
+                                                                            ok evidence abort_followup_key_evidence => match call require_text(got.abort_txn_key, "txn_outcome", c, "abort-txn-key")
+                                                                                failed
+                                                                                ok evidence abort_txn_key_evidence => match call require_text(got.replay_key, "replay_ok", c, "replay-key")
+                                                                                    failed
+                                                                                    ok evidence replay_key_evidence => match call require_text(got.abort_poison_id, "d0", c, "abort-poison-id")
+                                                                                        failed
+                                                                                        ok evidence abort_poison_id_evidence => match call require_text(got.replay_id, "d1", c, "replay-id")
+                                                                                            failed
+                                                                                            ok evidence replay_id_evidence => match call require_text(got.commit_leaf, "app::sql_commit_leaf", c, "commit-leaf")
+                                                                                                failed
+                                                                                                ok evidence commit_leaf_evidence => match call require_text(got.rollback_leaf, "app::sql_rollback_leaf", c, "rollback-leaf")
+                                                                                                    failed
+                                                                                                    ok evidence rollback_leaf_evidence => match call require_text(got.mysql_skipped, "skipped:no-mysql-url", c, "mysql-skipped")
+                                                                                                        failed
+                                                                                                        ok evidence mysql_skipped_evidence => match call require_text(got.mysql_admitted, "admitted", c, "mysql-admitted")
+                                                                                                            failed
+                                                                                                            ok evidence mysql_admitted_evidence => match call require_int(got.mysql_writers, 8, c, "mysql-writers")
+                                                                                                                failed
+                                                                                                                ok evidence mysql_writers_evidence => match call require_text(got.insert_returning_key, "insert_returning", c, "insert-returning-key")
+                                                                                                                    failed
+                                                                                                                    ok evidence insert_returning_key_evidence => match call require_text(got.mapping_all_own_key, "all_own_row", c, "mapping-all-own-key")
+                                                                                                                        failed
+                                                                                                                        ok evidence mapping_all_own_key_evidence => match call require_text(got.mapping_ids_key, "distinct_ids", c, "mapping-ids-key")
+                                                                                                                            failed
+                                                                                                                            ok evidence mapping_ids_key_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m25_h013: "m25-h013" => ok test_case("history/f03-roots", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("single-rows-key"), check_ref("single-id-type-key"), check_ref("multi-rows-key"), check_ref("conflict-first-key"), check_ref("conflict-repeat-key"), check_ref("conflict-unexpected"), check_ref("rejected-key"), check_ref("errno-key"), check_ref("constraint-key"), check_ref("vocab-duplicate-key"), check_ref("vocab-absent-key"), check_ref("vocab-two-row-key"), check_ref("vocab-wide-key"), check_ref("absent-id"), check_ref("wide-id"), check_ref("abort-first-key"), check_ref("abort-followup-key"), check_ref("abort-txn-key"), check_ref("replay-key"), check_ref("abort-poison-id"), check_ref("replay-id"), check_ref("commit-leaf"), check_ref("rollback-leaf"), check_ref("mysql-skipped"), check_ref("mysql-admitted"), check_ref("mysql-writers"), check_ref("insert-returning-key"), check_ref("mapping-all-own-key"), check_ref("mapping-ids-key")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m25-h013"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/f03-roots", ["history", "m25"], ["can-test-postgres-url", "bun"], 240000, [check_ref("single-rows-key"), check_ref("single-id-type-key"), check_ref("multi-rows-key"), check_ref("conflict-first-key"), check_ref("conflict-repeat-key"), check_ref("conflict-unexpected"), check_ref("rejected-key"), check_ref("errno-key"), check_ref("constraint-key"), check_ref("vocab-duplicate-key"), check_ref("vocab-absent-key"), check_ref("vocab-two-row-key"), check_ref("vocab-wide-key"), check_ref("absent-id"), check_ref("wide-id"), check_ref("abort-first-key"), check_ref("abort-followup-key"), check_ref("abort-txn-key"), check_ref("replay-key"), check_ref("abort-poison-id"), check_ref("replay-id"), check_ref("commit-leaf"), check_ref("rollback-leaf"), check_ref("mysql-skipped"), check_ref("mysql-admitted"), check_ref("mysql-writers"), check_ref("insert-returning-key"), check_ref("mapping-all-own-key"), check_ref("mapping-ids-key")], callable case_body)
