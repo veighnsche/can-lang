@@ -33,8 +33,12 @@
 // tokens, digest-only facts, and layered errors. Neither reads the
 // driver.
 //
-// Pure in-memory mechanics: no I/O, timers, transports, services,
-// browsers, processes, or live runtimes. Local controls only.
+// Engine layer: pure in-memory mechanics with no I/O, timers,
+// transports, services, browsers, processes, or live runtimes. The
+// actual observation channel runs in channel.go (framed wire protocol),
+// child.go (observer child process outside the driver subtree), and
+// process.go (owner-side handle); journal.go durably publishes every
+// accepted mutation. Local controls only.
 package browser_observer
 
 import (
@@ -148,8 +152,8 @@ func obsErr(layer Layer, code string, err error) *ObserverError {
 // Ownership is checked on every call: a foreign identity fails the owner
 // check and changes nothing.
 type Owner struct {
-	PID        int
-	StartToken string
+	PID        int    `json:"pid"`
+	StartToken string `json:"startToken"`
 }
 
 func (o Owner) same(other Owner) bool {
@@ -158,10 +162,10 @@ func (o Owner) same(other Owner) bool {
 
 // Limits bounds every observer table. Nothing here means unlimited.
 type Limits struct {
-	MaxScopes               int
-	MaxLaunches             int
-	MaxTicksPerLaunch       int
-	MaxCorrectionsPerLaunch int
+	MaxScopes               int `json:"maxScopes"`
+	MaxLaunches             int `json:"maxLaunches"`
+	MaxTicksPerLaunch       int `json:"maxTicksPerLaunch"`
+	MaxCorrectionsPerLaunch int `json:"maxCorrectionsPerLaunch"`
 }
 
 // DefaultLimits is the roomy bounded double the tests use.
@@ -307,79 +311,79 @@ func DigestInterval(launchID string, ticks []TickFacts, corrections []Correction
 // ScopeReceipt binds one open scope to its owner, channels, and handle
 // digest. The raw token never crosses.
 type ScopeReceipt struct {
-	Scope        string
-	Owner        Owner
-	Channels     []string
-	HandleDigest string
-	Launches     int
+	Scope        string   `json:"scope"`
+	Owner        Owner    `json:"owner"`
+	Channels     []string `json:"channels"`
+	HandleDigest string   `json:"handleDigest"`
+	Launches     int      `json:"launches"`
 }
 
 // LaunchAttestation attests one launch under a live observer binding.
 type LaunchAttestation struct {
-	LaunchID       string
-	Scope          string
-	Owner          Owner
-	ScopeDigest    string
-	ObserverDigest string
-	HandleDigest   string
-	Tick           int
+	LaunchID       string `json:"launchId"`
+	Scope          string `json:"scope"`
+	Owner          Owner  `json:"owner"`
+	ScopeDigest    string `json:"scopeDigest"`
+	ObserverDigest string `json:"observerDigest"`
+	HandleDigest   string `json:"handleDigest"`
+	Tick           int    `json:"tick"`
 }
 
 // ChannelFacts names one channel entry: its state, origin, and whether a
 // durable correction resolved it.
 type ChannelFacts struct {
-	Channel   string
-	State     string
-	Origin    string
-	Corrected bool
+	Channel   string `json:"channel"`
+	State     string `json:"state"`
+	Origin    string `json:"origin"`
+	Corrected bool   `json:"corrected"`
 }
 
 // TickFacts names one tick: its entries, closure, and digest.
 type TickFacts struct {
-	LaunchID string
-	Tick     int
-	Channels []ChannelFacts
-	Closed   bool
-	Digest   string
+	LaunchID string         `json:"launchId"`
+	Tick     int            `json:"tick"`
+	Channels []ChannelFacts `json:"channels"`
+	Closed   bool           `json:"closed"`
+	Digest   string         `json:"digest"`
 }
 
 // CorrectionFacts names one durable correction: tick, channel, the
 // before/after states, and its digest.
 type CorrectionFacts struct {
-	CorrectionID string
-	LaunchID     string
-	Tick         int
-	Channel      string
-	Before       string
-	After        string
-	Digest       string
+	CorrectionID string `json:"correctionId"`
+	LaunchID     string `json:"launchId"`
+	Tick         int    `json:"tick"`
+	Channel      string `json:"channel"`
+	Before       string `json:"before"`
+	After        string `json:"after"`
+	Digest       string `json:"digest"`
 }
 
 // IntervalFacts names the whole observed interval. Unknown is true when
 // any entry carries unknown (interruption, loss, or published unknown);
 // an unknown interval can never prove no-UI.
 type IntervalFacts struct {
-	LaunchID         string
-	Scope            string
-	Owner            Owner
-	Ticks            []TickFacts
-	Corrections      []CorrectionFacts
-	DriverDeathNoted bool
-	Disposed         bool
-	Unknown          bool
-	Digest           string
+	LaunchID         string            `json:"launchId"`
+	Scope            string            `json:"scope"`
+	Owner            Owner             `json:"owner"`
+	Ticks            []TickFacts       `json:"ticks"`
+	Corrections      []CorrectionFacts `json:"corrections"`
+	DriverDeathNoted bool              `json:"driverDeathNoted"`
+	Disposed         bool              `json:"disposed"`
+	Unknown          bool              `json:"unknown"`
+	Digest           string            `json:"digest"`
 }
 
 // DisposalReceipt seals the interval through confirmed disposal.
 type DisposalReceipt struct {
-	LaunchID         string
-	Scope            string
-	Owner            Owner
-	Ticks            int
-	Corrections      int
-	DriverDeathNoted bool
-	Unknown          bool
-	Digest           string
+	LaunchID         string `json:"launchId"`
+	Scope            string `json:"scope"`
+	Owner            Owner  `json:"owner"`
+	Ticks            int    `json:"ticks"`
+	Corrections      int    `json:"corrections"`
+	DriverDeathNoted bool   `json:"driverDeathNoted"`
+	Unknown          bool   `json:"unknown"`
+	Digest           string `json:"digest"`
 }
 
 // NoUiVerdict judges one verified observer attestation.
@@ -413,6 +417,11 @@ type launchRecord struct {
 	driverDeath   bool
 	disposed      bool
 	disposal      DisposalReceipt
+	// lost records observer loss for a live interval. Once set, the
+	// interval is unknown even when every tick was fully observed:
+	// the observer died before the seal, so late host effects between
+	// the last observation and disposal are unobserved.
+	lost bool
 }
 
 type scopeState string
@@ -613,6 +622,20 @@ func (o *Observer) InterruptScope(owner Owner, scope string) error {
 	if record.state == stateInterrupted {
 		return obsErr(LayerObserver, CodeInterrupted, fmt.Errorf("%w: scope already interrupted", ErrDenied))
 	}
+	// Refusal precedes effect: every live launch needs room for its
+	// post-resume tick before anything is marked.
+	for _, launch := range record.launches {
+		if launch.disposed {
+			continue
+		}
+		open := launch.ticks[len(launch.ticks)-1]
+		if open.closed {
+			continue
+		}
+		if len(launch.ticks) >= o.limits.MaxTicksPerLaunch {
+			return obsErr(LayerObserver, CodeCapacity, fmt.Errorf("%w: tick table full", ErrCapacity))
+		}
+	}
 	record.state = stateInterrupted
 	for _, launch := range record.launches {
 		if launch.disposed {
@@ -628,9 +651,6 @@ func (o *Observer) InterruptScope(owner Owner, scope string) error {
 			}
 		}
 		open.closed = true
-		if len(launch.ticks) >= o.limits.MaxTicksPerLaunch {
-			return obsErr(LayerObserver, CodeCapacity, fmt.Errorf("%w: tick table full", ErrCapacity))
-		}
 		launch.ticks = append(launch.ticks, &tickRecord{tick: open.tick + 1, entries: make(map[string]*tickEntry)})
 	}
 	return nil
@@ -676,6 +696,7 @@ func (o *Observer) LoseObserver(owner Owner, scope string) error {
 		if launch.disposed {
 			continue
 		}
+		launch.lost = true
 		for _, tick := range launch.ticks {
 			for _, channel := range record.channels {
 				entry, ok := tick.entries[channel]
@@ -1059,6 +1080,9 @@ func (o *Observer) TickFacts(owner Owner, scope, launchID string, tick int) (Tic
 }
 
 func intervalUnknown(launch *launchRecord) bool {
+	if launch.lost {
+		return true
+	}
 	for _, tick := range launch.ticks {
 		for _, entry := range tick.entries {
 			if entry.state == StateUnknown {

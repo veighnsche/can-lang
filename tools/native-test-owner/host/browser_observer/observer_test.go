@@ -448,6 +448,43 @@ func TestInterruptionAndLoss(t *testing.T) {
 	}
 }
 
+func TestLossWithFullyObservedTicksSealsUnknown(t *testing.T) {
+	o := testObserver(t)
+	token := testLaunch(t, o)
+	// Every tick fully observed, but the observer dies before the seal:
+	// late host effects between the last observation and disposal are
+	// unobserved, so the interval is unknown.
+	observeFull(t, o, token, "launch-1")
+	if _, err := o.EndTick(testOwner, "host-ui", "launch-1", token); err != nil {
+		t.Fatalf("EndTick: %v", err)
+	}
+	observeFull(t, o, token, "launch-1")
+	if err := o.LoseObserver(testOwner, "host-ui"); err != nil {
+		t.Fatalf("LoseObserver: %v", err)
+	}
+	during, err := o.IntervalFacts(testOwner, "host-ui", "launch-1")
+	if err != nil {
+		t.Fatalf("IntervalFacts: %v", err)
+	}
+	if !during.Unknown {
+		t.Fatal("lost interval with fully observed ticks is not unknown")
+	}
+	receipt, err := o.SealDisposal(testOwner, "host-ui", "launch-1", token)
+	if err != nil {
+		t.Fatalf("SealDisposal: %v", err)
+	}
+	if !receipt.Unknown {
+		t.Fatalf("lost interval sealed known: %+v", receipt)
+	}
+	verdict, err := AssertNoUiProof(ProofClaim{Kind: "observer-attestation", Interval: during})
+	if err != nil {
+		t.Fatalf("AssertNoUiProof: %v", err)
+	}
+	if !verdict.Unknown {
+		t.Fatalf("lost interval judged known: %+v", verdict)
+	}
+}
+
 func TestUnknownScopeHandling(t *testing.T) {
 	o := testObserver(t)
 	token := testLaunch(t, o)
