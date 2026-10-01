@@ -1,0 +1,24 @@
+package latch
+    provides []
+    uses []
+
+/// R-core corpus fixture: minimal string-match ladder reproducing the
+/// CAN-CHECK-STRING-MATCH-LADDER warning. Ladder body copied verbatim
+/// from tests/native-can/src/report/reducer/reducer.can exec_terminal.
+fn bool exec_terminal
+    emits {}
+    given
+        str execution
+    asserts
+        completed: "completed" => ok true
+        broken: "broken" => ok true
+        cancelled: "cancelled" => ok true
+        running: "running" => ok false
+        not_started: "not-started" => ok false
+    match execution is "completed"
+        true => ok true
+        false => match execution is "broken"
+            true => ok true
+            false => match execution is "cancelled"
+                true => ok true
+                false => ok false
