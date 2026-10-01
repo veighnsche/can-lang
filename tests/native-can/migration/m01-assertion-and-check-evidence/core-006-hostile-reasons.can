@@ -1,0 +1,204 @@
+package m01core006hostile
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M01 CORE-006 "bundled checks: hostile reasons, caught failures, sticky violation".
+/// Source: tests/integration/checks_test.go symbol TestCurrentBundledChecks.
+/// Related oracles: runtime/test/checks.test.ts (the 5 staged bun tests),
+/// compiler/testdata/current/checks/main.can (recovered_sign catch shape).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): hostile reasons are validated and rejected
+/// (TypeError, user coercions never invoked), frozen exact strings still
+/// yield the exact reason, hostile reason text round-trips exactly through
+/// JSON, a recovered application check cannot clear a separate harness
+/// violation (sticky: passed false, "harness violation", "argument
+/// mismatch" stays listed).
+/// Require reason/occurrence/JSON shape lives in
+/// core-006-check-shape.can; main fixture rows, the staged-trace count and
+/// the silent production run live in core-006-main-fixture.can.
+/// Variants: hostile reasons and caught failures. True/false conditions,
+/// authored reason text, fixture rows and tsc gating belong to the sibling
+/// files.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-007 (staged runtime/checks.test.ts).
+/// Execution credit: NOT claimed (accept_after P23, QN1).
+/// Case bundled/hostile-reasons checks: hostile-rejected, trap-count,
+/// frozen-green, hostile-roundtrip, sticky-violation, violation-reason,
+/// violation-arg.
+/// Facet map (checks.test.ts tests): hostile-rejected/trap-count pin test 3
+/// (L73-86: hostile reason rejects with TypeError, invoked stays 0, so
+/// toString/valueOf/toJSON/toPrimitive never run); frozen-green pins the
+/// frozen exact leg (L87-90: frozen "exact" yields reason "exact");
+/// hostile-roundtrip pins test 4 (L93-100: hostile text round-trips
+/// exactly through JSON); sticky-violation/violation-reason/violation-arg
+/// pin test 5 (L102-137: recovered check plus fixture violation yields
+/// passed false, reason "harness violation", violations containing
+/// "argument mismatch").
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool hostile_rejected
+    int trap_count
+    bool frozen_green
+    bool hostile_roundtrip
+    bool sticky_violation
+    str violation_reason
+    bool violation_arg
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/hostile-reasons", "default", "", "offline"), "hostile-rejected" => ok "case bundled/hostile-reasons variant default root hostile-rejected run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/hostile-reasons", "default", "", "offline"), "hostile-rejected" => ok evidence("hostile-rejected", "true", "true", true, "case bundled/hostile-reasons variant default root hostile-rejected run offline")
+        different: false, true, context("bundled/hostile-reasons", "default", "", "offline"), "hostile-rejected" => failed{"hostile-rejected"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 0, 0, context("bundled/hostile-reasons", "default", "", "offline"), "trap-count" => ok evidence("trap-count", "0", "0", true, "case bundled/hostile-reasons variant default root trap-count run offline")
+        different: 1, 0, context("bundled/hostile-reasons", "default", "", "offline"), "trap-count" => failed{"trap-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "harness violation", "harness violation", context("bundled/hostile-reasons", "default", "", "offline"), "violation-reason" => ok evidence("violation-reason", "harness violation", "harness violation", true, "case bundled/hostile-reasons variant default root violation-reason run offline")
+        different: "outcome mismatch", "harness violation", context("bundled/hostile-reasons", "default", "", "offline"), "violation-reason" => failed{"violation-reason"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, 0, true, true, true, "harness violation", true)
+        seed_hostile_passed: "seed-hostile-passed" => ok observation(false, 0, true, true, true, "harness violation", true)
+        seed_trap_fired: "seed-trap-fired" => ok observation(true, 1, true, true, true, "harness violation", true)
+        seed_frozen_red: "seed-frozen-red" => ok observation(true, 0, false, true, true, "harness violation", true)
+        seed_roundtrip_loss: "seed-roundtrip-loss" => ok observation(true, 0, true, false, true, "harness violation", true)
+        seed_violation_cleared: "seed-violation-cleared" => ok observation(true, 0, true, true, false, "harness violation", true)
+        seed_reason_drift: "seed-reason-drift" => ok observation(true, 0, true, true, true, "outcome mismatch", true)
+        seed_arg_missing: "seed-arg-missing" => ok observation(true, 0, true, true, true, "harness violation", false)
+    match variant_id
+        "seed-hostile-passed" => ok observation(false, 0, true, true, true, "harness violation", true)
+        "seed-trap-fired" => ok observation(true, 1, true, true, true, "harness violation", true)
+        "seed-frozen-red" => ok observation(true, 0, false, true, true, "harness violation", true)
+        "seed-roundtrip-loss" => ok observation(true, 0, true, false, true, "harness violation", true)
+        "seed-violation-cleared" => ok observation(true, 0, true, true, false, "harness violation", true)
+        "seed-reason-drift" => ok observation(true, 0, true, true, true, "outcome mismatch", true)
+        "seed-arg-missing" => ok observation(true, 0, true, true, true, "harness violation", false)
+        _ => ok observation(true, 0, true, true, true, "harness violation", true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m01_006: "m01-006" => ok [check("hostile-rejected", "hostile reason rejected with TypeError"), check("trap-count", "user coercions never invoked during validation"), check("frozen-green", "frozen exact string yields the exact reason"), check("hostile-roundtrip", "hostile reason text round-trips exactly through JSON"), check("sticky-violation", "recovered check cannot clear a harness violation"), check("violation-reason", "sticky report reason pins harness violation"), check("violation-arg", "sticky violations keep argument mismatch")]
+        other: "nope" => ok []
+    match scope is "m01-006"
+        false => ok []
+        true => ok [check("hostile-rejected", "hostile reason rejected with TypeError"), check("trap-count", "user coercions never invoked during validation"), check("frozen-green", "frozen exact string yields the exact reason"), check("hostile-roundtrip", "hostile reason text round-trips exactly through JSON"), check("sticky-violation", "recovered check cannot clear a harness violation"), check("violation-reason", "sticky report reason pins harness violation"), check("violation-arg", "sticky violations keep argument mismatch")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/hostile-reasons" => ok [expected_check("hostile-rejected", "true"), expected_check("trap-count", "0"), expected_check("frozen-green", "true"), expected_check("hostile-roundtrip", "true"), expected_check("sticky-violation", "true"), expected_check("violation-reason", "harness violation"), expected_check("violation-arg", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/hostile-reasons"
+        false => ok []
+        true => ok [expected_check("hostile-rejected", "true"), expected_check("trap-count", "0"), expected_check("frozen-green", "true"), expected_check("hostile-roundtrip", "true"), expected_check("sticky-violation", "true"), expected_check("violation-reason", "harness violation"), expected_check("violation-arg", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/hostile-reasons", "default", "", "offline") => ok
+        seed_hostile_passed: context("bundled/hostile-reasons", "seed-hostile-passed", "", "offline") => failed{"hostile-rejected"}
+        seed_trap_fired: context("bundled/hostile-reasons", "seed-trap-fired", "", "offline") => failed{"trap-count"}
+        seed_frozen_red: context("bundled/hostile-reasons", "seed-frozen-red", "", "offline") => failed{"frozen-green"}
+        seed_roundtrip_loss: context("bundled/hostile-reasons", "seed-roundtrip-loss", "", "offline") => failed{"hostile-roundtrip"}
+        seed_violation_cleared: context("bundled/hostile-reasons", "seed-violation-cleared", "", "offline") => failed{"sticky-violation"}
+        seed_reason_drift: context("bundled/hostile-reasons", "seed-reason-drift", "", "offline") => failed{"violation-reason"}
+        seed_arg_missing: context("bundled/hostile-reasons", "seed-arg-missing", "", "offline") => failed{"violation-arg"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.hostile_rejected, true, c, "hostile-rejected")
+            failed
+            ok evidence rejected_evidence => match call require_int(got.trap_count, 0, c, "trap-count")
+                failed
+                ok evidence trap_evidence => match call require_bool(got.frozen_green, true, c, "frozen-green")
+                    failed
+                    ok evidence frozen_evidence => match call require_bool(got.hostile_roundtrip, true, c, "hostile-roundtrip")
+                        failed
+                        ok evidence roundtrip_evidence => match call require_bool(got.sticky_violation, true, c, "sticky-violation")
+                            failed
+                            ok evidence sticky_evidence => match call require_text(got.violation_reason, "harness violation", c, "violation-reason")
+                                failed
+                                ok evidence reason_evidence => match call require_bool(got.violation_arg, true, c, "violation-arg")
+                                    failed
+                                    ok evidence arg_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m01_006: "m01-006" => ok test_case("bundled/hostile-reasons", ["checks", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("hostile-rejected"), check_ref("trap-count"), check_ref("frozen-green"), check_ref("hostile-roundtrip"), check_ref("sticky-violation"), check_ref("violation-reason"), check_ref("violation-arg")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m01-006"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/hostile-reasons", ["checks", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("hostile-rejected"), check_ref("trap-count"), check_ref("frozen-green"), check_ref("hostile-roundtrip"), check_ref("sticky-violation"), check_ref("violation-reason"), check_ref("violation-arg")], callable case_body)

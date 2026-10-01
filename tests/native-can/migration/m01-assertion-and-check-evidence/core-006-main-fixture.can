@@ -1,0 +1,232 @@
+package m01core006fixture
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M01 CORE-006 "bundled checks: main fixture, staged traces, silent run".
+/// Source: tests/integration/checks_test.go symbol TestCurrentBundledChecks.
+/// Related fixtures: compiler/testdata/current/checks/main.can (ground for
+/// every row pin below: require_positive 3 roots, recovered_sign 2 roots,
+/// empty_reason 1 root, main 1 root = 7 rows).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): staged bun traces green (5 pass, 0 fail), canlc
+/// assert green with passed report and exactly 7 roots, main fixture rows
+/// (positive green, zero/negative fail with the exact reason, recovered
+/// sign mapping, empty reason preserved), silent production run (exit 0,
+/// empty stdout, empty stderr), strict tsc stays environment-gated.
+/// Require reason/occurrence/JSON shape lives in
+/// core-006-check-shape.can; hostile-reason validation and the sticky
+/// harness violation live in core-006-hostile-reasons.can.
+/// Variants: main fixture. True/false conditions, hostile reasons, caught
+/// failures and the tsc environment gate belong to the sibling files (the
+/// strict-tsc variant is environment-gated, CAN_TSC with CAN_BUN, and stays
+/// recorded-conditional here, never waived).
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. The tsc leg additionally needs
+/// CAN_TSC with CAN_BUN. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-007 (staged runtime/checks.test.ts).
+/// Execution credit: NOT claimed (accept_after P23, QN1).
+/// Case bundled/main-fixture checks: assert-green, report-passed,
+/// root-count, positive-green, zero-fails, failure-reason, recovered-sign,
+/// empty-reason, run-silent, traces-green, tsc-gated.
+/// Facet map (checks_test.go legs): traces-green pins the staged offline
+/// traces (L29-34: "5 pass" and "0 fail"); assert-green pins the assert leg
+/// (L80-83: exit 0, empty stderr); report-passed/root-count pin the report
+/// leg (L84-87: passed true, 7 assertions); positive-green/zero-fails/
+/// failure-reason pin require_positive (main.can L4-12: 3 => ok, 0/-1 =>
+/// failed "expected a positive value" pinned verbatim); recovered-sign
+/// pins recovered_sign (L13-22: 3 => true, 0 => false); empty-reason pins
+/// empty_reason (L23-29: sample yields ""); run-silent pins the run leg
+/// (L88-91: exit 0, empty stdout, empty stderr); tsc-gated pins the
+/// strict-tsc leg as conditional on CAN_TSC with CAN_BUN (L92-111;
+/// BLOCKED in this session, recorded here, never waived).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool assert_green
+    bool report_passed
+    int root_count
+    bool positive_green
+    bool zero_fails
+    str failure_reason
+    bool recovered_sign
+    bool empty_reason
+    bool run_silent
+    bool traces_green
+    bool tsc_gated
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/main-fixture", "default", "", "offline"), "assert-green" => ok "case bundled/main-fixture variant default root assert-green run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/main-fixture", "default", "", "offline"), "assert-green" => ok evidence("assert-green", "true", "true", true, "case bundled/main-fixture variant default root assert-green run offline")
+        different: false, true, context("bundled/main-fixture", "default", "", "offline"), "assert-green" => failed{"assert-green"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("bundled/main-fixture", "default", "", "offline"), "root-count" => ok evidence("root-count", "7", "7", true, "case bundled/main-fixture variant default root root-count run offline")
+        different: 6, 7, context("bundled/main-fixture", "default", "", "offline"), "root-count" => failed{"root-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "expected a positive value", "expected a positive value", context("bundled/main-fixture", "default", "", "offline"), "failure-reason" => ok evidence("failure-reason", "expected a positive value", "expected a positive value", true, "case bundled/main-fixture variant default root failure-reason run offline")
+        different: "wrong reason", "expected a positive value", context("bundled/main-fixture", "default", "", "offline"), "failure-reason" => failed{"failure-reason"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, true, true)
+        seed_assert_red: "seed-assert-red" => ok observation(false, true, 7, true, true, "expected a positive value", true, true, true, true, true)
+        seed_report_red: "seed-report-red" => ok observation(true, false, 7, true, true, "expected a positive value", true, true, true, true, true)
+        seed_root_short: "seed-root-short" => ok observation(true, true, 6, true, true, "expected a positive value", true, true, true, true, true)
+        seed_positive_red: "seed-positive-red" => ok observation(true, true, 7, false, true, "expected a positive value", true, true, true, true, true)
+        seed_zero_green: "seed-zero-green" => ok observation(true, true, 7, true, false, "expected a positive value", true, true, true, true, true)
+        seed_reason_drift: "seed-reason-drift" => ok observation(true, true, 7, true, true, "wrong reason", true, true, true, true, true)
+        seed_recovered_drift: "seed-recovered-drift" => ok observation(true, true, 7, true, true, "expected a positive value", false, true, true, true, true)
+        seed_empty_loss: "seed-empty-loss" => ok observation(true, true, 7, true, true, "expected a positive value", true, false, true, true, true)
+        seed_run_noisy: "seed-run-noisy" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, false, true, true)
+        seed_traces_red: "seed-traces-red" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, false, true)
+        seed_tsc_waived: "seed-tsc-waived" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, true, false)
+    match variant_id
+        "seed-assert-red" => ok observation(false, true, 7, true, true, "expected a positive value", true, true, true, true, true)
+        "seed-report-red" => ok observation(true, false, 7, true, true, "expected a positive value", true, true, true, true, true)
+        "seed-root-short" => ok observation(true, true, 6, true, true, "expected a positive value", true, true, true, true, true)
+        "seed-positive-red" => ok observation(true, true, 7, false, true, "expected a positive value", true, true, true, true, true)
+        "seed-zero-green" => ok observation(true, true, 7, true, false, "expected a positive value", true, true, true, true, true)
+        "seed-reason-drift" => ok observation(true, true, 7, true, true, "wrong reason", true, true, true, true, true)
+        "seed-recovered-drift" => ok observation(true, true, 7, true, true, "expected a positive value", false, true, true, true, true)
+        "seed-empty-loss" => ok observation(true, true, 7, true, true, "expected a positive value", true, false, true, true, true)
+        "seed-run-noisy" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, false, true, true)
+        "seed-traces-red" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, false, true)
+        "seed-tsc-waived" => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, true, false)
+        _ => ok observation(true, true, 7, true, true, "expected a positive value", true, true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m01_006: "m01-006" => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 7 roots"), check("positive-green", "require_positive(3) passes"), check("zero-fails", "require_positive(0) and (-1) fail"), check("failure-reason", "failure reason pins expected a positive value"), check("recovered-sign", "recovered sign maps 3 to true and 0 to false"), check("empty-reason", "empty reason preserved through the failure"), check("run-silent", "production run is silent with exit 0"), check("traces-green", "staged bun traces show 5 pass and 0 fail"), check("tsc-gated", "strict tsc leg stays conditional on CAN_TSC with CAN_BUN")]
+        other: "nope" => ok []
+    match scope is "m01-006"
+        false => ok []
+        true => ok [check("assert-green", "canlc assert exits 0 with empty stderr"), check("report-passed", "assert report passes"), check("root-count", "assert report carries exactly 7 roots"), check("positive-green", "require_positive(3) passes"), check("zero-fails", "require_positive(0) and (-1) fail"), check("failure-reason", "failure reason pins expected a positive value"), check("recovered-sign", "recovered sign maps 3 to true and 0 to false"), check("empty-reason", "empty reason preserved through the failure"), check("run-silent", "production run is silent with exit 0"), check("traces-green", "staged bun traces show 5 pass and 0 fail"), check("tsc-gated", "strict tsc leg stays conditional on CAN_TSC with CAN_BUN")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/main-fixture" => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "7"), expected_check("positive-green", "true"), expected_check("zero-fails", "true"), expected_check("failure-reason", "expected a positive value"), expected_check("recovered-sign", "true"), expected_check("empty-reason", "true"), expected_check("run-silent", "true"), expected_check("traces-green", "true"), expected_check("tsc-gated", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/main-fixture"
+        false => ok []
+        true => ok [expected_check("assert-green", "true"), expected_check("report-passed", "true"), expected_check("root-count", "7"), expected_check("positive-green", "true"), expected_check("zero-fails", "true"), expected_check("failure-reason", "expected a positive value"), expected_check("recovered-sign", "true"), expected_check("empty-reason", "true"), expected_check("run-silent", "true"), expected_check("traces-green", "true"), expected_check("tsc-gated", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/main-fixture", "default", "", "offline") => ok
+        seed_assert_red: context("bundled/main-fixture", "seed-assert-red", "", "offline") => failed{"assert-green"}
+        seed_report_red: context("bundled/main-fixture", "seed-report-red", "", "offline") => failed{"report-passed"}
+        seed_root_short: context("bundled/main-fixture", "seed-root-short", "", "offline") => failed{"root-count"}
+        seed_positive_red: context("bundled/main-fixture", "seed-positive-red", "", "offline") => failed{"positive-green"}
+        seed_zero_green: context("bundled/main-fixture", "seed-zero-green", "", "offline") => failed{"zero-fails"}
+        seed_reason_drift: context("bundled/main-fixture", "seed-reason-drift", "", "offline") => failed{"failure-reason"}
+        seed_recovered_drift: context("bundled/main-fixture", "seed-recovered-drift", "", "offline") => failed{"recovered-sign"}
+        seed_empty_loss: context("bundled/main-fixture", "seed-empty-loss", "", "offline") => failed{"empty-reason"}
+        seed_run_noisy: context("bundled/main-fixture", "seed-run-noisy", "", "offline") => failed{"run-silent"}
+        seed_traces_red: context("bundled/main-fixture", "seed-traces-red", "", "offline") => failed{"traces-green"}
+        seed_tsc_waived: context("bundled/main-fixture", "seed-tsc-waived", "", "offline") => failed{"tsc-gated"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.assert_green, true, c, "assert-green")
+            failed
+            ok evidence assert_evidence => match call require_bool(got.report_passed, true, c, "report-passed")
+                failed
+                ok evidence passed_evidence => match call require_int(got.root_count, 7, c, "root-count")
+                    failed
+                    ok evidence count_evidence => match call require_bool(got.positive_green, true, c, "positive-green")
+                        failed
+                        ok evidence positive_evidence => match call require_bool(got.zero_fails, true, c, "zero-fails")
+                            failed
+                            ok evidence zero_evidence => match call require_text(got.failure_reason, "expected a positive value", c, "failure-reason")
+                                failed
+                                ok evidence reason_evidence => match call require_bool(got.recovered_sign, true, c, "recovered-sign")
+                                    failed
+                                    ok evidence recovered_evidence => match call require_bool(got.empty_reason, true, c, "empty-reason")
+                                        failed
+                                        ok evidence empty_evidence => match call require_bool(got.run_silent, true, c, "run-silent")
+                                            failed
+                                            ok evidence run_evidence => match call require_bool(got.traces_green, true, c, "traces-green")
+                                                failed
+                                                ok evidence traces_evidence => match call require_bool(got.tsc_gated, true, c, "tsc-gated")
+                                                    failed
+                                                    ok evidence tsc_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m01_006: "m01-006" => ok test_case("bundled/main-fixture", ["checks", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("positive-green"), check_ref("zero-fails"), check_ref("failure-reason"), check_ref("recovered-sign"), check_ref("empty-reason"), check_ref("run-silent"), check_ref("traces-green"), check_ref("tsc-gated")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m01-006"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/main-fixture", ["checks", "m01"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("assert-green"), check_ref("report-passed"), check_ref("root-count"), check_ref("positive-green"), check_ref("zero-fails"), check_ref("failure-reason"), check_ref("recovered-sign"), check_ref("empty-reason"), check_ref("run-silent"), check_ref("traces-green"), check_ref("tsc-gated")], callable case_body)
