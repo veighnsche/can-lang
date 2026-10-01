@@ -1,0 +1,178 @@
+package m27history027stable
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M27 HISTORY-027 "guided repair: extracted helper stays identical".
+/// Source: tests/failure-conventions/owner_test.go symbol TestFactoryRepairGuided
+/// (snapshot comparison at owner_test.go:222-228: helper const at :223,
+/// helperBody extraction at :224-225, identity predicate at :226) plus the
+/// helperBody extractor itself (owner_test.go:234-246).
+/// Related fixtures: tests/failure-conventions/owner-setup/
+/// src/handler/handler.can, snapshotted before and after the full
+/// retireConstructor repair. The tier_for helper (handler.can:10-23, doc
+/// comment at :8-9) is never touched by the repair edits: every
+/// replaceOnce target (registry, ids provides/error/parse, handle_tier
+/// emits/rows/match, the factory arm) sits outside the helper block, and
+/// the extraction window ends at the next "\n/// " separator (the
+/// handle_tier doc comment at handler.can:24).
+/// Disposition: RETAIN. The helper leg observes a source snapshot, not an
+/// assert report: the extracted helper text is byte-identical across the
+/// constructor evolution.
+/// Protects (this file): header-exact, helper-found, bodies-identical, and
+/// extraction-scoped pins for the snapshot comparison.
+/// The partial-repair guided rejection lives in
+/// history-027-guided-miss.can; the full-repair green outcome (16 roots)
+/// lives in history-027-repair-green.can.
+/// Variants: complete repair only (withFactoryArm=true): the identity
+/// comparison needs the before/after snapshot pair the full leg takes.
+/// The incomplete repair is the guided-miss sibling in this row, not this
+/// one; green-setup (023), tainted frames (024), forged-owner (025) and
+/// sneak (026) variants are other rows, not this one.
+/// Environment: CONV_BUNDLE or CAN_BUN_ARCHIVE; requires
+/// conv-bundle-or-can-bun-archive. Logical gates SUITE/DIAG/FAULT and C/R/N/S/A
+/// identities bind at P23; no live run now.
+/// Delegated oracles: none. Execution credit: NOT claimed (accept_after P23).
+/// Case owner-repair/helper-stable checks: header-exact, helper-found,
+/// bodies-identical, extraction-scoped.
+/// Facet map: header-exact pins the extraction anchor text
+/// "fn tier_view tier_for" (owner_test.go:223); helper-found pins that
+/// the anchor exists in both snapshots (helperBody fatals on a missing
+/// header at owner_test.go:238); bodies-identical pins the before/after
+/// byte equality (owner_test.go:226 `beforeBody != afterBody`);
+/// extraction-scoped pins the window rule (fn block from the anchor
+/// through the next blank-line-separated top-level declaration, i.e. the
+/// next "\n/// " separator at owner_test.go:241). No full-file golden is
+/// pinned: the Go test compares the extracted window only.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str header
+    bool helper_found
+    bool bodies_identical
+    bool extraction_scoped
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("owner-repair/helper-stable", "default", "", "offline"), "header-exact" => ok "case owner-repair/helper-stable variant default root header-exact run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("owner-repair/helper-stable", "default", "", "offline"), "helper-found" => ok evidence("helper-found", "true", "true", true, "case owner-repair/helper-stable variant default root helper-found run offline")
+        different: false, true, context("owner-repair/helper-stable", "default", "", "offline"), "helper-found" => failed{"helper-found"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "fn tier_view tier_for", "fn tier_view tier_for", context("owner-repair/helper-stable", "default", "", "offline"), "header-exact" => ok evidence("header-exact", "fn tier_view tier_for", "fn tier_view tier_for", true, "case owner-repair/helper-stable variant default root header-exact run offline")
+        different: "fn tier_view tier_for2", "fn tier_view tier_for", context("owner-repair/helper-stable", "default", "", "offline"), "header-exact" => failed{"header-exact"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("fn tier_view tier_for", true, true, true)
+        seed_header_drift: "seed-header-drift" => ok observation("fn tier_view tier_for2", false, false, true)
+        seed_helper_missing: "seed-helper-missing" => ok observation("fn tier_view tier_for", false, false, true)
+        seed_helper_changed: "seed-helper-changed" => ok observation("fn tier_view tier_for", true, false, true)
+        seed_extraction_drift: "seed-extraction-drift" => ok observation("fn tier_view tier_for", true, true, false)
+    match variant_id
+        "seed-header-drift" => ok observation("fn tier_view tier_for2", false, false, true)
+        "seed-helper-missing" => ok observation("fn tier_view tier_for", false, false, true)
+        "seed-helper-changed" => ok observation("fn tier_view tier_for", true, false, true)
+        "seed-extraction-drift" => ok observation("fn tier_view tier_for", true, true, false)
+        _ => ok observation("fn tier_view tier_for", true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m27_027: "m27-027" => ok [check("header-exact", "extraction anchors at fn tier_view tier_for"), check("helper-found", "the anchor exists in both snapshots"), check("bodies-identical", "the extracted helper is byte-identical across the repair"), check("extraction-scoped", "the window ends at the next blank-line-separated declaration")]
+        other: "nope" => ok []
+    match scope is "m27-027"
+        false => ok []
+        true => ok [check("header-exact", "extraction anchors at fn tier_view tier_for"), check("helper-found", "the anchor exists in both snapshots"), check("bodies-identical", "the extracted helper is byte-identical across the repair"), check("extraction-scoped", "the window ends at the next blank-line-separated declaration")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "owner-repair/helper-stable" => ok [expected_check("header-exact", "fn tier_view tier_for"), expected_check("helper-found", "true"), expected_check("bodies-identical", "true"), expected_check("extraction-scoped", "true")]
+        unknown: "nope" => ok []
+    match case is "owner-repair/helper-stable"
+        false => ok []
+        true => ok [expected_check("header-exact", "fn tier_view tier_for"), expected_check("helper-found", "true"), expected_check("bodies-identical", "true"), expected_check("extraction-scoped", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("owner-repair/helper-stable", "default", "", "offline") => ok
+        seed_header_drift: context("owner-repair/helper-stable", "seed-header-drift", "", "offline") => failed{"header-exact"}
+        seed_helper_missing: context("owner-repair/helper-stable", "seed-helper-missing", "", "offline") => failed{"helper-found"}
+        seed_helper_changed: context("owner-repair/helper-stable", "seed-helper-changed", "", "offline") => failed{"bodies-identical"}
+        seed_extraction_drift: context("owner-repair/helper-stable", "seed-extraction-drift", "", "offline") => failed{"extraction-scoped"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.header, "fn tier_view tier_for", c, "header-exact")
+            failed
+            ok evidence header_evidence => match call require_bool(got.helper_found, true, c, "helper-found")
+                failed
+                ok evidence found_evidence => match call require_bool(got.bodies_identical, true, c, "bodies-identical")
+                    failed
+                    ok evidence identical_evidence => match call require_bool(got.extraction_scoped, true, c, "extraction-scoped")
+                        failed
+                        ok evidence scoped_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m27_027: "m27-027" => ok test_case("owner-repair/helper-stable", ["owner", "m27", "repair"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("header-exact"), check_ref("helper-found"), check_ref("bodies-identical"), check_ref("extraction-scoped")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m27-027"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("owner-repair/helper-stable", ["owner", "m27", "repair"], ["conv-bundle-or-can-bun-archive"], 300000, [check_ref("header-exact"), check_ref("helper-found"), check_ref("bodies-identical"), check_ref("extraction-scoped")], callable case_body)
