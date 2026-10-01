@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 83cd99947f364d4b59729aca0987b21bfeb654d24a584fb7be122e397b141948.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e525ba1ab7aa8e8ac8b59a5175fc610c7bf31718806979a6f5681e0dab0d75aa.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -294,6 +294,15 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | db::identity_comparison | record |  | bool match, int[] mismatches | true |
 | db::settlement_record | record |  | str actor, str connection, str outcome, str engine, str digest | true |
 | db::release_record | record |  | str actor, str connection, bool released, str ack_digest | true |
+| db::poison_attempt_record | record |  | str attempt, str kind, str[] schema, str sentinel_digest, option::value&lt;str&gt; poison_digest | true |
+| db::poison_error_facts | record |  | str attempt, str code, str class, str detail, str detail_digest | true |
+| db::poison_callback_facts | record |  | str attempt, str reported, str proves | true |
+| db::poison_settlement_record | record |  | str attempt, str outcome, bool terminal | true |
+| db::sentinel_row_facts | record |  | int seq, db::cell[] cells, str digest | true |
+| db::fresh_sentinel_facts | record |  | str attempt, str read, int row_count, db::sentinel_row_facts[] rows, str digest | true |
+| db::replay_sentinel_facts | record |  | str attempt, str read, int row_count, db::sentinel_row_facts[] rows, str digest | true |
+| db::sentinel_comparison | record |  | bool match, int[] mismatches | true |
+| db::settlement_agreement | record |  | bool agree, str reason | true |
 
 ## Domain errors
 
@@ -844,6 +853,23 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | db::settlement_facts | test::owner owner, str actor → db::settlement_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read settlement facts; unsettled actors throw (K24 settlementFacts). | supplied | NT-I14 / NT-I14 |
 | db::release | test::owner owner, str actor, str token → db::release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Release the actor handle after settlement; early release refuses (K24 release). | supplied | NT-I14 / NT-I14 |
 | db::release_ack | test::owner owner, str actor → db::release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the release acknowledgment (K24 releaseAck). | supplied | NT-I14 / NT-I14 |
+| db::begin_poison_attempt | test::owner owner, str[] schema, db::seed_row sentinel_row, str poison_statement → db::poison_attempt_record | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.createHash | Begin a poison attempt: sentinel write plus the poison statement (K25 beginPoisonAttempt). | supplied | NT-I15 / NT-I15 |
+| db::begin_control_attempt | test::owner owner, str[] schema, db::seed_row sentinel_row → db::poison_attempt_record | {test::stale_handle, db::db_fault} |  | Map.prototype.set, crypto.createHash | Begin the omit-poison control with the same sentinel write (K25 beginControlAttempt). | supplied | NT-I15 / NT-I15 |
+| db::attempt_record | test::owner owner, str attempt → db::poison_attempt_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read an attempt record (K25 attemptRecord). | supplied | NT-I15 / NT-I15 |
+| db::record_poison_error | test::owner owner, str attempt, str code, str detail → db::poison_error_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Record the PG error-code observation for the poison write (K25 recordPoisonError). | supplied | NT-I15 / NT-I15 |
+| db::error_facts | test::owner owner, str attempt → db::poison_error_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read poison error facts (K25 errorFacts). | supplied | NT-I15 / NT-I15 |
+| db::record_callback_report | test::owner owner, str attempt, str reported → db::poison_callback_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Record the inert callback report label, proving nothing (K25 recordCallbackReport). | supplied | NT-I15 / NT-I15 |
+| db::callback_facts | test::owner owner, str attempt → db::poison_callback_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read callback facts (K25 callbackFacts). | supplied | NT-I15 / NT-I15 |
+| db::record_poison_settlement | test::owner owner, str attempt, str outcome → db::poison_settlement_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Record the terminal poison settlement as facts only (K25 recordSettlement). | supplied | NT-I15 / NT-I15 |
+| db::poison_settlement_facts | test::owner owner, str attempt → db::poison_settlement_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read poison settlement facts (K25 settlementFacts). | supplied | NT-I15 / NT-I15 |
+| db::record_fresh_read | test::owner owner, str attempt, db::seed_row[] rows → db::fresh_sentinel_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, crypto.createHash | Record the fresh-pool sentinel read (K25 recordFreshRead). | supplied | NT-I15 / NT-I15 |
+| db::fresh_facts | test::owner owner, str attempt → db::fresh_sentinel_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, Array.prototype.map | Re-read fresh sentinel facts (K25 freshFacts). | supplied | NT-I15 / NT-I15 |
+| db::record_replay_read | test::owner owner, str attempt, db::seed_row[] rows → db::replay_sentinel_facts | {test::stale_handle, db::db_fault} |  | Array.prototype.map, crypto.createHash | Record the new-connection replay sentinel read (K25 recordReplayRead). | supplied | NT-I15 / NT-I15 |
+| db::replay_facts | test::owner owner, str attempt → db::replay_sentinel_facts | {test::stale_handle, db::db_fault} |  | Map.prototype.get, Array.prototype.map | Re-read replay sentinel facts (K25 replayFacts). | supplied | NT-I15 / NT-I15 |
+| db::compare_fresh_to_replay | test::owner owner, db::fresh_sentinel_facts fresh, db::replay_sentinel_facts replay → db::sentinel_comparison | {test::stale_handle, db::db_fault} |  | Array.prototype.every | Compare fresh rows against replay rows of one attempt (K25 compareFreshToReplay). | supplied | NT-I15 / NT-I15 |
+| db::sentinel_present_in_fresh | test::owner owner, str attempt, db::fresh_sentinel_facts read → bool | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Probe whether the sentinel row is present in a fresh read (K25 sentinelPresentIn). | supplied | NT-I15 / NT-I15 |
+| db::sentinel_present_in_replay | test::owner owner, str attempt, db::replay_sentinel_facts read → bool | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Probe whether the sentinel row is present in a replay read (K25 sentinelPresentIn). | supplied | NT-I15 / NT-I15 |
+| db::settlement_agrees_with_reads | test::owner owner, str attempt → db::settlement_agreement | {test::stale_handle, db::db_fault} |  | Array.prototype.some | Verdict whether terminal settlement agrees with both reads (K25 settlementAgreesWithReads). | supplied | NT-I15 / NT-I15 |
 
 ## Native declaration profiles
 

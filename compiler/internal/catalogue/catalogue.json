@@ -5206,8 +5206,238 @@
    "leaves": [],
    "projections": [],
    "constructible": true
+  },
+  {
+   "name": "db::poison_attempt_record",
+   "identity": "can.std.db@1::poison_attempt_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "schema",
+     "type": "str[]"
+    },
+    {
+     "name": "sentinel_digest",
+     "type": "str"
+    },
+    {
+     "name": "poison_digest",
+     "type": "option::value<str>"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::poison_error_facts",
+   "identity": "can.std.db@1::poison_error_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "code",
+     "type": "str"
+    },
+    {
+     "name": "class",
+     "type": "str"
+    },
+    {
+     "name": "detail",
+     "type": "str"
+    },
+    {
+     "name": "detail_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::poison_callback_facts",
+   "identity": "can.std.db@1::poison_callback_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "reported",
+     "type": "str"
+    },
+    {
+     "name": "proves",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::poison_settlement_record",
+   "identity": "can.std.db@1::poison_settlement_record",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    },
+    {
+     "name": "terminal",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::sentinel_row_facts",
+   "identity": "can.std.db@1::sentinel_row_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "seq",
+     "type": "int"
+    },
+    {
+     "name": "cells",
+     "type": "db::cell[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::fresh_sentinel_facts",
+   "identity": "can.std.db@1::fresh_sentinel_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "read",
+     "type": "str"
+    },
+    {
+     "name": "row_count",
+     "type": "int"
+    },
+    {
+     "name": "rows",
+     "type": "db::sentinel_row_facts[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::replay_sentinel_facts",
+   "identity": "can.std.db@1::replay_sentinel_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "read",
+     "type": "str"
+    },
+    {
+     "name": "row_count",
+     "type": "int"
+    },
+    {
+     "name": "rows",
+     "type": "db::sentinel_row_facts[]"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::sentinel_comparison",
+   "identity": "can.std.db@1::sentinel_comparison",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "match",
+     "type": "bool"
+    },
+    {
+     "name": "mismatches",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "db::settlement_agreement",
+   "identity": "can.std.db@1::settlement_agreement",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "agree",
+     "type": "bool"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
   }
-
  ],
  "errors": [
   {
@@ -21767,8 +21997,674 @@
    "refs": [
     "NT-I14"
    ]
+  },
+  {
+   "name": "db::begin_poison_attempt",
+   "identity": "can.std.db@1::begin_poison_attempt",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "schema",
+     "type": "str[]"
+    },
+    {
+     "name": "sentinel_row",
+     "type": "db::seed_row"
+    },
+    {
+     "name": "poison_statement",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_attempt_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.createHash"
+    ],
+    "adapter": "Begin a poison attempt: sentinel write plus the poison statement (K25 beginPoisonAttempt).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::begin_control_attempt",
+   "identity": "can.std.db@1::begin_control_attempt",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "schema",
+     "type": "str[]"
+    },
+    {
+     "name": "sentinel_row",
+     "type": "db::seed_row"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_attempt_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.set",
+     "crypto.createHash"
+    ],
+    "adapter": "Begin the omit-poison control with the same sentinel write (K25 beginControlAttempt).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::attempt_record",
+   "identity": "can.std.db@1::attempt_record",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_attempt_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read an attempt record (K25 attemptRecord).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::record_poison_error",
+   "identity": "can.std.db@1::record_poison_error",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "code",
+     "type": "str"
+    },
+    {
+     "name": "detail",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_error_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the PG error-code observation for the poison write (K25 recordPoisonError).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::error_facts",
+   "identity": "can.std.db@1::error_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_error_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read poison error facts (K25 errorFacts).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::record_callback_report",
+   "identity": "can.std.db@1::record_callback_report",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "reported",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_callback_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Record the inert callback report label, proving nothing (K25 recordCallbackReport).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::callback_facts",
+   "identity": "can.std.db@1::callback_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_callback_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read callback facts (K25 callbackFacts).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::record_poison_settlement",
+   "identity": "can.std.db@1::record_poison_settlement",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "outcome",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_settlement_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Record the terminal poison settlement as facts only (K25 recordSettlement).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::poison_settlement_facts",
+   "identity": "can.std.db@1::poison_settlement_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::poison_settlement_record",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read poison settlement facts (K25 settlementFacts).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::record_fresh_read",
+   "identity": "can.std.db@1::record_fresh_read",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::seed_row[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::fresh_sentinel_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the fresh-pool sentinel read (K25 recordFreshRead).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::fresh_facts",
+   "identity": "can.std.db@1::fresh_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::fresh_sentinel_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.map"
+    ],
+    "adapter": "Re-read fresh sentinel facts (K25 freshFacts).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::record_replay_read",
+   "identity": "can.std.db@1::record_replay_read",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "rows",
+     "type": "db::seed_row[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::replay_sentinel_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.map",
+     "crypto.createHash"
+    ],
+    "adapter": "Record the new-connection replay sentinel read (K25 recordReplayRead).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::replay_facts",
+   "identity": "can.std.db@1::replay_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::replay_sentinel_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.map"
+    ],
+    "adapter": "Re-read replay sentinel facts (K25 replayFacts).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::compare_fresh_to_replay",
+   "identity": "can.std.db@1::compare_fresh_to_replay",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "fresh",
+     "type": "db::fresh_sentinel_facts"
+    },
+    {
+     "name": "replay",
+     "type": "db::replay_sentinel_facts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::sentinel_comparison",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.every"
+    ],
+    "adapter": "Compare fresh rows against replay rows of one attempt (K25 compareFreshToReplay).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::sentinel_present_in_fresh",
+   "identity": "can.std.db@1::sentinel_present_in_fresh",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "read",
+     "type": "db::fresh_sentinel_facts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.some"
+    ],
+    "adapter": "Probe whether the sentinel row is present in a fresh read (K25 sentinelPresentIn).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::sentinel_present_in_replay",
+   "identity": "can.std.db@1::sentinel_present_in_replay",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    },
+    {
+     "name": "read",
+     "type": "db::replay_sentinel_facts"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.some"
+    ],
+    "adapter": "Probe whether the sentinel row is present in a replay read (K25 sentinelPresentIn).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
+  },
+  {
+   "name": "db::settlement_agrees_with_reads",
+   "identity": "can.std.db@1::settlement_agrees_with_reads",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "attempt",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "db::settlement_agreement",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "db::db_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.some"
+    ],
+    "adapter": "Verdict whether terminal settlement agrees with both reads (K25 settlementAgreesWithReads).",
+    "task": "NT-I15"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I15"
+   ]
   }
-
  ],
  "nativeDeclarations": [
   {
