@@ -1,0 +1,245 @@
+package m29history036run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-036 "unavailable liveness retains orphan: run shape".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestUnavailableLivenessRetainsOrphan (L111-120); skip report plus probe
+/// refusals tests/support/tempcache/cache.go (L165/L194/L198).
+/// Disposition: migrate (this row ports
+/// TestUnavailableLivenessRetainsOrphan to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after every linked row,
+/// variant, environment and control has accepted evidence).
+/// Protects (this file): the live run shape: the TempDir setup, the aged
+/// orphan call, the recovery func plus arg count, the probe closure shape
+/// plus error ctor, both fatal verbs, the stat call, the skip report head
+/// plus tail, and both probe refusal wordings.
+/// ADAPTATION (recorded, with source lines): recover-arg-count pins 3 from
+/// parent plus now plus check (L114); the skip head pins the static wording
+/// before the dynamic count and the skip tail pins the static wording after
+/// it (impl L165), since one pin cannot hold the dynamic count.
+/// Facet map (calls plus diagnostics): tempdir-op pins t.TempDir (L112);
+/// candidate-call pins the orphan call (L113; five twin calls
+/// L72/L75/L84/L124/L155);
+/// recover-func pins recoverAbandoned (L114); recover-arg-count pins 3
+/// (L114); check-shape pins func([]string) error (L114; twin shape L144);
+/// probe-error-ctor pins errors.New (L114); fatal-verb pins t.Fatal (L115);
+/// fatalf-verb pins t.Fatalf (L118); stat-call pins os.Stat(path) (L117;
+/// twin call L147); skip-head pins the report head (impl L165); skip-tail
+/// pins the report tail (impl L165); unavailable-format pins the
+/// unavailability wording (impl L194); active-format pins the active wording
+/// (impl L198).
+/// Verdict legs live in history-036-cache-semantics.can; the roots-green pin
+/// lives in history-036-roots-green.can.
+/// Variants: the single lsof-unavailable variant shares one call and
+/// diagnostic shape (a single default case; per-leg verdicts pin in
+/// cache-semantics).
+/// Environment: no gates; requires nothing. Logical gates
+/// WORK/BUILD/CHILD/CLOCK and C/R/N/S/A identities bind at P23; no live run
+/// now. Accept gate P23 is unmet. Timeout 60000ms is a neutral offline
+/// descriptor default (the Go test sets no ctx).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-run checks: tempdir-op, candidate-call, recover-func,
+/// recover-arg-count, check-shape, probe-error-ctor, fatal-verb, fatalf-verb,
+/// stat-call, skip-head, skip-tail, unavailable-format, active-format.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str tempdir_op
+    str candidate_call
+    str recover_func
+    int recover_arg_count
+    str check_shape
+    str probe_error_ctor
+    str fatal_verb
+    str fatalf_verb
+    str stat_call
+    str skip_head
+    str skip_tail
+    str unavailable_format
+    str active_format
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-run", "default", "", "offline"), "tempdir-op" => ok "case history/cache-run variant default root tempdir-op run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-run", "default", "", "offline"), "tempdir-op" => ok evidence("tempdir-op", "true", "true", true, "case history/cache-run variant default root tempdir-op run offline")
+        different: false, true, context("history/cache-run", "default", "", "offline"), "tempdir-op" => failed{"tempdir-op"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/cache-run", "default", "", "offline"), "recover-arg-count" => ok evidence("recover-arg-count", "3", "3", true, "case history/cache-run variant default root recover-arg-count run offline")
+        different: 2, 3, context("history/cache-run", "default", "", "offline"), "recover-arg-count" => failed{"recover-arg-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "t.TempDir", "t.TempDir", context("history/cache-run", "default", "", "offline"), "tempdir-op" => ok evidence("tempdir-op", "t.TempDir", "t.TempDir", true, "case history/cache-run variant default root tempdir-op run offline")
+        different: "t.TempDir_2", "t.TempDir", context("history/cache-run", "default", "", "offline"), "tempdir-op" => failed{"tempdir-op"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_tempdir_op: "seed-tempdir-op-drift" => ok observation("t.TempDir_2", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_candidate_call: "seed-candidate-call-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)_2", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_recover_func: "seed-recover-func-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned_2", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_recover_arg_count: "seed-recover-arg-count-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 2, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_check_shape: "seed-check-shape-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error_2", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_probe_error_ctor: "seed-probe-error-ctor-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New_2", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_fatal_verb: "seed-fatal-verb-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal_2", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_fatalf_verb: "seed-fatalf-verb-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf_2", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_stat_call: "seed-stat-call-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)_2", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_skip_head: "seed-skip-head-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (_2", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_skip_tail: "seed-skip-tail-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v_2", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        seed_unavailable_format: "seed-unavailable-format-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete_2", "%s reports an active reference")
+        seed_active_format: "seed-active-format-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference_2")
+    match variant_id
+        "seed-tempdir-op-drift" => ok observation("t.TempDir_2", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-candidate-call-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)_2", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-recover-func-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned_2", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-recover-arg-count-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 2, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-check-shape-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error_2", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-probe-error-ctor-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New_2", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-fatal-verb-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal_2", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-fatalf-verb-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf_2", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-stat-call-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)_2", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-skip-head-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (_2", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-skip-tail-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v_2", "%s liveness unavailable or incomplete", "%s reports an active reference")
+        "seed-unavailable-format-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete_2", "%s reports an active reference")
+        "seed-active-format-drift" => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference_2")
+        _ => ok observation("t.TempDir", "candidate(t, parent, deadPID, true)", "recoverAbandoned", 3, "func([]string) error", "errors.New", "t.Fatal", "t.Fatalf", "os.Stat(path)", "suite cache recovery skipped (", " candidates): %v", "%s liveness unavailable or incomplete", "%s reports an active reference")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h036: "m29-h036" => ok [check("tempdir-op", "setup uses t.TempDir"), check("candidate-call", "setup builds an aged dead-pid orphan"), check("recover-func", "recovery runs recoverAbandoned"), check("recover-arg-count", "recovery takes three args"), check("check-shape", "probe has the liveness closure shape"), check("probe-error-ctor", "probe builds its error with errors.New"), check("fatal-verb", "recovery leg fails plain"), check("fatalf-verb", "retention leg fails formatted"), check("stat-call", "retention leg stats the orphan path"), check("skip-head", "skip report opens with the suite head"), check("skip-tail", "skip report closes with count and error"), check("unavailable-format", "missing tools refuse as unavailable"), check("active-format", "live paths refuse as active")]
+        other: "nope" => ok []
+    match scope is "m29-h036"
+        false => ok []
+        true => ok [check("tempdir-op", "setup uses t.TempDir"), check("candidate-call", "setup builds an aged dead-pid orphan"), check("recover-func", "recovery runs recoverAbandoned"), check("recover-arg-count", "recovery takes three args"), check("check-shape", "probe has the liveness closure shape"), check("probe-error-ctor", "probe builds its error with errors.New"), check("fatal-verb", "recovery leg fails plain"), check("fatalf-verb", "retention leg fails formatted"), check("stat-call", "retention leg stats the orphan path"), check("skip-head", "skip report opens with the suite head"), check("skip-tail", "skip report closes with count and error"), check("unavailable-format", "missing tools refuse as unavailable"), check("active-format", "live paths refuse as active")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-run" => ok [expected_check("tempdir-op", "t.TempDir"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("recover-func", "recoverAbandoned"), expected_check("recover-arg-count", "3"), expected_check("check-shape", "func([]string) error"), expected_check("probe-error-ctor", "errors.New"), expected_check("fatal-verb", "t.Fatal"), expected_check("fatalf-verb", "t.Fatalf"), expected_check("stat-call", "os.Stat(path)"), expected_check("skip-head", "suite cache recovery skipped ("), expected_check("skip-tail", " candidates): %v"), expected_check("unavailable-format", "%s liveness unavailable or incomplete"), expected_check("active-format", "%s reports an active reference")]
+        unknown: "nope" => ok []
+    match case is "history/cache-run"
+        false => ok []
+        true => ok [expected_check("tempdir-op", "t.TempDir"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("recover-func", "recoverAbandoned"), expected_check("recover-arg-count", "3"), expected_check("check-shape", "func([]string) error"), expected_check("probe-error-ctor", "errors.New"), expected_check("fatal-verb", "t.Fatal"), expected_check("fatalf-verb", "t.Fatalf"), expected_check("stat-call", "os.Stat(path)"), expected_check("skip-head", "suite cache recovery skipped ("), expected_check("skip-tail", " candidates): %v"), expected_check("unavailable-format", "%s liveness unavailable or incomplete"), expected_check("active-format", "%s reports an active reference")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-run", "default", "", "offline") => ok
+        seed_tempdir_op: context("history/cache-run", "seed-tempdir-op-drift", "", "offline") => failed{"tempdir-op"}
+        seed_candidate_call: context("history/cache-run", "seed-candidate-call-drift", "", "offline") => failed{"candidate-call"}
+        seed_recover_func: context("history/cache-run", "seed-recover-func-drift", "", "offline") => failed{"recover-func"}
+        seed_recover_arg_count: context("history/cache-run", "seed-recover-arg-count-drift", "", "offline") => failed{"recover-arg-count"}
+        seed_check_shape: context("history/cache-run", "seed-check-shape-drift", "", "offline") => failed{"check-shape"}
+        seed_probe_error_ctor: context("history/cache-run", "seed-probe-error-ctor-drift", "", "offline") => failed{"probe-error-ctor"}
+        seed_fatal_verb: context("history/cache-run", "seed-fatal-verb-drift", "", "offline") => failed{"fatal-verb"}
+        seed_fatalf_verb: context("history/cache-run", "seed-fatalf-verb-drift", "", "offline") => failed{"fatalf-verb"}
+        seed_stat_call: context("history/cache-run", "seed-stat-call-drift", "", "offline") => failed{"stat-call"}
+        seed_skip_head: context("history/cache-run", "seed-skip-head-drift", "", "offline") => failed{"skip-head"}
+        seed_skip_tail: context("history/cache-run", "seed-skip-tail-drift", "", "offline") => failed{"skip-tail"}
+        seed_unavailable_format: context("history/cache-run", "seed-unavailable-format-drift", "", "offline") => failed{"unavailable-format"}
+        seed_active_format: context("history/cache-run", "seed-active-format-drift", "", "offline") => failed{"active-format"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.tempdir_op, "t.TempDir", c, "tempdir-op")
+            failed
+            ok evidence tempdir_op_evidence => match call require_text(got.candidate_call, "candidate(t, parent, deadPID, true)", c, "candidate-call")
+                failed
+                ok evidence candidate_call_evidence => match call require_text(got.recover_func, "recoverAbandoned", c, "recover-func")
+                    failed
+                    ok evidence recover_func_evidence => match call require_int(got.recover_arg_count, 3, c, "recover-arg-count")
+                        failed
+                        ok evidence recover_arg_count_evidence => match call require_text(got.check_shape, "func([]string) error", c, "check-shape")
+                            failed
+                            ok evidence check_shape_evidence => match call require_text(got.probe_error_ctor, "errors.New", c, "probe-error-ctor")
+                                failed
+                                ok evidence probe_error_ctor_evidence => match call require_text(got.fatal_verb, "t.Fatal", c, "fatal-verb")
+                                    failed
+                                    ok evidence fatal_verb_evidence => match call require_text(got.fatalf_verb, "t.Fatalf", c, "fatalf-verb")
+                                        failed
+                                        ok evidence fatalf_verb_evidence => match call require_text(got.stat_call, "os.Stat(path)", c, "stat-call")
+                                            failed
+                                            ok evidence stat_call_evidence => match call require_text(got.skip_head, "suite cache recovery skipped (", c, "skip-head")
+                                                failed
+                                                ok evidence skip_head_evidence => match call require_text(got.skip_tail, " candidates): %v", c, "skip-tail")
+                                                    failed
+                                                    ok evidence skip_tail_evidence => match call require_text(got.unavailable_format, "%s liveness unavailable or incomplete", c, "unavailable-format")
+                                                        failed
+                                                        ok evidence unavailable_format_evidence => match call require_text(got.active_format, "%s reports an active reference", c, "active-format")
+                                                            failed
+                                                            ok evidence active_format_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h036: "m29-h036" => ok test_case("history/cache-run", ["history", "m29"], [], 60000, [check_ref("tempdir-op"), check_ref("candidate-call"), check_ref("recover-func"), check_ref("recover-arg-count"), check_ref("check-shape"), check_ref("probe-error-ctor"), check_ref("fatal-verb"), check_ref("fatalf-verb"), check_ref("stat-call"), check_ref("skip-head"), check_ref("skip-tail"), check_ref("unavailable-format"), check_ref("active-format")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h036"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-run", ["history", "m29"], [], 60000, [check_ref("tempdir-op"), check_ref("candidate-call"), check_ref("recover-func"), check_ref("recover-arg-count"), check_ref("check-shape"), check_ref("probe-error-ctor"), check_ref("fatal-verb"), check_ref("fatalf-verb"), check_ref("stat-call"), check_ref("skip-head"), check_ref("skip-tail"), check_ref("unavailable-format"), check_ref("active-format")], callable case_body)

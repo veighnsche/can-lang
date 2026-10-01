@@ -1,0 +1,240 @@
+package m29history036cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-036 "unavailable liveness retains orphan: cache verdicts".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestUnavailableLivenessRetainsOrphan (L111-120); dead pid const (L38);
+/// orphan builder (L13-36); skip path
+/// tests/support/tempcache/cache.go (L164-167).
+/// Disposition: migrate (this row ports
+/// TestUnavailableLivenessRetainsOrphan to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after every linked row,
+/// variant, environment and control has accepted evidence).
+/// Protects (this file): the row verdict: the lsof-unavailable probe error,
+/// the failing probe, the nil recovery verdict, the retained orphan plus its
+/// os.Stat probe, the retention diagnostic wording, the dead pid plus aged
+/// flag, and the one/one/two leg counts.
+/// ADAPTATION (recorded, with source lines): probe-fails pins bool true from
+/// the closure returning errors.New (L114); recover-returns-nil pins bool
+/// true from the skip path returning nil (impl L164-167) which the L114-116
+/// guard accepts; orphan-retained pins bool true from the L117 err-nil guard;
+/// candidate-old pins bool true from the builder flag (L113); candidate-pid
+/// pins int from the deadPID const (L38); recovery-calls pins 1 from the
+/// single call site (L114); retention-asserts pins 1 from the single stat
+/// guard (L117); fatal-guards pins 2 from t.Fatal plus t.Fatalf (L115/L118).
+/// Facet map (Go verdict legs): test-name pins
+/// TestUnavailableLivenessRetainsOrphan (L111); probe-error pins lsof
+/// unavailable (L114); probe-fails pins true (L114); recover-returns-nil
+/// pins true (L114-116; impl L164-167); orphan-retained pins true (L117);
+/// orphan-check-op pins os.Stat (L117); fatal-retention pins the verdict
+/// wording (L118); candidate-pid pins 999999999 (L38 via L113);
+/// candidate-old pins true (L113); recovery-calls pins 1 (L114);
+/// retention-asserts pins 1 (L117); fatal-guards pins 2 (L115/L118).
+/// The roots-green pin lives in history-036-roots-green.can; the run shape
+/// plus call wording live in history-036-run-shape.can.
+/// Variants: lsof unavailable (the single row variant).
+/// Environment: no gates; requires nothing. Logical gates
+/// WORK/BUILD/CHILD/CLOCK and C/R/N/S/A identities bind at P23; no live run
+/// now. Accept gate P23 is unmet. Timeout 60000ms is a neutral offline
+/// descriptor default (the Go test sets no ctx).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-semantics checks: test-name, probe-error, probe-fails,
+/// recover-returns-nil, orphan-retained, orphan-check-op, fatal-retention,
+/// candidate-pid, candidate-old, recovery-calls, retention-asserts,
+/// fatal-guards.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str probe_error
+    bool probe_fails
+    bool recover_returns_nil
+    bool orphan_retained
+    str orphan_check_op
+    str fatal_retention
+    int candidate_pid
+    bool candidate_old
+    int recovery_calls
+    int retention_asserts
+    int fatal_guards
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-semantics", "default", "", "offline"), "test-name" => ok "case history/cache-semantics variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-semantics", "default", "", "offline"), "probe-fails" => ok evidence("probe-fails", "true", "true", true, "case history/cache-semantics variant default root probe-fails run offline")
+        different: false, true, context("history/cache-semantics", "default", "", "offline"), "probe-fails" => failed{"probe-fails"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 999999999, 999999999, context("history/cache-semantics", "default", "", "offline"), "candidate-pid" => ok evidence("candidate-pid", "999999999", "999999999", true, "case history/cache-semantics variant default root candidate-pid run offline")
+        different: 999999998, 999999999, context("history/cache-semantics", "default", "", "offline"), "candidate-pid" => failed{"candidate-pid"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestUnavailableLivenessRetainsOrphan", "TestUnavailableLivenessRetainsOrphan", context("history/cache-semantics", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestUnavailableLivenessRetainsOrphan", "TestUnavailableLivenessRetainsOrphan", true, "case history/cache-semantics variant default root test-name run offline")
+        different: "TestUnavailableLivenessRetainsOrphan_2", "TestUnavailableLivenessRetainsOrphan", context("history/cache-semantics", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestUnavailableLivenessRetainsOrphan_2", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_probe_error: "seed-probe-error-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable_2", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_probe_fails: "seed-probe-fails-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", false, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_recover_returns_nil: "seed-recover-returns-nil-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, false, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_orphan_retained: "seed-orphan-retained-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, false, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_orphan_check_op: "seed-orphan-check-op-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat_2", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        seed_fatal_retention: "seed-fatal-retention-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v_2", 999999999, true, 1, 1, 2)
+        seed_candidate_pid: "seed-candidate-pid-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999998, true, 1, 1, 2)
+        seed_candidate_old: "seed-candidate-old-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, false, 1, 1, 2)
+        seed_recovery_calls: "seed-recovery-calls-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 0, 1, 2)
+        seed_retention_asserts: "seed-retention-asserts-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 0, 2)
+        seed_fatal_guards: "seed-fatal-guards-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestUnavailableLivenessRetainsOrphan_2", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-probe-error-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable_2", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-probe-fails-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", false, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-recover-returns-nil-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, false, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-orphan-retained-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, false, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-orphan-check-op-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat_2", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+        "seed-fatal-retention-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v_2", 999999999, true, 1, 1, 2)
+        "seed-candidate-pid-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999998, true, 1, 1, 2)
+        "seed-candidate-old-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, false, 1, 1, 2)
+        "seed-recovery-calls-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 0, 1, 2)
+        "seed-retention-asserts-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 0, 2)
+        "seed-fatal-guards-drift" => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 1)
+        _ => ok observation("TestUnavailableLivenessRetainsOrphan", "lsof unavailable", true, true, true, "os.Stat", "inconclusive liveness deleted cache: %v", 999999999, true, 1, 1, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h036: "m29-h036" => ok [check("test-name", "row pins the unavailable-liveness test"), check("probe-error", "probe fails with lsof unavailable"), check("probe-fails", "liveness check returns an error"), check("recover-returns-nil", "recovery swallows the probe failure"), check("orphan-retained", "orphan cache survives the probe"), check("orphan-check-op", "retention probe stats the orphan"), check("fatal-retention", "retention failure names the verdict"), check("candidate-pid", "orphan carries the dead pid"), check("candidate-old", "orphan is aged past recovery"), check("recovery-calls", "one recovery call runs"), check("retention-asserts", "one retention assert guards the orphan"), check("fatal-guards", "two fatal guards watch the legs")]
+        other: "nope" => ok []
+    match scope is "m29-h036"
+        false => ok []
+        true => ok [check("test-name", "row pins the unavailable-liveness test"), check("probe-error", "probe fails with lsof unavailable"), check("probe-fails", "liveness check returns an error"), check("recover-returns-nil", "recovery swallows the probe failure"), check("orphan-retained", "orphan cache survives the probe"), check("orphan-check-op", "retention probe stats the orphan"), check("fatal-retention", "retention failure names the verdict"), check("candidate-pid", "orphan carries the dead pid"), check("candidate-old", "orphan is aged past recovery"), check("recovery-calls", "one recovery call runs"), check("retention-asserts", "one retention assert guards the orphan"), check("fatal-guards", "two fatal guards watch the legs")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-semantics" => ok [expected_check("test-name", "TestUnavailableLivenessRetainsOrphan"), expected_check("probe-error", "lsof unavailable"), expected_check("probe-fails", "true"), expected_check("recover-returns-nil", "true"), expected_check("orphan-retained", "true"), expected_check("orphan-check-op", "os.Stat"), expected_check("fatal-retention", "inconclusive liveness deleted cache: %v"), expected_check("candidate-pid", "999999999"), expected_check("candidate-old", "true"), expected_check("recovery-calls", "1"), expected_check("retention-asserts", "1"), expected_check("fatal-guards", "2")]
+        unknown: "nope" => ok []
+    match case is "history/cache-semantics"
+        false => ok []
+        true => ok [expected_check("test-name", "TestUnavailableLivenessRetainsOrphan"), expected_check("probe-error", "lsof unavailable"), expected_check("probe-fails", "true"), expected_check("recover-returns-nil", "true"), expected_check("orphan-retained", "true"), expected_check("orphan-check-op", "os.Stat"), expected_check("fatal-retention", "inconclusive liveness deleted cache: %v"), expected_check("candidate-pid", "999999999"), expected_check("candidate-old", "true"), expected_check("recovery-calls", "1"), expected_check("retention-asserts", "1"), expected_check("fatal-guards", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-semantics", "default", "", "offline") => ok
+        seed_test_name: context("history/cache-semantics", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_probe_error: context("history/cache-semantics", "seed-probe-error-drift", "", "offline") => failed{"probe-error"}
+        seed_probe_fails: context("history/cache-semantics", "seed-probe-fails-drift", "", "offline") => failed{"probe-fails"}
+        seed_recover_returns_nil: context("history/cache-semantics", "seed-recover-returns-nil-drift", "", "offline") => failed{"recover-returns-nil"}
+        seed_orphan_retained: context("history/cache-semantics", "seed-orphan-retained-drift", "", "offline") => failed{"orphan-retained"}
+        seed_orphan_check_op: context("history/cache-semantics", "seed-orphan-check-op-drift", "", "offline") => failed{"orphan-check-op"}
+        seed_fatal_retention: context("history/cache-semantics", "seed-fatal-retention-drift", "", "offline") => failed{"fatal-retention"}
+        seed_candidate_pid: context("history/cache-semantics", "seed-candidate-pid-drift", "", "offline") => failed{"candidate-pid"}
+        seed_candidate_old: context("history/cache-semantics", "seed-candidate-old-drift", "", "offline") => failed{"candidate-old"}
+        seed_recovery_calls: context("history/cache-semantics", "seed-recovery-calls-drift", "", "offline") => failed{"recovery-calls"}
+        seed_retention_asserts: context("history/cache-semantics", "seed-retention-asserts-drift", "", "offline") => failed{"retention-asserts"}
+        seed_fatal_guards: context("history/cache-semantics", "seed-fatal-guards-drift", "", "offline") => failed{"fatal-guards"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestUnavailableLivenessRetainsOrphan", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.probe_error, "lsof unavailable", c, "probe-error")
+                failed
+                ok evidence probe_error_evidence => match call require_bool(got.probe_fails, true, c, "probe-fails")
+                    failed
+                    ok evidence probe_fails_evidence => match call require_bool(got.recover_returns_nil, true, c, "recover-returns-nil")
+                        failed
+                        ok evidence recover_returns_nil_evidence => match call require_bool(got.orphan_retained, true, c, "orphan-retained")
+                            failed
+                            ok evidence orphan_retained_evidence => match call require_text(got.orphan_check_op, "os.Stat", c, "orphan-check-op")
+                                failed
+                                ok evidence orphan_check_op_evidence => match call require_text(got.fatal_retention, "inconclusive liveness deleted cache: %v", c, "fatal-retention")
+                                    failed
+                                    ok evidence fatal_retention_evidence => match call require_int(got.candidate_pid, 999999999, c, "candidate-pid")
+                                        failed
+                                        ok evidence candidate_pid_evidence => match call require_bool(got.candidate_old, true, c, "candidate-old")
+                                            failed
+                                            ok evidence candidate_old_evidence => match call require_int(got.recovery_calls, 1, c, "recovery-calls")
+                                                failed
+                                                ok evidence recovery_calls_evidence => match call require_int(got.retention_asserts, 1, c, "retention-asserts")
+                                                    failed
+                                                    ok evidence retention_asserts_evidence => match call require_int(got.fatal_guards, 2, c, "fatal-guards")
+                                                        failed
+                                                        ok evidence fatal_guards_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h036: "m29-h036" => ok test_case("history/cache-semantics", ["history", "m29"], [], 60000, [check_ref("test-name"), check_ref("probe-error"), check_ref("probe-fails"), check_ref("recover-returns-nil"), check_ref("orphan-retained"), check_ref("orphan-check-op"), check_ref("fatal-retention"), check_ref("candidate-pid"), check_ref("candidate-old"), check_ref("recovery-calls"), check_ref("retention-asserts"), check_ref("fatal-guards")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h036"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-semantics", ["history", "m29"], [], 60000, [check_ref("test-name"), check_ref("probe-error"), check_ref("probe-fails"), check_ref("recover-returns-nil"), check_ref("orphan-retained"), check_ref("orphan-check-op"), check_ref("fatal-retention"), check_ref("candidate-pid"), check_ref("candidate-old"), check_ref("recovery-calls"), check_ref("retention-asserts"), check_ref("fatal-guards")], callable case_body)
