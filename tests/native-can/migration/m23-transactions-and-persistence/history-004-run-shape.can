@@ -1,0 +1,303 @@
+package m23history004run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M23 HISTORY-004 "live SQL transactions: fd-3 delivery and run shape".
+/// Source: tests/integration/sql_test.go symbol TestCurrentSQLTransactionsLive
+/// (L518-677); live build leg (L554-560); snapshot helper snapshotFor
+/// (L597-609); run helper run with ExtraFiles (L612-634); ok
+/// (L636-643) and fault (L644-651) contracts; refused leg (L671-675).
+/// Disposition: migrate (this row ports TestCurrentSQLTransactionsLive to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the live run shape: the sandboxed build
+/// invocation, the fd-3 snapshot credential delivery (key, fd
+/// number, file count, mode, CLI env without the URL versus driver
+/// env with it), the ok/fault exit and stream contracts, the fault
+/// error-colon wrap, the dummy refused value, and the thirteen-check
+/// total.
+/// ADAPTATION (recorded, with source lines): snapshot-fd pins 3 from
+/// the fd-3 doc comment (L513) plus single ExtraFiles entry (L622);
+/// the file mode pins the exact source spelling 0600 (L605);
+/// cli-env-clean pins true for the URL travelling only in the
+/// snapshot, never the environment (L513-514/L621); driver-env-has-url
+/// pins true for the driver env carrying CAN_TEST_POSTGRES_URL (L573);
+/// fault-needle pins the backtick error-colon prefix while Go appends
+/// want plus the closing quote (L648); live-check-count pins 13 from
+/// eleven ok plus one fault plus one refused leg (L635-675).
+/// Facet map (sql_test.go legs): sandbox-profile pins the deny-network
+/// profile (L554); canlc-bin pins bin/canlc (L554); build-cmd pins
+/// build (L554); offline-path pins PATH=/nonexistent
+/// (L556/L573/L621); bun-entry pins runtime/bun (L571/L619);
+/// entry-name pins entry.ts (L619); snapshot-key pins CAN_TEST_POSTGRES
+/// (L599); snapshot-fd pins 3 (L513/L622); snapshot-count pins 1
+/// (L622); snapshot-mode pins 0600 (L605); cli-env-count pins 2
+/// (L621); cli-env-clean pins URL-absent (L513-514/L621);
+/// driver-env-has-url pins URL-present (L573); ok-exit pins 0 and
+/// ok-diag-empty pins empty (L640); fault-exit pins 1 and
+/// fault-stdout-empty pins empty (L648); fault-needle pins the
+/// error-colon wrap (L648); refused-value pins the dummy postgres
+/// value (L611); live-check-count pins 13 (L635-675).
+/// The roots-green pin lives in history-004-roots-green.can; answer
+/// semantics live in history-004-live-semantics.can.
+/// Variants: the thirteen transaction legs share one delivery and
+/// contract shape (a single default case; per-leg answers pin in
+/// live-semantics).
+/// Environment: CAN_BUN_ARCHIVE plus CAN_TEST_POSTGRES_URL gates;
+/// requires can-bun-archive and can-test-postgres-url.
+/// Logical gates SUITE/CAN/PROC/CHILD/DB/WORK/ENV and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gates P23/QD1/QF1
+/// are unmet. Descriptor timeout 360000ms mirrors the Go 6-minute
+/// ctx (L539).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QD1/QF1 unmet).
+/// Case history/live-tx-run checks: sandbox-profile, canlc-bin,
+/// build-cmd, offline-path, bun-entry, entry-name, snapshot-key,
+/// snapshot-fd, snapshot-count, snapshot-mode, cli-env-count,
+/// cli-env-clean, driver-env-has-url, ok-exit, ok-diag-empty,
+/// fault-exit, fault-stdout-empty, fault-needle, refused-value,
+/// live-check-count.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str sandbox_profile
+    str canlc_bin
+    str build_cmd
+    str offline_path
+    str bun_entry
+    str entry_name
+    str snapshot_key
+    int snapshot_fd
+    int snapshot_count
+    str snapshot_mode
+    int cli_env_count
+    bool cli_env_clean
+    bool driver_env_has_url
+    int ok_exit
+    bool ok_diag_empty
+    int fault_exit
+    bool fault_stdout_empty
+    str fault_needle
+    str refused_value
+    int live_check_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/live-tx-run", "default", "", "offline"), "sandbox-profile" => ok "case history/live-tx-run variant default root sandbox-profile run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/live-tx-run", "default", "", "offline"), "cli-env-clean" => ok evidence("cli-env-clean", "true", "true", true, "case history/live-tx-run variant default root cli-env-clean run offline")
+        different: false, true, context("history/live-tx-run", "default", "", "offline"), "cli-env-clean" => failed{"cli-env-clean"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/live-tx-run", "default", "", "offline"), "snapshot-fd" => ok evidence("snapshot-fd", "3", "3", true, "case history/live-tx-run variant default root snapshot-fd run offline")
+        different: 4, 3, context("history/live-tx-run", "default", "", "offline"), "snapshot-fd" => failed{"snapshot-fd"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", context("history/live-tx-run", "default", "", "offline"), "sandbox-profile" => ok evidence("sandbox-profile", "(version 1)(allow default)(deny network*)", "(version 1)(allow default)(deny network*)", true, "case history/live-tx-run variant default root sandbox-profile run offline")
+        different: "(version 1)(allow default)(deny network*)_2", "(version 1)(allow default)(deny network*)", context("history/live-tx-run", "default", "", "offline"), "sandbox-profile" => failed{"sandbox-profile"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_sandbox_profile: "seed-sandbox-profile-drift" => ok observation("(version 1)(allow default)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_canlc_bin: "seed-canlc-bin-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/other", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_build_cmd: "seed-build-cmd-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "compile", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_offline_path: "seed-offline-path-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/usr/bin", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_bun_entry: "seed-bun-entry-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/node", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_entry_name: "seed-entry-name-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "main.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_snapshot_key: "seed-snapshot-key-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES_2", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_snapshot_fd: "seed-snapshot-fd-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 4, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_snapshot_count: "seed-snapshot-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 2, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_snapshot_mode: "seed-snapshot-mode-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0644", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_cli_env_count: "seed-cli-env-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 3, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_cli_env_clean: "seed-cli-env-clean-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, false, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_driver_env_has_url: "seed-driver-env-has-url-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, false, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_ok_exit: "seed-ok-exit-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 1, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_ok_diag_empty: "seed-ok-diag-empty-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, false, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_fault_exit: "seed-fault-exit-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 2, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_fault_stdout_empty: "seed-fault-stdout-empty-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, false, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_fault_needle: "seed-fault-needle-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"err\":\"", "postgres://127.0.0.1:1/nope", 13)
+        seed_refused_value: "seed-refused-value-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/other", 13)
+        seed_live_check_count: "seed-live-check-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 12)
+    match variant_id
+        "seed-sandbox-profile-drift" => ok observation("(version 1)(allow default)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-canlc-bin-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/other", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-build-cmd-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "compile", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-offline-path-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/usr/bin", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-bun-entry-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/node", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-entry-name-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "main.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-snapshot-key-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES_2", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-snapshot-fd-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 4, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-snapshot-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 2, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-snapshot-mode-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0644", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-cli-env-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 3, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-cli-env-clean-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, false, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-driver-env-has-url-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, false, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-ok-exit-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 1, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-ok-diag-empty-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, false, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-fault-exit-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 2, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-fault-stdout-empty-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, false, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-fault-needle-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"err\":\"", "postgres://127.0.0.1:1/nope", 13)
+        "seed-refused-value-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/other", 13)
+        "seed-live-check-count-drift" => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 12)
+        _ => ok observation("(version 1)(allow default)(deny network*)", "bin/canlc", "build", "PATH=/nonexistent", "runtime/bun", "entry.ts", "CAN_TEST_POSTGRES", 3, 1, "0600", 2, true, true, 0, true, 1, true, "\"error\":\"", "postgres://127.0.0.1:1/nope", 13)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h004: "m23-h004" => ok [check("sandbox-profile", "live build pins the deny-network profile"), check("canlc-bin", "live build runs bin/canlc"), check("build-cmd", "live leg invokes canlc build"), check("offline-path", "live legs clear PATH to /nonexistent"), check("bun-entry", "driver and CLI run under runtime/bun"), check("entry-name", "compiled entry is entry.ts"), check("snapshot-key", "snapshot carries the CAN_TEST_POSTGRES key"), check("snapshot-fd", "credential snapshot arrives on fd 3"), check("snapshot-count", "CLI run passes one snapshot file"), check("snapshot-mode", "snapshot file lands mode 0600"), check("cli-env-count", "CLI environment holds two entries"), check("cli-env-clean", "CLI environment never carries the URL"), check("driver-env-has-url", "driver environment carries the URL"), check("ok-exit", "ok legs exit 0"), check("ok-diag-empty", "ok legs keep diagnostics empty"), check("fault-exit", "fault legs exit 1"), check("fault-stdout-empty", "fault legs keep stdout empty"), check("fault-needle", "fault legs wrap the code as error colon"), check("refused-value", "refusal uses the dummy postgres value"), check("live-check-count", "live run performs thirteen checks")]
+        other: "nope" => ok []
+    match scope is "m23-h004"
+        false => ok []
+        true => ok [check("sandbox-profile", "live build pins the deny-network profile"), check("canlc-bin", "live build runs bin/canlc"), check("build-cmd", "live leg invokes canlc build"), check("offline-path", "live legs clear PATH to /nonexistent"), check("bun-entry", "driver and CLI run under runtime/bun"), check("entry-name", "compiled entry is entry.ts"), check("snapshot-key", "snapshot carries the CAN_TEST_POSTGRES key"), check("snapshot-fd", "credential snapshot arrives on fd 3"), check("snapshot-count", "CLI run passes one snapshot file"), check("snapshot-mode", "snapshot file lands mode 0600"), check("cli-env-count", "CLI environment holds two entries"), check("cli-env-clean", "CLI environment never carries the URL"), check("driver-env-has-url", "driver environment carries the URL"), check("ok-exit", "ok legs exit 0"), check("ok-diag-empty", "ok legs keep diagnostics empty"), check("fault-exit", "fault legs exit 1"), check("fault-stdout-empty", "fault legs keep stdout empty"), check("fault-needle", "fault legs wrap the code as error colon"), check("refused-value", "refusal uses the dummy postgres value"), check("live-check-count", "live run performs thirteen checks")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/live-tx-run" => ok [expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("canlc-bin", "bin/canlc"), expected_check("build-cmd", "build"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("bun-entry", "runtime/bun"), expected_check("entry-name", "entry.ts"), expected_check("snapshot-key", "CAN_TEST_POSTGRES"), expected_check("snapshot-fd", "3"), expected_check("snapshot-count", "1"), expected_check("snapshot-mode", "0600"), expected_check("cli-env-count", "2"), expected_check("cli-env-clean", "true"), expected_check("driver-env-has-url", "true"), expected_check("ok-exit", "0"), expected_check("ok-diag-empty", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("fault-needle", "\"error\":\""), expected_check("refused-value", "postgres://127.0.0.1:1/nope"), expected_check("live-check-count", "13")]
+        unknown: "nope" => ok []
+    match case is "history/live-tx-run"
+        false => ok []
+        true => ok [expected_check("sandbox-profile", "(version 1)(allow default)(deny network*)"), expected_check("canlc-bin", "bin/canlc"), expected_check("build-cmd", "build"), expected_check("offline-path", "PATH=/nonexistent"), expected_check("bun-entry", "runtime/bun"), expected_check("entry-name", "entry.ts"), expected_check("snapshot-key", "CAN_TEST_POSTGRES"), expected_check("snapshot-fd", "3"), expected_check("snapshot-count", "1"), expected_check("snapshot-mode", "0600"), expected_check("cli-env-count", "2"), expected_check("cli-env-clean", "true"), expected_check("driver-env-has-url", "true"), expected_check("ok-exit", "0"), expected_check("ok-diag-empty", "true"), expected_check("fault-exit", "1"), expected_check("fault-stdout-empty", "true"), expected_check("fault-needle", "\"error\":\""), expected_check("refused-value", "postgres://127.0.0.1:1/nope"), expected_check("live-check-count", "13")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/live-tx-run", "default", "", "offline") => ok
+        seed_sandbox_profile: context("history/live-tx-run", "seed-sandbox-profile-drift", "", "offline") => failed{"sandbox-profile"}
+        seed_canlc_bin: context("history/live-tx-run", "seed-canlc-bin-drift", "", "offline") => failed{"canlc-bin"}
+        seed_build_cmd: context("history/live-tx-run", "seed-build-cmd-drift", "", "offline") => failed{"build-cmd"}
+        seed_offline_path: context("history/live-tx-run", "seed-offline-path-drift", "", "offline") => failed{"offline-path"}
+        seed_bun_entry: context("history/live-tx-run", "seed-bun-entry-drift", "", "offline") => failed{"bun-entry"}
+        seed_entry_name: context("history/live-tx-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_snapshot_key: context("history/live-tx-run", "seed-snapshot-key-drift", "", "offline") => failed{"snapshot-key"}
+        seed_snapshot_fd: context("history/live-tx-run", "seed-snapshot-fd-drift", "", "offline") => failed{"snapshot-fd"}
+        seed_snapshot_count: context("history/live-tx-run", "seed-snapshot-count-drift", "", "offline") => failed{"snapshot-count"}
+        seed_snapshot_mode: context("history/live-tx-run", "seed-snapshot-mode-drift", "", "offline") => failed{"snapshot-mode"}
+        seed_cli_env_count: context("history/live-tx-run", "seed-cli-env-count-drift", "", "offline") => failed{"cli-env-count"}
+        seed_cli_env_clean: context("history/live-tx-run", "seed-cli-env-clean-drift", "", "offline") => failed{"cli-env-clean"}
+        seed_driver_env_has_url: context("history/live-tx-run", "seed-driver-env-has-url-drift", "", "offline") => failed{"driver-env-has-url"}
+        seed_ok_exit: context("history/live-tx-run", "seed-ok-exit-drift", "", "offline") => failed{"ok-exit"}
+        seed_ok_diag_empty: context("history/live-tx-run", "seed-ok-diag-empty-drift", "", "offline") => failed{"ok-diag-empty"}
+        seed_fault_exit: context("history/live-tx-run", "seed-fault-exit-drift", "", "offline") => failed{"fault-exit"}
+        seed_fault_stdout_empty: context("history/live-tx-run", "seed-fault-stdout-empty-drift", "", "offline") => failed{"fault-stdout-empty"}
+        seed_fault_needle: context("history/live-tx-run", "seed-fault-needle-drift", "", "offline") => failed{"fault-needle"}
+        seed_refused_value: context("history/live-tx-run", "seed-refused-value-drift", "", "offline") => failed{"refused-value"}
+        seed_live_check_count: context("history/live-tx-run", "seed-live-check-count-drift", "", "offline") => failed{"live-check-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.sandbox_profile, "(version 1)(allow default)(deny network*)", c, "sandbox-profile")
+            failed
+            ok evidence sandbox_profile_evidence => match call require_text(got.canlc_bin, "bin/canlc", c, "canlc-bin")
+                failed
+                ok evidence canlc_bin_evidence => match call require_text(got.build_cmd, "build", c, "build-cmd")
+                    failed
+                    ok evidence build_cmd_evidence => match call require_text(got.offline_path, "PATH=/nonexistent", c, "offline-path")
+                        failed
+                        ok evidence offline_path_evidence => match call require_text(got.bun_entry, "runtime/bun", c, "bun-entry")
+                            failed
+                            ok evidence bun_entry_evidence => match call require_text(got.entry_name, "entry.ts", c, "entry-name")
+                                failed
+                                ok evidence entry_name_evidence => match call require_text(got.snapshot_key, "CAN_TEST_POSTGRES", c, "snapshot-key")
+                                    failed
+                                    ok evidence snapshot_key_evidence => match call require_int(got.snapshot_fd, 3, c, "snapshot-fd")
+                                        failed
+                                        ok evidence snapshot_fd_evidence => match call require_int(got.snapshot_count, 1, c, "snapshot-count")
+                                            failed
+                                            ok evidence snapshot_count_evidence => match call require_text(got.snapshot_mode, "0600", c, "snapshot-mode")
+                                                failed
+                                                ok evidence snapshot_mode_evidence => match call require_int(got.cli_env_count, 2, c, "cli-env-count")
+                                                    failed
+                                                    ok evidence cli_env_count_evidence => match call require_bool(got.cli_env_clean, true, c, "cli-env-clean")
+                                                        failed
+                                                        ok evidence cli_env_clean_evidence => match call require_bool(got.driver_env_has_url, true, c, "driver-env-has-url")
+                                                            failed
+                                                            ok evidence driver_env_has_url_evidence => match call require_int(got.ok_exit, 0, c, "ok-exit")
+                                                                failed
+                                                                ok evidence ok_exit_evidence => match call require_bool(got.ok_diag_empty, true, c, "ok-diag-empty")
+                                                                    failed
+                                                                    ok evidence ok_diag_empty_evidence => match call require_int(got.fault_exit, 1, c, "fault-exit")
+                                                                        failed
+                                                                        ok evidence fault_exit_evidence => match call require_bool(got.fault_stdout_empty, true, c, "fault-stdout-empty")
+                                                                            failed
+                                                                            ok evidence fault_stdout_empty_evidence => match call require_text(got.fault_needle, "\"error\":\"", c, "fault-needle")
+                                                                                failed
+                                                                                ok evidence fault_needle_evidence => match call require_text(got.refused_value, "postgres://127.0.0.1:1/nope", c, "refused-value")
+                                                                                    failed
+                                                                                    ok evidence refused_value_evidence => match call require_int(got.live_check_count, 13, c, "live-check-count")
+                                                                                        failed
+                                                                                        ok evidence live_check_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m23_h004: "m23-h004" => ok test_case("history/live-tx-run", ["history", "m23"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("sandbox-profile"), check_ref("canlc-bin"), check_ref("build-cmd"), check_ref("offline-path"), check_ref("bun-entry"), check_ref("entry-name"), check_ref("snapshot-key"), check_ref("snapshot-fd"), check_ref("snapshot-count"), check_ref("snapshot-mode"), check_ref("cli-env-count"), check_ref("cli-env-clean"), check_ref("driver-env-has-url"), check_ref("ok-exit"), check_ref("ok-diag-empty"), check_ref("fault-exit"), check_ref("fault-stdout-empty"), check_ref("fault-needle"), check_ref("refused-value"), check_ref("live-check-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m23-h004"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/live-tx-run", ["history", "m23"], ["can-bun-archive", "can-test-postgres-url"], 360000, [check_ref("sandbox-profile"), check_ref("canlc-bin"), check_ref("build-cmd"), check_ref("offline-path"), check_ref("bun-entry"), check_ref("entry-name"), check_ref("snapshot-key"), check_ref("snapshot-fd"), check_ref("snapshot-count"), check_ref("snapshot-mode"), check_ref("cli-env-count"), check_ref("cli-env-clean"), check_ref("driver-env-has-url"), check_ref("ok-exit"), check_ref("ok-diag-empty"), check_ref("fault-exit"), check_ref("fault-stdout-empty"), check_ref("fault-needle"), check_ref("refused-value"), check_ref("live-check-count")], callable case_body)
