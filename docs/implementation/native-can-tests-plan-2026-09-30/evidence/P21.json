@@ -1,1 +1,95 @@
-{"acceptance_prerequisite_receipts":[],"campaign":{"append_only_index":null,"attempt_id":null,"id":null,"job_registered_before_execution":null,"manifest":null},"changed_paths":["compiler/main.go","compiler/cli_test.go","docs/implementation/native-can-tests-plan-2026-09-30/evidence/P21.json"],"commands_with_deadlines_and_results":[{"command":"gofmt -l compiler/ ; go vet ./compiler/","deadline":"120s","result":"clean: no files listed; vet exit 0"},{"command":"go test -count=1 -timeout 250s -run 'TestRunTest|TestRunCheck' ./compiler/","deadline":"280s foreground wait","result":"5/5 PASS: TestRunTestCheckUsageCodes (16 vectors exit 2), TestRunTestListIsNonexecuting (envelope + 2 app roots + tree-untouched), TestRunTestSelectionRefusals (unknown candidate/reference exit 1, silent stdout), TestRunTestExecutionRefusals (absent-R/absent-N/P23-gate messages + exit 1), TestRunCheckJSONPure (can.check envelope + tree-untouched)"},{"command":"go test -count=1 -timeout 280s ./compiler/","deadline":"300s foreground wait","result":"ok 4.1s: full compiler suite green, no regressions"},{"command":"built canlc binary control runs over a /tmp fixture project (2 packages, 3 roots)","deadline":"180s","result":"check --json exit 0 with can.check accepted envelope (all 5 stages finished, 0 diagnostics); test --list exit 0 with can.test.list envelope listing exactly the 2 app roots; --schema 2 exit 2; unknown candidate exit 1; absent toolchain exit 1 with 'reference toolchain absent'; present R/N exit 1 with P23-gate refusal; bare check exit 2. Fixture + binary removed after."}],"commit_note":"Code + tests committed together; this evidence next; flip recorded in the follow-up docs commit.","commits":["666ba3b24d0b67522152bdef977c16be52804afe"],"correction_registry_head":null,"coverage":{"case_check_ids":[],"retained_facets":["explicit candidate/reference selection: both flags required, resolved against the checked project package graph, unknown packages refuse exit 1 with silent stdout","nonexecuting --list: check-only load + CheckAssertionProgram, candidate-filtered roots in a versioned can.test.list envelope; tree-untouched control proves no staging/publication/spawn","presence-gated execution parameters: --reference-toolchain must exist as a file, --owner-dir as a directory; absent R or N refuses exit 1 with an explicit message","live execution refuses until P23 even with R/N present: selection validated, no partial runs, no verdict synthesis in Go; plans/retries/verdicts stay in Can","check --json delegates to the inert P20 checker (never emits/publishes/runs); unknown schemas refuse exit 2 on both commands"]},"executor":"integrator (P21 is integrator-owned single-writer compiler/main.go work; no worker wrote these paths)","identities":{"artifact":"N/A: no executable promoted; dispatch code only","candidate":"explicit --candidate package selection, resolved in-graph","host_profile":"darwin arm64","observer":"buffer-captured CLI tests + built-binary control runs (envelopes, messages, true exit codes)","owner":"N/A as an N artifact; --owner-dir presence-gated only, never opened","reference":"explicit --reference package selection, resolved in-graph; P20 inert checker for check --json","suite":"bounded local controls only (t.TempDir fixture projects, presence fixtures); authoritative live execution gated by P14/P26/P23"},"limitations":["test execution mode always refuses: the live R/N runner does not exist until P23; this task wires selection/validation/refusal only","--list enumerates assertion roots only; (case, variant) fan-out planning stays in the Can controller"],"local_control_slice_status":"accepted","missing_evidence":[],"parent_task_id":"P21","path_reservation":{"exact_paths":["compiler/main.go","compiler/cli_test.go"],"handoff_from":null},"promotion_status":"code only; no R/N promotion claimed (authoritative live execution gated by P14/P26/P23)","resource_and_cleanup_receipts":["all CLI temp state in t.TempDir fixture projects; auto-reclaimed","/tmp/p21ctl fixture + built canlc binary removed after control runs (verified absent)"],"retirement_commit":null,"retirement_eligible":false,"reviewer_disposition":"integrator-authored slice; independent review position: --list nonexecution is proven by a byte-level tree snapshot before/after plus success without bundle resolution (unstamped test binary has no sidecar to resolve); execution refusal is a terminal message, not a stub that could silently succeed (all execution paths return 1 with the P23 gate named); check purity inherits the P20 inertness contract, re-proven by the tree-untouched control.","row_or_file_slice":null,"slice_id":null,"source_slice_status":"accepted","start_prerequisite_receipts":["P18 complete (tasks.json; staged generation leases)","P19 complete (tasks.json; launch handoff + Can controller policy)","P20 complete (tasks.json; inert JSON diagnostics driver)"],"status":"active","task_id":"P21","writing_owner":"can-suite-cli"}
+{
+  "acceptance_prerequisite_receipts": [],
+  "campaign": {
+    "append_only_index": null,
+    "attempt_id": null,
+    "id": null,
+    "job_registered_before_execution": null,
+    "manifest": null
+  },
+  "changed_paths": [
+    "compiler/main.go",
+    "compiler/cli_test.go",
+    "docs/implementation/native-can-tests-plan-2026-09-30/evidence/P21.json"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "gofmt -l compiler/ ; go vet ./compiler/",
+      "deadline": "120s",
+      "result": "clean: no files listed; vet exit 0"
+    },
+    {
+      "command": "go test -count=1 -timeout 250s -run 'TestRunTest|TestRunCheck' ./compiler/",
+      "deadline": "280s foreground wait",
+      "result": "5/5 PASS: TestRunTestCheckUsageCodes (16 vectors exit 2), TestRunTestListIsNonexecuting (envelope + 2 app roots + tree-untouched), TestRunTestSelectionRefusals (unknown candidate/reference exit 1, silent stdout), TestRunTestExecutionRefusals (absent-R/absent-N/P23-gate messages + exit 1), TestRunCheckJSONPure (can.check envelope + tree-untouched)"
+    },
+    {
+      "command": "go test -count=1 -timeout 280s ./compiler/",
+      "deadline": "300s foreground wait",
+      "result": "ok 4.1s: full compiler suite green, no regressions"
+    },
+    {
+      "command": "built canlc binary control runs over a /tmp fixture project (2 packages, 3 roots)",
+      "deadline": "180s",
+      "result": "check --json exit 0 with can.check accepted envelope (all 5 stages finished, 0 diagnostics); test --list exit 0 with can.test.list envelope listing exactly the 2 app roots; --schema 2 exit 2; unknown candidate exit 1; absent toolchain exit 1 with 'reference toolchain absent'; present R/N exit 1 with P23-gate refusal; bare check exit 2. Fixture + binary removed after."
+    }
+  ],
+  "commit_note": "Code + tests committed together; this evidence next; flip recorded in the follow-up docs commit.",
+  "commits": [
+    "666ba3b24d0b67522152bdef977c16be52804afe"
+  ],
+  "correction_registry_head": null,
+  "coverage": {
+    "case_check_ids": [],
+    "retained_facets": [
+      "explicit candidate/reference selection: both flags required, resolved against the checked project package graph, unknown packages refuse exit 1 with silent stdout",
+      "nonexecuting --list: check-only load + CheckAssertionProgram, candidate-filtered roots in a versioned can.test.list envelope; tree-untouched control proves no staging/publication/spawn",
+      "presence-gated execution parameters: --reference-toolchain must exist as a file, --owner-dir as a directory; absent R or N refuses exit 1 with an explicit message",
+      "live execution refuses until P23 even with R/N present: selection validated, no partial runs, no verdict synthesis in Go; plans/retries/verdicts stay in Can",
+      "check --json delegates to the inert P20 checker (never emits/publishes/runs); unknown schemas refuse exit 2 on both commands"
+    ]
+  },
+  "executor": "integrator (P21 is integrator-owned single-writer compiler/main.go work; no worker wrote these paths)",
+  "identities": {
+    "artifact": "N/A: no executable promoted; dispatch code only",
+    "candidate": "explicit --candidate package selection, resolved in-graph",
+    "host_profile": "darwin arm64",
+    "observer": "buffer-captured CLI tests + built-binary control runs (envelopes, messages, true exit codes)",
+    "owner": "N/A as an N artifact; --owner-dir presence-gated only, never opened",
+    "reference": "explicit --reference package selection, resolved in-graph; P20 inert checker for check --json",
+    "suite": "bounded local controls only (t.TempDir fixture projects, presence fixtures); authoritative live execution gated by P14/P26/P23"
+  },
+  "limitations": [
+    "test execution mode always refuses: the live R/N runner does not exist until P23; this task wires selection/validation/refusal only",
+    "--list enumerates assertion roots only; (case, variant) fan-out planning stays in the Can controller"
+  ],
+  "local_control_slice_status": "accepted",
+  "missing_evidence": [],
+  "parent_task_id": "P21",
+  "path_reservation": {
+    "exact_paths": [
+      "compiler/main.go",
+      "compiler/cli_test.go"
+    ],
+    "handoff_from": null
+  },
+  "promotion_status": "code only; no R/N promotion claimed (authoritative live execution gated by P14/P26/P23)",
+  "resource_and_cleanup_receipts": [
+    "all CLI temp state in t.TempDir fixture projects; auto-reclaimed",
+    "/tmp/p21ctl fixture + built canlc binary removed after control runs (verified absent)"
+  ],
+  "retirement_commit": null,
+  "retirement_eligible": false,
+  "reviewer_disposition": "integrator-authored slice; independent review position: --list nonexecution is proven by a byte-level tree snapshot before/after plus success without bundle resolution (unstamped test binary has no sidecar to resolve); execution refusal is a terminal message, not a stub that could silently succeed (all execution paths return 1 with the P23 gate named); check purity inherits the P20 inertness contract, re-proven by the tree-untouched control.",
+  "row_or_file_slice": null,
+  "slice_id": null,
+  "source_slice_status": "accepted",
+  "start_prerequisite_receipts": [
+    "P18 complete (tasks.json; staged generation leases)",
+    "P19 complete (tasks.json; launch handoff + Can controller policy)",
+    "P20 complete (tasks.json; inert JSON diagnostics driver)"
+  ],
+  "status": "complete",
+  "task_id": "P21",
+  "writing_owner": "can-suite-cli"
+}

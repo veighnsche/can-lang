@@ -453,7 +453,7 @@
       "acceptance": "Candidate and reference selection are explicit; malformed args/unknown schema/absent R or N produce nonzero; `--list` is nonexecuting and `check` never emits/publishes/runs.",
       "evidence": "Save CLI control outputs; commit dispatch integration.",
       "commit": "feat(testing): integrate test and check cli dispatch",
-      "status": "planned",
+      "status": "complete",
       "start_after": [
         "P18",
         "P19",
