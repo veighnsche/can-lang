@@ -1,0 +1,12 @@
+{
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "startedAt": "2026-10-01T00:57:39.058Z",
+  "finishedAt": "2026-10-01T00:57:39.301Z",
+  "httpStatus": 200,
+  "requestSha256": "7d4670476c9fc9cc00c3cce90db38a28615997a63cb877eacfab21b99d6a4cfa",
+  "responseSha256": "21f727fb1487ada683c59633206eaabf0540de1b993d024b62066edfd5d83eba",
+  "usage": {
+    "input_tokens": 956,
+    "output_tokens": 48
+  }
+}

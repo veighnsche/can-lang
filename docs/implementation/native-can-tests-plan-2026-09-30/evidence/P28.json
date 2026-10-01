@@ -1,0 +1,148 @@
+{
+  "acceptance_prerequisite_receipts": [],
+  "changed_paths": [
+    "compiler/internal/catalogue/catalogue.go",
+    "compiler/internal/catalogue/catalogue.json",
+    "compiler/internal/catalogue/catalogue_test.go",
+    "compiler/internal/catalogue/generated.go",
+    "compiler/internal/catalogue/integration_test.go",
+    "compiler/internal/catalogue/test_operations_test.go",
+    "runtime/catalogue.ts",
+    "runtime/modules.json",
+    "runtime/test-support/owner.ts",
+    "runtime/test-support/transport.ts",
+    "runtime/test/test-owner.test.ts",
+    "std/catalogue/README.md",
+    "std/catalogue/errors.json"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "timeout 180 go test -count=1 ./compiler/internal/catalogue/",
+      "deadline": "190s",
+      "result": "ok (all pass incl. new TestOwnerTransportCatalogueContract; also repairs pre-existing 305/306 inventory-count drift from 9c283544)"
+    },
+    {
+      "command": "timeout 120 go run ./compiler/internal/catalogue/cmd/cataloguegen --check",
+      "deadline": "130s",
+      "result": "clean (generated.go, runtime/catalogue.ts, std/catalogue/* regenerated via cataloguegen)"
+    },
+    {
+      "command": "timeout 120 bun test runtime/test/test-owner.test.ts",
+      "deadline": "130s",
+      "result": "10 pass / 0 fail, 134 expects"
+    },
+    {
+      "command": "timeout 240 bun run check:runtime",
+      "deadline": "250s",
+      "result": "clean (oxlint 0/0, oxfmt clean, tsc clean)"
+    },
+    {
+      "command": "timeout 120 bun test tools/runtime/module-inventory.test.ts",
+      "deadline": "130s",
+      "result": "2 pass / 0 fail (new module edges validate)"
+    },
+    {
+      "command": "gofmt -l + go vet ./compiler/internal/catalogue/",
+      "deadline": "70s",
+      "result": "clean"
+    }
+  ],
+  "commits": [
+    "858f96d14107c9d39cb20a143c6072f3fdf9d355"
+  ],
+  "controls": {
+    "missing_evidence": [
+      "test::wrong_owner unreachable until the N-link slice wires live issuance verification (vocabulary-only; 8 unreferenced-error precedents exist)",
+      "checker admission (check/program.go gate) + emitter test_operations.go + $canTest contribution arrive in S1b; ops resolve but are not yet callable from Can",
+      "N-link byte delivery covered only via stub byte source + real codec decode; live N frames wait for the qualified profile"
+    ],
+    "positive": [
+      "7 ops resolve with exact emits; opaque handles admit no constructor; test package distribution-owned",
+      "grant shape rule mirrors N issuance (ng1- + 32 hex); malformed shapes reject with closed reasons",
+      "envelope round trip preserves nominal JSON values; byte counts honest (bigint frame lengths)",
+      "idempotent release/close; drain-then-seal close; detach keeps depth/close observable"
+    ],
+    "seeded_defect": [
+      "bad grant shapes x4, bad channel kind, empty/full/closed/detached/stale/foreign handles, mistagged encode, malformed + non-object + oversize frames \u2014 all map onto the declared union with nothing retained on failure"
+    ]
+  },
+  "correction_registry_head": null,
+  "coverage": {
+    "case_check_ids": [
+      "TestOwnerTransportCatalogueContract subtests (7 ops + 2 types + reservation)",
+      "test-owner.test.ts: 10 tests incl. admission/roundtrip/close/full/detach/foreign/codec/oversize"
+    ],
+    "retained_facets": [
+      "base typed owner/channel bindings with exact finite error unions",
+      "native JS/Bun lowering (Map, JSON, TextEncoder/Decoder) + minimal contract adapters"
+    ],
+    "unrun_or_blocked": [
+      "S1b: checker admission + emitter lowering + $canTest contribution",
+      "N-link slice: live issuance verification (wrong_owner), live frame delivery, detach wiring",
+      "S1c+: workspace/process/evidence bindings"
+    ],
+    "variants_and_environments": [
+      "go test darwin/arm64; bun test local; no services, transports, timers, or live runtimes"
+    ]
+  },
+  "executor": "integrator (muse-spark-1.3-contributor); P28 is integrator-owned shared-path work",
+  "identities": {
+    "artifact": "catalogue can.std.test@1 (39/117/120/313); adapters runtime/test-support/{owner,transport}.ts; registry runtime/modules.json",
+    "candidate": null,
+    "host_profile": "bounded local only; no qualification credit",
+    "observer": null,
+    "owner": "integrator",
+    "reference": "Jev x3 decision evidence/P28-jev/ (single_test_package: one can.std.test@1 package, opaque handles, per-op allowlist, one $canTest contribution)",
+    "suite": null
+  },
+  "limitations": [
+    "S1a is descriptors + adapters + tests; nothing is callable from Can until S1b emitter/checker work lands",
+    "base adapter loopbacks locally; no N link exists yet"
+  ],
+  "resource_and_cleanup_receipts": [
+    "owned /tmp/p28-s1a-append.py + /tmp/k05-* logs removed at commit (rm -f receipt in commit chain)",
+    "no services, builds, bundles, or retained workspaces"
+  ],
+  "retirement_commit": null,
+  "retirement_eligible": false,
+  "reviewer_disposition": null,
+  "row_or_file_slice": "owner-transport-base (S1a)",
+  "start_prerequisite_receipts": [
+    "P02 complete",
+    "P10 complete",
+    "P12 complete in d24e576e",
+    "P15 complete"
+  ],
+  "status": "active",
+  "subdeliveries": {
+    "owner-transport-base": {
+      "changed_paths": [
+        "compiler/internal/catalogue/catalogue.go",
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/catalogue_test.go",
+        "compiler/internal/catalogue/generated.go",
+        "compiler/internal/catalogue/integration_test.go",
+        "compiler/internal/catalogue/test_operations_test.go",
+        "runtime/catalogue.ts",
+        "runtime/modules.json",
+        "runtime/test-support/owner.ts",
+        "runtime/test-support/transport.ts",
+        "runtime/test/test-owner.test.ts",
+        "std/catalogue/README.md",
+        "std/catalogue/errors.json"
+      ],
+      "commits": [
+        "858f96d14107c9d39cb20a143c6072f3fdf9d355"
+      ],
+      "local_control_slice_status": "ready-for-review",
+      "parent_task_id": "P28",
+      "promotion_status": "planned",
+      "reviewer_disposition": null,
+      "slice_id": "owner-transport-base",
+      "source_slice_status": "ready-for-review",
+      "traceability_decision": "lowering.task/refs use qualified NT-P28: bare P/I numbers already name main-program phases (58 ops reference main-program P10; sql::execute refs main-program P12), so bare P28 would collide. taskID regex extended with NT-[PKIQMZ][0-9]{2} following the established growth precedent (I-only to I/LF/B1/T/A-H); inclusion test admits NT tasks under the same committed-tests rule as T/lane tasks; TestTaskIDAdmitsProgramLanes pins NT-P28 admitted and bare P28 rejected."
+    }
+  },
+  "task_id": "P28",
+  "writing_owner": "integration"
+}

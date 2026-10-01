@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "binding_shape": {
+      "type": "choice",
+      "choice": "single_test_package",
+      "confidence": 0.74,
+      "probabilities": {
+        "split_owner_test_packages": 0.14,
+        "extend_existing_packages": 0.04,
+        "single_test_package": 0.82
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 956,
+    "output_tokens": 48
+  }
+}
