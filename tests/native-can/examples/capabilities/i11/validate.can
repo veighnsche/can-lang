@@ -1,0 +1,40 @@
+package i11_example
+    provides [map_demo, env_demo]
+    uses [descriptor, i11, text]
+
+/// Tiny typed I11 example: both doc validators end to end over
+/// fixture-shaped docs. map_demo validates a fresh descriptor map and a
+/// flipped-direction map; env_demo validates a c-cli environment and an
+/// unsorted-names environment. Rows are offline/provisional asserts
+/// (static until qualified execution). The seven live ops have no Can
+/// wrappers by scope decision (all rows would bet on live N execution).
+
+/// Validate one descriptor map.
+fn bool map_demo
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        descriptor::descriptor_map doc
+    asserts
+        fresh: descriptor::descriptor_map("1", "run-20260930-001", "launch-0001", descriptor::snapshot("fresh", "sha256:a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3"), [descriptor::fd_entry(0, "N", "in", "streaming", "open", "active", 1024, 256), descriptor::fd_entry(1, "N", "out", "streaming", "open", "active", 0, 0), descriptor::fd_entry(2, "N", "out", "streaming", "open", "active", 0, 0), descriptor::fd_entry(3, "N", "in", "streaming", "open", "active", 4096, 4096), descriptor::fd_entry(4, "N", "hold", "none", "none", "active", 0, 0)]) => ok true
+        flipped: descriptor::descriptor_map("1", "run-20260930-001", "launch-0001", descriptor::snapshot("fresh", "sha256:a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3"), [descriptor::fd_entry(0, "N", "out", "streaming", "open", "active", 1024, 256), descriptor::fd_entry(1, "N", "out", "streaming", "open", "active", 0, 0), descriptor::fd_entry(2, "N", "out", "streaming", "open", "active", 0, 0), descriptor::fd_entry(3, "N", "in", "streaming", "open", "active", 4096, 4096), descriptor::fd_entry(4, "N", "hold", "none", "none", "active", 0, 0)]) => ok false
+    match call i11::descriptor_map_ok(doc)
+        text::invalid_regex
+        text::invalid_limit
+        ok bool good => match good
+            true => ok true
+            false => ok false
+/// Validate one launch environment.
+fn bool env_demo
+    emits {text::invalid_regex, text::invalid_limit, text::invalid_unicode}
+    given
+        descriptor::environment doc
+    asserts
+        cli: descriptor::environment("1", "run-20260930-001", "launch-0001", "c-cli", ["c-suite", "run", "--case", "f1-stdin"], ["CAN_LOCALE", "PATH"], "sha256:c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1", "fd2") => ok true
+        unsorted: descriptor::environment("1", "run-20260930-001", "launch-0001", "c-cli", ["c-suite"], ["PATH", "CAN_LOCALE"], "sha256:c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1", "fd2") => ok false
+    match call i11::environment_ok(doc)
+        text::invalid_regex
+        text::invalid_limit
+        text::invalid_unicode
+        ok bool good => match good
+            true => ok true
+            false => ok false
