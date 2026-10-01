@@ -1,0 +1,20 @@
+{
+ "pairs": {
+  "1-vs-2": {
+   "state": "differ",
+   "instructions": "differ",
+   "criteria": "all-9-differ"
+  },
+  "1-vs-3": {
+   "state": "differ",
+   "instructions": "differ",
+   "criteria": "all-9-differ"
+  },
+  "2-vs-3": {
+   "state": "differ",
+   "instructions": "differ",
+   "criteria": "all-9-differ"
+  }
+ },
+ "structural": "model/question-ids/types/option-keys identical; 24 technical identifiers present in all three requests"
+}

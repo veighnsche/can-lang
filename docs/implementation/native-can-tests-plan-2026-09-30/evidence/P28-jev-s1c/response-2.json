@@ -1,0 +1,39 @@
+{
+ "model": "jev-1.13.0",
+ "answers": {
+  "evidence_bundle": {
+   "type": "choice",
+   "choice": "bundle_handle",
+   "confidence": 0.88,
+   "probabilities": {
+    "bundle_handle": 0.92,
+    "path_seal": 0.07,
+    "memory_only": 0.01
+   }
+  },
+  "process_dispatch": {
+   "type": "choice",
+   "choice": "keyed_dispatch",
+   "confidence": 0.99,
+   "probabilities": {
+    "workspace_relative": 0.01,
+    "grant_wrapped_reuse": 0.0,
+    "keyed_dispatch": 0.99
+   }
+  },
+  "workspace_model": {
+   "type": "choice",
+   "choice": "opaque_handle",
+   "confidence": 0.99,
+   "probabilities": {
+    "root_path_string": 0.0,
+    "no_workspace_ops": 0.0,
+    "opaque_handle": 1.0
+   }
+  }
+ },
+ "usage": {
+  "input_tokens": 1685,
+  "output_tokens": 133
+ }
+}
