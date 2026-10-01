@@ -151,7 +151,7 @@
         "P12"
       ],
       "accept_after": [],
-      "status": "blocked",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit",
       "status_audit": {
         "date": "2026-10-01",

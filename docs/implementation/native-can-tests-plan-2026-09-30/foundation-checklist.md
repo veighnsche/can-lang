@@ -316,7 +316,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P27 — Implement run-scoped immutable build reuse and lease accounting
 
-- [ ] **P27: planned** — owner lane: `can-suite-cli`.
+- [ ] **P27: active** — owner lane: `can-suite-cli`. Key-policy slice dispatched (worker-a-p27).
 
 **Start after:** P09, P12, P15. **Additional acceptance prerequisites:** none.
 
@@ -412,7 +412,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P28 — Integrate base typed owner bindings and generated catalogue
 
-- [ ] **P28: planned** — owner lane: `integration`.
+- [ ] **P28: active** — owner lane: `integration`. Integrator-owned shared-path work started.
 
 **Audit correction:** Old active assignment has no task evidence or authored binding/transport/emitter artifacts; reset to planned. Existing catalogue files predate the assignment. Historical Muse checkpoint is not current ownership.
 

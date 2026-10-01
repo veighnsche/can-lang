@@ -733,7 +733,7 @@
       "acceptance": "Catalogue/checker/emitter agree on normal effects and opaque handle admission. Reject forged/stale owner, arbitrary dispatch/eval, raw thenable transport and wrong target; generated files are reproducible. Treat this as provisional R-core input until P26.",
       "evidence": "evidence/P28.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): integrate typed owner bindings",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P02",
         "P10",
@@ -764,7 +764,7 @@
       "acceptance": "Detect input drift, partial fills, corrupt bundles, waiter cancellation, key omissions, leased eviction and reused determinism/corruption subjects. Failed fills do not publish; no persistent full bundle cache or hidden producer overlap; actual reuse qualification is included in P23.",
       "evidence": "evidence/P27.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "feat(testing): reuse immutable builds within one run",
-      "status": "planned",
+      "status": "active",
       "start_after": [
         "P09",
         "P12",
@@ -980,7 +980,7 @@
         "P12"
       ],
       "accept_after": [],
-      "status": "blocked",
+      "status": "active",
       "scope": "mechanism code and local controls; no integrated credit",
       "status_audit": {
         "date": "2026-10-01",

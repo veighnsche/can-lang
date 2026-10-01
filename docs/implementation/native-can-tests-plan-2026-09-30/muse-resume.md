@@ -1,3 +1,121 @@
+# EMFILE PAUSE 5 — 2026-10-01 (fifth tool-layer hit, on dispatch-record commit; restart required)
+
+Event: tool-layer `Too many open files (os error 24)` on the integrator `git add + commit` of the dispatch record. Sequential single spawns + health checks had all passed; the hit came several calls later with two workers running. Both workers quiesced at once (K05 cancel confirmed; P27 cancel accepted, confirmation pending at pause). No reports. Goal left active at 18%.
+Status: PAUSED. Do not dispatch new work until the Muse instance is restarted.
+
+## Completed/current task IDs
+- The dispatch-record commit FAILED (command never completed): P27/K07/P28 flips (JSONs), checklist flips, and the round-2 dispatch note in this file are all UNCOMMITTED. Nothing was lost (all in tree) but nothing is committed either.
+- Round-2 sequential dispatch (UNFINISHED, minutes of work at most): B K05 (`01a0f4f1-b987-7742-9892-bbeebf982888`) cancelled; A P27 (`01a0f4f1-f8e0-7b32-a337-a44b4dc6b592`) cancel accepted. K07 still queued, never spawned.
+- Hypothesis update: sequential dispatch did NOT prevent EMFILE (hit 5 came outside any spawn burst). Burst-spawn correlation is falsified as the sole cause. Remaining suspects: cumulative tool-layer fd leak over session lifetime (5 hits and counting), and/or concurrent-worker pressure. Next mitigation if it recurs after a genuine restart: solo integrator operation + ONE worker maximum.
+
+## Latest commits / uncommitted owned paths
+- HEAD still `40f92b19`. Uncommitted (reconcile AFTER restart): status flips (foundation.json, capabilities.json, tasks.json), checklist flips (foundation/capabilities), c-witness.ts (K05 partial), possible minutes-old worker partials (verify), this checkpoint file. Preserved untouched: `muse-implementation-prompt.txt` (user's; never stage), `muse-replan-prompt.txt`.
+
+## Worker assignments / running commands
+- Both workers cancel-requested (K05 confirmed, P27 accepted-pending); no reports. No integrator-owned long commands, temp dirs, builds, browsers, DBs, or services.
+
+## Cleanup ownership / blockers / next ready actions
+- Cleanup: integrator owns nothing; brief worker runs — residue unlikely but unconfirmed.
+- Blocker: Muse instance restart required (fifth tool-layer EMFILE). Please restart the instance itself this time if prior resumes skipped it — the fault now recurs within minutes of healthy operation regardless of dispatch pattern.
+- After restart: (1) git status/diff reconcile (incl. possible worker partials); (2) retry the dispatch-record commit FIRST, before any spawn; (3) dispatch K05 alone; P28 survey + implement as integrator; add a second worker only after sustained stability.
+
+---
+
+# Round-2 dispatch record — 2026-10-01 (sequential dispatch after pause 4)
+
+Resume: tools healthy, tree matched pause-4 checkpoint exactly. Worker C's pause-4 failure verified as tool-layer EMFILE (8 hits in its log), not an implementation defect.
+Mitigation in effect: sequential dispatch (one spawn, health-check, next) instead of 3-worker bursts; holding at two workers + integrator until stability is proven.
+
+## Active dispatch
+- Worker B K05 (subagent `01a0f4f1-b987-7742-9892-bbeebf982888`, agent_path `main/worker-b-k05/13`): reconcile + complete C-entry witness. Paths: native-values/c-witness*, evidence/K05.json.
+- Worker A P27 (subagent `01a0f4f1-f8e0-7b32-a337-a44b4dc6b592`, agent_path `main/worker-a-p27/14`): Can key/reuse policy slice. Paths: tests/native-can/src/builds/policy/, evidence/P27.json.
+- K07 queued (not yet spawned): independent-observer slice brief stands; spawn only after K05/P27 health confirmed. K07 already flipped blocked->active in tree.
+- Integrator: P28 shared-path work (flipped active). Workers do not commit; integrator reviews, commits, flips statuses.
+
+## Next ready actions
+1. Spawn K07 when stable; P28 survey + implement meanwhile.
+2. Review round-2 slices as they land; commit increments; rerun validators on ledger updates.
+3. P29 consumers (K20/K22) join the queue per exact readiness once K05/P27 land.
+
+---
+
+# EMFILE PAUSE 4 — 2026-10-01 (fourth tool-layer hit, immediately post-dispatch; restart required)
+
+Event: tool-layer `Too many open files (os error 24)` on a trivial integrator `grep`, seconds after re-spawning the three round-2 workers. Workers quiesced at once: A and B cancels confirmed; C was already_terminal/failed (same signature as pause 2's EMFILE casualty — verify from its log after restart, do not assume). No reports. Goal left active at 18%.
+Status: PAUSED. Do not dispatch new work until the Muse instance is restarted.
+
+## Completed/current task IDs
+- Nothing new completed this turn. HEAD `40f92b19` (ledger 27/3/93/20 at HEAD). Tree flips still uncommitted: P27/K07/P28 active (foundation.json, capabilities.json, tasks.json). c-witness.ts K05 partial untouched. Checklist dispatch flips NOT made (the grep to locate them was the EMFILE-hit command).
+- Round-2 re-dispatch (UNFINISHED, ~zero work possible): A P27 (`01a0f4f0-d6e2-7872-a72d-45c22d0cfd24`) cancelled; B K05 (`01a0f4f0-d844-7700-8f9b-8aca7bf8507a`) cancelled; C K07 (`01a0f4f0-d9b7-7261-9919-81a3912f64aa`) failed, log at `subagent/01a0f4f0-d9f7-75b3-bcb4-e42663956ae7/session.jsonl`.
+- Correlation observation (unproven): pauses 2, 3, 4 all struck within minutes after a 3-worker burst spawn (pause 1 did not). Possible tool-layer fd spike on burst spawn; or coincidence under general pressure. Mitigation to try after restart: dispatch SEQUENTIALLY — one worker, verify tool health with a cheap command, then the next — and start with ONE worker (K05, highest risk) + integrator P28 work, scaling up only if stable. Fewer than three workers is plan-compliant ("at most three").
+
+## Latest commits / uncommitted owned paths
+- Uncommitted (reconcile AFTER restart): status flips above, c-witness.ts, unlikely worker partials (verify), this checkpoint file. Preserved untouched: `muse-implementation-prompt.txt` (user's; never stage), `muse-replan-prompt.txt`.
+
+## Worker assignments / running commands
+- All round-2 workers terminal (A/B cancelled, C failed); no reports. No integrator-owned long commands, temp dirs, builds, browsers, DBs, or services.
+
+## Cleanup ownership / blockers / next ready actions
+- Cleanup: integrator owns nothing; workers lived ~1 minute — residue unlikely but unconfirmed.
+- Blocker: Muse instance restart required (fourth tool-layer EMFILE). If EMFILE persists even for solo integrator operation after restart, that falsifies the burst-spawn hypothesis and the instance itself needs attention.
+- After restart: (1) git status/diff reconcile; (2) verify worker C failure cause from its log; (3) dispatch K05 ALONE first + health-check, then add P27, then K07 only if stable; (4) commit dispatch record (flips + checklist + resume); (5) P28 survey + implement.
+
+---
+
+# EMFILE PAUSE 3 — 2026-10-01 (third tool-layer hit on trivial ls; restart required)
+
+Event: tool-layer `Too many open files (os error 24)` on a trivial integrator `ls` of P28 paths, minutes after a healthy resume. No implementation defect: the previous turn ran git/python/subagent calls cleanly. Round-2 workers had just been re-spawned and were quiesced immediately; they cannot have done meaningful work. Goal left active at 17%.
+Status: PAUSED. Do not dispatch new work until the Muse instance is restarted.
+
+## Completed/current task IDs
+- Diagnosis from pause 2 (completed while healthy): worker C K07's failure was tool-layer EMFILE during its initial reads (run terminated, wrote nothing). No implementation defect; K07 re-dispatch stands.
+- P28 flipped planned->active in tree (uncommitted). P27/K07 active flips still uncommitted. Nothing else changed since pause 2.
+- Round-2 re-dispatch (UNFINISHED, ~zero work possible before quiesce):
+  - Worker A P27 (`01a0f4ef-ea34-7053-bc37-20b494d5de38`): cancel ACCEPTED + confirmed.
+  - Worker B K05 (`01a0f4ef-eb94-7353-bff0-f224d9fddf08`): cancel ACCEPTED + confirmed.
+  - Worker C K07 (`01a0f4ef-ecf2-7961-927d-7e425e085ff9`): cancel ACCEPTED, terminal confirmation pending at pause; treat as stopped.
+
+## Latest commits / uncommitted owned paths
+- HEAD `40f92b19` (ledger 27/3/93/20 at HEAD; tree flips add P27/K07/P28 active). Uncommitted (reconcile AFTER restart): P27/K07/P28 flips (foundation.json, capabilities.json, tasks.json), c-witness.ts (K05 partial, untouched this turn), unlikely worker partials (verify), this checkpoint file. Preserved untouched: `muse-implementation-prompt.txt` (user's; never stage), `muse-replan-prompt.txt`.
+
+## Worker assignments / running commands
+- All round-2 workers terminal or accepted-cancel; no reports. No integrator-owned long commands, temp dirs, builds, browsers, DBs, or services.
+
+## Cleanup ownership / blockers / next ready actions
+- Cleanup: integrator owns nothing; workers lived ~1 minute with read-only briefs first — residue unlikely but unconfirmed.
+- Blocker: Muse instance restart required (third tool-layer EMFILE, now striking trivial commands within minutes of healthy operation). Pattern note for the user: EMFILE recurs roughly every 30-60 min of active tool use in this session, clearing on the next turn without an observed restart; a genuine instance restart may clear it longer.
+- After restart: (1) git status/diff reconcile; (2) re-dispatch round 2 (P27, K05-reconcile, K07 briefs stand); (3) P28 survey + implement (integrator); (4) commit dispatch record; rerun validators on ledger updates.
+
+---
+
+# EMFILE PAUSE 2 — 2026-10-01 (second tool-layer hit + worker failure; restart required)
+
+Event: tool-layer `Too many open files (os error 24)` on the integrator P28 survey command, and near-simultaneously worker C (K07) reported child-run FAILED (cause undiagnosed — possibly EMFILE-related; session log preserved below). Per procedure: no retry, no new dispatch; remaining workers quiesced. Goal left active at 16%.
+Status: PAUSED. Do not dispatch new work until the Muse instance is restarted.
+
+## Completed/current task IDs
+- Commits since pause 1: `d24e576e` P12 slice, `15380bd2` handoff, `7a78e73c` Z01 slice, `e5454ad8` round-1 ledgers (P12 complete), `40f92b19` P29 revalidation (P29 complete). Ledger at HEAD: 27 complete / 3 active / 93 planned / 20 blocked; both validators pass.
+- Round-2 dispatch (all UNFINISHED, partial work possible in tree):
+  - Worker A P27 (subagent `01a0f4ee-b403-7c20-bf82-30717ebec1fa`): CANCELLED by quiesce, no report. P27 was flipped planned->active in tree (uncommitted).
+  - Worker B K05 (subagent `01a0f4ee-b572-75f3-93d4-3550ce2780e0`): cancel ACCEPTED, confirmation pending at pause; no report. Prior ~700-line partial c-witness.ts still in tree plus whatever B added.
+  - Worker C K07 (subagent `01a0f4ee-b6d0-7583-b632-cb79269af3ae`): FAILED (error_kind failed, no result). K07 was flipped blocked->active in tree (uncommitted). Diagnose from subagent log after restart; do NOT assume EMFILE — read the log.
+- P28 flip: the EMFILE-hit command was `mark-task-status.py P28 active && ...`; ASSUME NOT APPLIED (reconcile from tasks.json after restart). P28 survey never ran.
+
+## Latest commits / uncommitted owned paths
+- HEAD `40f92b19`. Uncommitted (reconcile with git status/diff AFTER restart): P27/K07 status flips (foundation.json, capabilities.json, tasks.json), c-witness.ts (K05 partial), any worker A/B/C partial files, this checkpoint file. Preserved untouched: tracked-modified `muse-implementation-prompt.txt` (user's; never stage), `muse-replan-prompt.txt`.
+
+## Worker assignments / running commands
+- A: cancelled (confirmed). B: cancel accepted, terminal confirmation pending — treat as stopped; verify no stray worker processes after restart only via bounded process listing if needed. C: terminal-failed.
+- Worker transcripts (post-restart diagnosis): `/Users/vince/.local/share/muse/sessions/2026/10/01/01a0f4d4-1ecd-7a62-892d-71ac67f9fcc6/subagent/` (A: `01a0f4ee-b44f-...`, B: pending envelope, C: `01a0f4ee-b707-...`).
+- No integrator-owned long commands, temp dirs, builds, browsers, DBs, or services. compiler/zcheck-tmp was removed before round 2 (verified).
+
+## Cleanup ownership / blockers / next ready actions
+- Cleanup: integrator owns nothing. UNCONFIRMED: temp/process residue from cancelled/failed workers (they were restricted to t.TempDir/mkdtemp + package tests; C's failure mode unknown until log read).
+- Blocker: Muse instance restart required (second tool-layer EMFILE). No implementation blocker established; K07 failure undiagnosed.
+- After restart: (1) git status/diff reconcile incl. P28-flip check; (2) read worker C failure log, then worker A/B partial states; (3) re-dispatch round 2 fresh (P27, K05-reconcile, K07) with reconcile-first briefs; (4) P28 flip + survey + implement; (5) commit dispatch record; rerun validators on ledger updates.
+
+---
+
 # Round-1 review record — 2026-10-01 (resumed after EMFILE pause; tools healthy)
 
 Resume: no surviving workers (all three terminal). /tmp holds no worker-owned scratch (17 pre-existing entries only; own validate-out.json removed). Reconciled tree at f4c7a84c matched the pause checkpoint exactly.

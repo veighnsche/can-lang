@@ -106,7 +106,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## K07 — Implement independent browser host-effect observation
 
-- [ ] **K07: blocked** — owner lane: `browser`. Evidence: [evidence/K07.json](evidence/K07.json).
+- [ ] **K07: active** — owner lane: `browser`. Evidence: [evidence/K07.json](evidence/K07.json). Independent-observer slice queued (sequential dispatch after K05/P27 health).
 
 **Audit correction:** The required actual independent host-effect observer and durable publication are absent. observer.go uses scripted in-memory facts with no host observation channel; local mirror controls do not finish this mechanism.
 
