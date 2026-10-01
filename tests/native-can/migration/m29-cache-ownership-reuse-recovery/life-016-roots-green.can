@@ -1,0 +1,267 @@
+package m29life016roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-016 "Key stable: roots green".
+/// Source: tests/integration/harness_cache_test.go static
+/// baseline for TestHarnessKeyStable (L16-29) plus call shapes
+/// (L17-18, L22-23, L26).
+/// Disposition: migrate (this row ports
+/// TestHarnessKeyStable to ordinary Can functions; the old Go
+/// harness stays until the integrator retires it after every
+/// linked row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the static baseline as the green root:
+/// the test symbol plus param shape, the repo root plus archive
+/// name plus seed bytes, the byte wrap plus file mode, and the
+/// call spellings (Abs, Join, TempDir, WriteFile, Parallel,
+/// Fatal, Fatalf, harnessKey).
+/// ADAPTATION (recorded, with source lines): repo-root pins the
+/// ../.. inner bytes as str (L18); archive-suffix pins the
+/// archive.zip inner bytes (L22); archive-bytes pins the
+/// fake-archive-bytes inner bytes (L23); byte-wrap pins the full
+/// []byte call spelling (L23); file-mode pins the 0600 spelling
+/// structurally as str (L23; Go octal has no Can int spelling);
+/// paren calls pin t.TempDir() and t.Parallel() with parens
+/// (L22, L17); harness-call pins one spelling for both
+/// derivation sites (L26-27).
+/// Facet map (static baseline): test-name pins
+/// TestHarnessKeyStable (L16); test-param pins t *testing.T
+/// (L16); repo-root pins ../.. (L18); archive-suffix pins
+/// archive.zip (L22); archive-bytes pins fake-archive-bytes
+/// (L23); byte-wrap pins []byte("fake-archive-bytes") (L23);
+/// file-mode pins 0600 (L23); abs-call pins filepath.Abs (L18);
+/// join-call pins filepath.Join (L22); tempdir-call pins
+/// t.TempDir() (L22); write-call pins os.WriteFile (L23);
+/// parallel-call pins t.Parallel() (L17); fatal-call pins
+/// t.Fatal (L20); fatalf-call pins t.Fatalf (L29);
+/// harness-call pins harnessKey(t, sourceRoot, archive) (L26).
+/// The verdict pins live in life-016-cache-semantics.can;
+/// the run shape plus diagnostics live in
+/// life-016-run-shape.can.
+/// Variants: first/second (the two repeated derivations in Go
+/// order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/cache-roots checks: test-name, test-param,
+/// repo-root, archive-suffix, archive-bytes, byte-wrap,
+/// file-mode, abs-call, join-call, tempdir-call, write-call,
+/// parallel-call, fatal-call, fatalf-call, harness-call.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str test_param
+    str repo_root
+    str archive_suffix
+    str archive_bytes
+    str byte_wrap
+    str file_mode
+    str abs_call
+    str join_call
+    str tempdir_call
+    str write_call
+    str parallel_call
+    str fatal_call
+    str fatalf_call
+    str harness_call
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/cache-roots", "default", "", "offline"), "test-name" => ok "case life/cache-roots variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/cache-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case life/cache-roots variant default root test-name run offline")
+        different: false, true, context("life/cache-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("life/cache-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "1", "1", true, "case life/cache-roots variant default root test-name run offline")
+        different: 2, 1, context("life/cache-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestHarnessKeyStable", "TestHarnessKeyStable", context("life/cache-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestHarnessKeyStable", "TestHarnessKeyStable", true, "case life/cache-roots variant default root test-name run offline")
+        different: "TestHarnessKeyStable_2", "TestHarnessKeyStable", context("life/cache-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_test_name: "seed-test-name-drift" => ok observation("TestHarnessKeyStable_2", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_test_param: "seed-test-param-drift" => ok observation("TestHarnessKeyStable", "t *testing.T_2", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_repo_root: "seed-repo-root-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../.._2", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_archive_suffix: "seed-archive-suffix-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip_2", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_archive_bytes: "seed-archive-bytes-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes_2", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_byte_wrap: "seed-byte-wrap-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")_2", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_file_mode: "seed-file-mode-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600_2", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_abs_call: "seed-abs-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs_2", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_join_call: "seed-join-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join_2", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_tempdir_call: "seed-tempdir-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()_2", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_write_call: "seed-write-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile_2", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_parallel_call: "seed-parallel-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()_2", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal_2", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        seed_fatalf_call: "seed-fatalf-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf_2", "harnessKey(t, sourceRoot, archive)")
+        seed_harness_call: "seed-harness-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)_2")
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestHarnessKeyStable_2", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-test-param-drift" => ok observation("TestHarnessKeyStable", "t *testing.T_2", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-repo-root-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../.._2", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-archive-suffix-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip_2", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-archive-bytes-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes_2", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-byte-wrap-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")_2", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-file-mode-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600_2", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-abs-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs_2", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-join-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join_2", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-tempdir-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()_2", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-write-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile_2", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-parallel-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()_2", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-fatal-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal_2", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+        "seed-fatalf-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf_2", "harnessKey(t, sourceRoot, archive)")
+        "seed-harness-call-drift" => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)_2")
+        _ => ok observation("TestHarnessKeyStable", "t *testing.T", "../..", "archive.zip", "fake-archive-bytes", "[]byte(\"fake-archive-bytes\")", "0600", "filepath.Abs", "filepath.Join", "t.TempDir()", "os.WriteFile", "t.Parallel()", "t.Fatal", "t.Fatalf", "harnessKey(t, sourceRoot, archive)")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l016: "m29-l016" => ok [check("test-name", "stable test symbol is pinned"), check("test-param", "test param spelling is pinned"), check("repo-root", "repo root literal is pinned"), check("archive-suffix", "archive name is pinned"), check("archive-bytes", "seed bytes are pinned"), check("byte-wrap", "seed bytes pin the byte wrap"), check("file-mode", "seed lands owner-only"), check("abs-call", "root lookup pins the Abs call"), check("join-call", "archive path pins the Join call"), check("tempdir-call", "archive dir pins the TempDir call"), check("write-call", "seed pins the WriteFile call"), check("parallel-call", "test pins the Parallel gate"), check("fatal-call", "setup pins the Fatal call"), check("fatalf-call", "refusal pins the Fatalf call"), check("harness-call", "derivations pin the harness call")]
+        other: "nope" => ok []
+    match scope is "m29-l016"
+        false => ok []
+        true => ok [check("test-name", "stable test symbol is pinned"), check("test-param", "test param spelling is pinned"), check("repo-root", "repo root literal is pinned"), check("archive-suffix", "archive name is pinned"), check("archive-bytes", "seed bytes are pinned"), check("byte-wrap", "seed bytes pin the byte wrap"), check("file-mode", "seed lands owner-only"), check("abs-call", "root lookup pins the Abs call"), check("join-call", "archive path pins the Join call"), check("tempdir-call", "archive dir pins the TempDir call"), check("write-call", "seed pins the WriteFile call"), check("parallel-call", "test pins the Parallel gate"), check("fatal-call", "setup pins the Fatal call"), check("fatalf-call", "refusal pins the Fatalf call"), check("harness-call", "derivations pin the harness call")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/cache-roots" => ok [expected_check("test-name", "TestHarnessKeyStable"), expected_check("test-param", "t *testing.T"), expected_check("repo-root", "../.."), expected_check("archive-suffix", "archive.zip"), expected_check("archive-bytes", "fake-archive-bytes"), expected_check("byte-wrap", "[]byte(\"fake-archive-bytes\")"), expected_check("file-mode", "0600"), expected_check("abs-call", "filepath.Abs"), expected_check("join-call", "filepath.Join"), expected_check("tempdir-call", "t.TempDir()"), expected_check("write-call", "os.WriteFile"), expected_check("parallel-call", "t.Parallel()"), expected_check("fatal-call", "t.Fatal"), expected_check("fatalf-call", "t.Fatalf"), expected_check("harness-call", "harnessKey(t, sourceRoot, archive)")]
+        unknown: "nope" => ok []
+    match case is "life/cache-roots"
+        false => ok []
+        true => ok [expected_check("test-name", "TestHarnessKeyStable"), expected_check("test-param", "t *testing.T"), expected_check("repo-root", "../.."), expected_check("archive-suffix", "archive.zip"), expected_check("archive-bytes", "fake-archive-bytes"), expected_check("byte-wrap", "[]byte(\"fake-archive-bytes\")"), expected_check("file-mode", "0600"), expected_check("abs-call", "filepath.Abs"), expected_check("join-call", "filepath.Join"), expected_check("tempdir-call", "t.TempDir()"), expected_check("write-call", "os.WriteFile"), expected_check("parallel-call", "t.Parallel()"), expected_check("fatal-call", "t.Fatal"), expected_check("fatalf-call", "t.Fatalf"), expected_check("harness-call", "harnessKey(t, sourceRoot, archive)")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/cache-roots", "default", "", "offline") => ok
+        seed_test_name: context("life/cache-roots", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_test_param: context("life/cache-roots", "seed-test-param-drift", "", "offline") => failed{"test-param"}
+        seed_repo_root: context("life/cache-roots", "seed-repo-root-drift", "", "offline") => failed{"repo-root"}
+        seed_archive_suffix: context("life/cache-roots", "seed-archive-suffix-drift", "", "offline") => failed{"archive-suffix"}
+        seed_archive_bytes: context("life/cache-roots", "seed-archive-bytes-drift", "", "offline") => failed{"archive-bytes"}
+        seed_byte_wrap: context("life/cache-roots", "seed-byte-wrap-drift", "", "offline") => failed{"byte-wrap"}
+        seed_file_mode: context("life/cache-roots", "seed-file-mode-drift", "", "offline") => failed{"file-mode"}
+        seed_abs_call: context("life/cache-roots", "seed-abs-call-drift", "", "offline") => failed{"abs-call"}
+        seed_join_call: context("life/cache-roots", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_tempdir_call: context("life/cache-roots", "seed-tempdir-call-drift", "", "offline") => failed{"tempdir-call"}
+        seed_write_call: context("life/cache-roots", "seed-write-call-drift", "", "offline") => failed{"write-call"}
+        seed_parallel_call: context("life/cache-roots", "seed-parallel-call-drift", "", "offline") => failed{"parallel-call"}
+        seed_fatal_call: context("life/cache-roots", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_fatalf_call: context("life/cache-roots", "seed-fatalf-call-drift", "", "offline") => failed{"fatalf-call"}
+        seed_harness_call: context("life/cache-roots", "seed-harness-call-drift", "", "offline") => failed{"harness-call"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestHarnessKeyStable", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.test_param, "t *testing.T", c, "test-param")
+                failed
+                ok evidence test_param_evidence => match call require_text(got.repo_root, "../..", c, "repo-root")
+                    failed
+                    ok evidence repo_root_evidence => match call require_text(got.archive_suffix, "archive.zip", c, "archive-suffix")
+                        failed
+                        ok evidence archive_suffix_evidence => match call require_text(got.archive_bytes, "fake-archive-bytes", c, "archive-bytes")
+                            failed
+                            ok evidence archive_bytes_evidence => match call require_text(got.byte_wrap, "[]byte(\"fake-archive-bytes\")", c, "byte-wrap")
+                                failed
+                                ok evidence byte_wrap_evidence => match call require_text(got.file_mode, "0600", c, "file-mode")
+                                    failed
+                                    ok evidence file_mode_evidence => match call require_text(got.abs_call, "filepath.Abs", c, "abs-call")
+                                        failed
+                                        ok evidence abs_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                            failed
+                                            ok evidence join_call_evidence => match call require_text(got.tempdir_call, "t.TempDir()", c, "tempdir-call")
+                                                failed
+                                                ok evidence tempdir_call_evidence => match call require_text(got.write_call, "os.WriteFile", c, "write-call")
+                                                    failed
+                                                    ok evidence write_call_evidence => match call require_text(got.parallel_call, "t.Parallel()", c, "parallel-call")
+                                                        failed
+                                                        ok evidence parallel_call_evidence => match call require_text(got.fatal_call, "t.Fatal", c, "fatal-call")
+                                                            failed
+                                                            ok evidence fatal_call_evidence => match call require_text(got.fatalf_call, "t.Fatalf", c, "fatalf-call")
+                                                                failed
+                                                                ok evidence fatalf_call_evidence => match call require_text(got.harness_call, "harnessKey(t, sourceRoot, archive)", c, "harness-call")
+                                                                    failed
+                                                                    ok evidence harness_call_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l016: "m29-l016" => ok test_case("life/cache-roots", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("repo-root"), check_ref("archive-suffix"), check_ref("archive-bytes"), check_ref("byte-wrap"), check_ref("file-mode"), check_ref("abs-call"), check_ref("join-call"), check_ref("tempdir-call"), check_ref("write-call"), check_ref("parallel-call"), check_ref("fatal-call"), check_ref("fatalf-call"), check_ref("harness-call")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l016"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/cache-roots", ["life", "m29"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("repo-root"), check_ref("archive-suffix"), check_ref("archive-bytes"), check_ref("byte-wrap"), check_ref("file-mode"), check_ref("abs-call"), check_ref("join-call"), check_ref("tempdir-call"), check_ref("write-call"), check_ref("parallel-call"), check_ref("fatal-call"), check_ref("fatalf-call"), check_ref("harness-call")], callable case_body)

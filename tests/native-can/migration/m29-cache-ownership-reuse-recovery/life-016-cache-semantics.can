@@ -1,0 +1,269 @@
+package m29life016cache
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-016 "Key stable: cache semantics".
+/// Source: tests/integration/harness_cache_test.go symbol
+/// TestHarnessKeyStable (L16-31).
+/// Disposition: migrate (this row ports
+/// TestHarnessKeyStable to ordinary Can functions; the old Go
+/// harness stays until the integrator retires it after every
+/// linked row, variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the stability verdicts in Go order:
+/// the source and archive leg names, the first and second
+/// derivation names, the helper name, the derivation and input
+/// and guard and refusal counts, plus the identical-inputs,
+/// keys-equal, key-nonempty, abs-ok, write-ok and refusal-fired
+/// verdicts.
+/// ADAPTATION (recorded, with source lines): leg names pin
+/// the Go local spellings (sourceRoot L18, archive L22, first
+/// L26, second L27, harnessKey L26); derivation-count pins int
+/// (2) from the two harnessKey calls (L26-27);
+/// bundle-input-count pins int (4) from two derivations times
+/// two bundle inputs (sourceRoot plus archive per call, L26-27;
+/// t is the test handle, not a bundle input); guard-leg-count
+/// pins int (2) from the empty plus stability legs (L28);
+/// refusal-count pins int (1) from the single Fatalf site (L29);
+/// verdicts pin bools from the identical call args (L26-27) and
+/// the passing guards (L19, L23, L28); refusal-fired pins false
+/// since the stable path never reaches the Fatalf (L29).
+/// Facet map (Go verdict legs): source-root-name pins sourceRoot
+/// (L18); archive-name pins archive (L22); first-name pins first
+/// (L26); second-name pins second (L27); helper-name pins
+/// harnessKey (L26); derivation-count pins 2 (L26-27);
+/// bundle-input-count pins 4 (L26-27); guard-leg-count pins 2
+/// (L28); refusal-count pins 1 (L29); inputs-identical pins true
+/// (L26-27); keys-equal pins true (L28); key-nonempty pins true
+/// (L28); abs-ok pins true (L19); write-ok pins true (L23);
+/// refusal-fired pins false (L29).
+/// The roots-green pin lives in life-016-roots-green.can;
+/// the run shape plus diagnostics live in
+/// life-016-run-shape.can.
+/// Variants: first/second (the two repeated derivations in Go
+/// order).
+/// Environment: none (no gates; requires []).
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE bind at P23;
+/// no live run now. Accept gate P23 is unmet. Timeout
+/// 120000ms is the offline default bound (no Go timeout in
+/// this row; binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/cache-semantics checks: source-root-name,
+/// archive-name, first-name, second-name, helper-name,
+/// derivation-count, bundle-input-count, guard-leg-count,
+/// refusal-count, inputs-identical, keys-equal, key-nonempty,
+/// abs-ok, write-ok, refusal-fired.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str source_root_name
+    str archive_name
+    str first_name
+    str second_name
+    str helper_name
+    int derivation_count
+    int bundle_input_count
+    int guard_leg_count
+    int refusal_count
+    bool inputs_identical
+    bool keys_equal
+    bool key_nonempty
+    bool abs_ok
+    bool write_ok
+    bool refusal_fired
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/cache-semantics", "default", "", "offline"), "source-root-name" => ok "case life/cache-semantics variant default root source-root-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/cache-semantics", "default", "", "offline"), "inputs-identical" => ok evidence("inputs-identical", "true", "true", true, "case life/cache-semantics variant default root inputs-identical run offline")
+        different: false, true, context("life/cache-semantics", "default", "", "offline"), "inputs-identical" => failed{"inputs-identical"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("life/cache-semantics", "default", "", "offline"), "derivation-count" => ok evidence("derivation-count", "2", "2", true, "case life/cache-semantics variant default root derivation-count run offline")
+        different: 1, 2, context("life/cache-semantics", "default", "", "offline"), "derivation-count" => failed{"derivation-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "sourceRoot", "sourceRoot", context("life/cache-semantics", "default", "", "offline"), "source-root-name" => ok evidence("source-root-name", "sourceRoot", "sourceRoot", true, "case life/cache-semantics variant default root source-root-name run offline")
+        different: "sourceRoot_2", "sourceRoot", context("life/cache-semantics", "default", "", "offline"), "source-root-name" => failed{"source-root-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_source_root_name: "seed-source-root-name-drift" => ok observation("sourceRoot_2", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_archive_name: "seed-archive-name-drift" => ok observation("sourceRoot", "archive_2", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_first_name: "seed-first-name-drift" => ok observation("sourceRoot", "archive", "first_2", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_second_name: "seed-second-name-drift" => ok observation("sourceRoot", "archive", "first", "second_2", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey_2", 2, 4, 2, 1, true, true, true, true, true, false)
+        seed_derivation_count: "seed-derivation-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 1, 4, 2, 1, true, true, true, true, true, false)
+        seed_bundle_input_count: "seed-bundle-input-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 3, 2, 1, true, true, true, true, true, false)
+        seed_guard_leg_count: "seed-guard-leg-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 3, 1, true, true, true, true, true, false)
+        seed_refusal_count: "seed-refusal-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 2, true, true, true, true, true, false)
+        seed_inputs_identical: "seed-inputs-identical-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, false, true, true, true, true, false)
+        seed_keys_equal: "seed-keys-equal-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, false, true, true, true, false)
+        seed_key_nonempty: "seed-key-nonempty-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, false, true, true, false)
+        seed_abs_ok: "seed-abs-ok-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, false, true, false)
+        seed_write_ok: "seed-write-ok-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, false, false)
+        seed_refusal_fired: "seed-refusal-fired-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, true)
+    match variant_id
+        "seed-source-root-name-drift" => ok observation("sourceRoot_2", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        "seed-archive-name-drift" => ok observation("sourceRoot", "archive_2", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        "seed-first-name-drift" => ok observation("sourceRoot", "archive", "first_2", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        "seed-second-name-drift" => ok observation("sourceRoot", "archive", "first", "second_2", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+        "seed-helper-name-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey_2", 2, 4, 2, 1, true, true, true, true, true, false)
+        "seed-derivation-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 1, 4, 2, 1, true, true, true, true, true, false)
+        "seed-bundle-input-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 3, 2, 1, true, true, true, true, true, false)
+        "seed-guard-leg-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 3, 1, true, true, true, true, true, false)
+        "seed-refusal-count-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 2, true, true, true, true, true, false)
+        "seed-inputs-identical-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, false, true, true, true, true, false)
+        "seed-keys-equal-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, false, true, true, true, false)
+        "seed-key-nonempty-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, false, true, true, false)
+        "seed-abs-ok-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, false, true, false)
+        "seed-write-ok-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, false, false)
+        "seed-refusal-fired-drift" => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, true)
+        _ => ok observation("sourceRoot", "archive", "first", "second", "harnessKey", 2, 4, 2, 1, true, true, true, true, true, false)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l016: "m29-l016" => ok [check("source-root-name", "source leg keeps its Go name"), check("archive-name", "archive leg keeps its Go name"), check("first-name", "first derivation keeps its Go name"), check("second-name", "second derivation keeps its Go name"), check("helper-name", "key helper is named harnessKey"), check("derivation-count", "two derivations run in order"), check("bundle-input-count", "four bundle input slots are pinned"), check("guard-leg-count", "stability gate has two legs"), check("refusal-count", "one refusal guards the gate"), check("inputs-identical", "both derivations share inputs"), check("keys-equal", "repeated keys compare equal"), check("key-nonempty", "derived key is nonempty"), check("abs-ok", "root lookup succeeds"), check("write-ok", "archive seed write succeeds"), check("refusal-fired", "refusal stays silent on stable keys")]
+        other: "nope" => ok []
+    match scope is "m29-l016"
+        false => ok []
+        true => ok [check("source-root-name", "source leg keeps its Go name"), check("archive-name", "archive leg keeps its Go name"), check("first-name", "first derivation keeps its Go name"), check("second-name", "second derivation keeps its Go name"), check("helper-name", "key helper is named harnessKey"), check("derivation-count", "two derivations run in order"), check("bundle-input-count", "four bundle input slots are pinned"), check("guard-leg-count", "stability gate has two legs"), check("refusal-count", "one refusal guards the gate"), check("inputs-identical", "both derivations share inputs"), check("keys-equal", "repeated keys compare equal"), check("key-nonempty", "derived key is nonempty"), check("abs-ok", "root lookup succeeds"), check("write-ok", "archive seed write succeeds"), check("refusal-fired", "refusal stays silent on stable keys")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/cache-semantics" => ok [expected_check("source-root-name", "sourceRoot"), expected_check("archive-name", "archive"), expected_check("first-name", "first"), expected_check("second-name", "second"), expected_check("helper-name", "harnessKey"), expected_check("derivation-count", "2"), expected_check("bundle-input-count", "4"), expected_check("guard-leg-count", "2"), expected_check("refusal-count", "1"), expected_check("inputs-identical", "true"), expected_check("keys-equal", "true"), expected_check("key-nonempty", "true"), expected_check("abs-ok", "true"), expected_check("write-ok", "true"), expected_check("refusal-fired", "false")]
+        unknown: "nope" => ok []
+    match case is "life/cache-semantics"
+        false => ok []
+        true => ok [expected_check("source-root-name", "sourceRoot"), expected_check("archive-name", "archive"), expected_check("first-name", "first"), expected_check("second-name", "second"), expected_check("helper-name", "harnessKey"), expected_check("derivation-count", "2"), expected_check("bundle-input-count", "4"), expected_check("guard-leg-count", "2"), expected_check("refusal-count", "1"), expected_check("inputs-identical", "true"), expected_check("keys-equal", "true"), expected_check("key-nonempty", "true"), expected_check("abs-ok", "true"), expected_check("write-ok", "true"), expected_check("refusal-fired", "false")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/cache-semantics", "default", "", "offline") => ok
+        seed_source_root_name: context("life/cache-semantics", "seed-source-root-name-drift", "", "offline") => failed{"source-root-name"}
+        seed_archive_name: context("life/cache-semantics", "seed-archive-name-drift", "", "offline") => failed{"archive-name"}
+        seed_first_name: context("life/cache-semantics", "seed-first-name-drift", "", "offline") => failed{"first-name"}
+        seed_second_name: context("life/cache-semantics", "seed-second-name-drift", "", "offline") => failed{"second-name"}
+        seed_helper_name: context("life/cache-semantics", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_derivation_count: context("life/cache-semantics", "seed-derivation-count-drift", "", "offline") => failed{"derivation-count"}
+        seed_bundle_input_count: context("life/cache-semantics", "seed-bundle-input-count-drift", "", "offline") => failed{"bundle-input-count"}
+        seed_guard_leg_count: context("life/cache-semantics", "seed-guard-leg-count-drift", "", "offline") => failed{"guard-leg-count"}
+        seed_refusal_count: context("life/cache-semantics", "seed-refusal-count-drift", "", "offline") => failed{"refusal-count"}
+        seed_inputs_identical: context("life/cache-semantics", "seed-inputs-identical-drift", "", "offline") => failed{"inputs-identical"}
+        seed_keys_equal: context("life/cache-semantics", "seed-keys-equal-drift", "", "offline") => failed{"keys-equal"}
+        seed_key_nonempty: context("life/cache-semantics", "seed-key-nonempty-drift", "", "offline") => failed{"key-nonempty"}
+        seed_abs_ok: context("life/cache-semantics", "seed-abs-ok-drift", "", "offline") => failed{"abs-ok"}
+        seed_write_ok: context("life/cache-semantics", "seed-write-ok-drift", "", "offline") => failed{"write-ok"}
+        seed_refusal_fired: context("life/cache-semantics", "seed-refusal-fired-drift", "", "offline") => failed{"refusal-fired"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.source_root_name, "sourceRoot", c, "source-root-name")
+            failed
+            ok evidence source_root_name_evidence => match call require_text(got.archive_name, "archive", c, "archive-name")
+                failed
+                ok evidence archive_name_evidence => match call require_text(got.first_name, "first", c, "first-name")
+                    failed
+                    ok evidence first_name_evidence => match call require_text(got.second_name, "second", c, "second-name")
+                        failed
+                        ok evidence second_name_evidence => match call require_text(got.helper_name, "harnessKey", c, "helper-name")
+                            failed
+                            ok evidence helper_name_evidence => match call require_int(got.derivation_count, 2, c, "derivation-count")
+                                failed
+                                ok evidence derivation_count_evidence => match call require_int(got.bundle_input_count, 4, c, "bundle-input-count")
+                                    failed
+                                    ok evidence bundle_input_count_evidence => match call require_int(got.guard_leg_count, 2, c, "guard-leg-count")
+                                        failed
+                                        ok evidence guard_leg_count_evidence => match call require_int(got.refusal_count, 1, c, "refusal-count")
+                                            failed
+                                            ok evidence refusal_count_evidence => match call require_bool(got.inputs_identical, true, c, "inputs-identical")
+                                                failed
+                                                ok evidence inputs_identical_evidence => match call require_bool(got.keys_equal, true, c, "keys-equal")
+                                                    failed
+                                                    ok evidence keys_equal_evidence => match call require_bool(got.key_nonempty, true, c, "key-nonempty")
+                                                        failed
+                                                        ok evidence key_nonempty_evidence => match call require_bool(got.abs_ok, true, c, "abs-ok")
+                                                            failed
+                                                            ok evidence abs_ok_evidence => match call require_bool(got.write_ok, true, c, "write-ok")
+                                                                failed
+                                                                ok evidence write_ok_evidence => match call require_bool(got.refusal_fired, false, c, "refusal-fired")
+                                                                    failed
+                                                                    ok evidence refusal_fired_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l016: "m29-l016" => ok test_case("life/cache-semantics", ["life", "m29"], [], 120000, [check_ref("source-root-name"), check_ref("archive-name"), check_ref("first-name"), check_ref("second-name"), check_ref("helper-name"), check_ref("derivation-count"), check_ref("bundle-input-count"), check_ref("guard-leg-count"), check_ref("refusal-count"), check_ref("inputs-identical"), check_ref("keys-equal"), check_ref("key-nonempty"), check_ref("abs-ok"), check_ref("write-ok"), check_ref("refusal-fired")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l016"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/cache-semantics", ["life", "m29"], [], 120000, [check_ref("source-root-name"), check_ref("archive-name"), check_ref("first-name"), check_ref("second-name"), check_ref("helper-name"), check_ref("derivation-count"), check_ref("bundle-input-count"), check_ref("guard-leg-count"), check_ref("refusal-count"), check_ref("inputs-identical"), check_ref("keys-equal"), check_ref("key-nonempty"), check_ref("abs-ok"), check_ref("write-ok"), check_ref("refusal-fired")], callable case_body)
