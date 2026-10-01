@@ -6402,7 +6402,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Test one-winner/seven-conflict, replay expiry/revocation, postcommit renderer fault and startup/shutdown using settled independent effects. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-018; shared delegate references: none.",
       "commit": "test(native-can): add gate3-concurrency-replay-and-f cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-018"
