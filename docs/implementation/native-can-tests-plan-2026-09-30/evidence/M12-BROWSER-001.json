@@ -1,0 +1,137 @@
+{
+  "changed_paths": [
+    "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M12-BROWSER-001.json",
+    "tests/native-can/migration/m12-application-server-and-browser/browser-001-apps-semantics.can",
+    "tests/native-can/migration/m12-application-server-and-browser/browser-001-roots-green.can",
+    "tests/native-can/migration/m12-application-server-and-browser/browser-001-run-shape.can"
+  ],
+  "commands_with_deadlines_and_results": [
+    {
+      "command": "python3 /tmp/m12b001scratch/gen.py && go run ./compiler parse <each of the 3 owned slices>",
+      "deadline": "280s",
+      "result": "Generator emitted the 3 owned slices deterministically (roots 238 lines/12 checks/18358 bytes; apps 312 lines/23 checks/39428 bytes; run 269 lines/16 checks/24428 bytes). Parse first run, exit 0 each: m12browser001roots 17 declarations; m12browser001apps 17 declarations; m12browser001run 17 declarations (17 = 8 shapes + 9 fns: selector/require_bool/require_int/require_text/observe/checks/expected_vector/case_body/descriptor, matching CORE-034)."
+    },
+    {
+      "command": "grep -c '^    text ' <each owned slice>; grep -c REDACTED <each owned slice>; md5 <each owned slice>",
+      "deadline": "60s",
+      "result": "Vocabulary control: '^    text ' count 0 on all 3 files (record/given types are str/int/bool only; text used solely as the text:: package). REDACTED 0 per file (trailing grep exit 1 = no matches). roots 18358 bytes md5 378eeef1671c94e7500215438ff520f2; apps 39428 bytes md5 203b7714921c7d9dc5edabc42649c4a7; run 24428 bytes md5 35a016bcaac2b92835c9f0976dbbecae."
+    },
+    {
+      "command": "python3 /tmp/m12b001scratch/byttruth.py (byte-counts every pinned literal in tests/integration/applications_test.go; md5; REDACTED count; grep -c spot checks)",
+      "deadline": "60s",
+      "result": "All pins byte-present. Go md5 39bb2632c4647acfc2782e1aab505970 (32525 bytes): L286 four-name loop literal x1; account-search x3; form-validation x3; dashboard x22; native-ai x5; \"examples\" x2; \"dist\" x1; 0600 x6; 0700 x2; \"assert\" x1; status/diag predicate x2; os.Getenv CAN_BUN_ARCHIVE x5; skip message x4; 8*time.Minute x1; deny-network profile x1; PATH=/nonexistent x5; \"bin/canlc\" x1; \"build\" x1; passed/assertions/evidence json keys x3/x1/x1; \"real-can\" x1; L298 report predicate x1; real == 0 x1; One build x1; firstID/firstDir x1; \"buildID\"/\"directory\" x1 each; L134 nonempty predicate x1; \"entry.ts\" x8; \"snapshot-\" x1; \".json\" x2; UNUSED+dummy-url pair x3; ExtraFiles x3; \"runtime/bun\" x4; zero-arg bun+entry call x1; \"usage: \" x1; HasPrefix x1; firstID[:12] x1; staged log format x1; L127 build exit x1. grep -c: CAN_BUN_ARCHIVE 10, real-can 2, usage: 2, snapshot-UNUSED 0 (name composes at runtime from verified parts; recorded as adaptation), entry.ts 9, 0600 6. REDACTED 0 in source bytes."
+    },
+    {
+      "command": "python3 /tmp/m12b001scratch/deadseed.py (extracts every ok observation(...) tuple from observe asserts AND match arms; diffs each seed against the expected tuple; checks assert/arm parity and type-default separation)",
+      "deadline": "60s",
+      "result": "CLEAN, exit 0: roots 13 assert tuples + 13 match arms at 12 fields; apps 24 + 24 at 23 fields; run 17 + 17 at 16 fields. All 51 seeds differ from the expected tuple in exactly one field, always the seed's target field; every assert tuple is byte-identical to its match arm (including the default arm); every tuple differs from the type-default tuple. Full per-seed diff table in coverage.controls."
+    },
+    {
+      "command": "D=tests/native-can/migration/m12-application-server-and-browser; rm -rf /tmp/m12b001check && mkdir -p /tmp/m12b001check/src/{apps,roots,run} && cp $D/browser-001-*.can (one package per subdir) && cp tests/native-can/can.project.json + printf can.errors.json active [m12browser001apps::failed, m12browser001roots::failed, m12browser001run::failed] && 3x diff && python3 sorted-check && echo STAGE-IDENTICAL",
+      "deadline": "60s",
+      "result": "STAGE-IDENTICAL: all 3 diffs empty. Registry active byte-sorted: [m12browser001apps::failed, m12browser001roots::failed, m12browser001run::failed]."
+    },
+    {
+      "command": "go run ./compiler check --json /tmp/m12b001check > /tmp/m12b001check-out.json 2>/tmp/m12b001check-err.txt; python3 print keys/accepted/diagnostics/status/kind/schema; wc stderr capture",
+      "deadline": "280s",
+      "result": "exit 0, accepted:true, diagnostics:[], first run. Top-level keys kind/result/schema_version/status (can.check/completed/1). Stderr capture empty (0 bytes). Slice is cancheck-clean standalone (provides include the shape types per the H023 lesson; one package per src subdirectory; uses [text] only)."
+    },
+    {
+      "command": "rm -rf /tmp/m12b001neg && cp -r /tmp/m12b001check /tmp/m12b001neg && sed -i '' 's/^    int app_count$/    str app_count/' /tmp/m12b001neg/src/roots/browser-001-roots-green.can && go run ./compiler check --json /tmp/m12b001neg > captures; python3 print accepted/ndiag/severity/files/codes/messages",
+      "deadline": "280s",
+      "result": "Seed applied in neg copy only (L66 now 'str app_count'). check exit 1, accepted:false, diagnostics: 27 (27 errors), all 27 naming src/roots/browser-001-roots-green.can, code CAN-CHECK, message 'expression type does not fit expected type'. Harness is non-vacuous."
+    },
+    {
+      "command": "python3 start_lines from neg output; grep -c '^    int app_count$' live file; grep -c 'str app_count' live file; rm -rf /tmp/m12b001neg + captures; ls (verify absent)",
+      "deadline": "60s",
+      "result": "start_lines: 13 observe asserts (L137-149) + 13 match arms (L151-163) + 1 case_body require_int call site (L203) = 27. Live-tree file verified still 'int app_count' (grep count 1, str-defect count 0). /tmp/m12b001neg and captures removed after (ls confirms absent)."
+    },
+    {
+      "command": "go run ./compiler check --json /Users/vince/Projects/can-lang/tests/native-can > /tmp/m12b001-live.json 2>/tmp/m12b001-live.err; python3 print accepted/ndiag/sev/each diagnostic/m12browser001+browser-001 mentions; wc stderr",
+      "deadline": "280s",
+      "result": "exit 0, accepted:true, diagnostics: 2 (0 errors), first run. Both are the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings in untouched src/report/reducer/reducer.can (start_line 466, 486). m12browser001 mentions: 0; browser-001 mentions: 0; stderr empty (0 bytes). Slice contributes zero live-tree diagnostics (read-only; zero live-tree writes outside owned paths)."
+    },
+    {
+      "command": "printf CAN_BUN_ARCHIVE; ls archive-or-nonexistent; ls /usr/bin/sandbox-exec; ls evidence | grep -E '^(P15|P27|P28)\\.json'; ls evidence | grep -E '^P23'; ls examples/<4 apps>; uname -sm; go version",
+      "deadline": "60s",
+      "result": "CAN_BUN_ARCHIVE=<unset>; archive ls: 'No such file or directory'. /usr/bin/sandbox-exec present. Start gates satisfied: P15.json, P27.json, P28.json all present. No P23 evidence file (grep exit 1): accept_after P23 UNMET. Staging inputs followed: examples/account-search, examples/form-validation, examples/dashboard (README/assets/can.errors.json/can.project.json/src each), examples/native-ai (README/can.errors.json/can.project.json/src). No live canlc assert/build/run attempted, no bundle build (broad builds deferred; execution BLOCKED, recorded not waived). Host: Darwin arm64; go1.27.1 darwin/arm64."
+    },
+    {
+      "command": "git status --short; git log --oneline -2; md5 + wc -c owned slices",
+      "deadline": "60s",
+      "result": "Only untracked paths from this worker: tests/native-can/migration/m12-application-server-and-browser/ (3 owned .can files). Concurrent/sibling state untouched: M10 CORE-037/CORE-046 triples + M10-CORE-046.json (sibling workers), compiler/internal/check/late.go, muse-resume.md modification; nothing staged. HEAD 73e84042 feat(i03): merge 13 late-occurrence operations into catalogue. Owned md5s/sizes as in the vocab-control result above."
+    },
+    {
+      "command": "rm -rf /tmp/m12b001check /tmp/m12b001check-out.json /tmp/m12b001check-err.txt /tmp/m12b001-live.json /tmp/m12b001-live.err /tmp/m12b001scratch; ls each (verify absent); git status --short (final)",
+      "deadline": "60s",
+      "result": "All /tmp/m12b001* scratch removed (probe project with its check captures, live-tree captures, generator + audit scripts); ls confirms none remain. Final git status shows only the 3 owned .can files plus this evidence file as untracked under the owned prefix; nothing staged, committed, or pushed."
+    },
+    {
+      "command": "Restage /tmp/m12b001re (diff-identical copies, byte-sorted active list) and rerun go run ./compiler check --json after concurrent compiler/ tree changes landed mid-run; then rm -rf /tmp/m12b001re + captures",
+      "deadline": "280s",
+      "result": "RESTAGE-IDENTICAL (3 diffs empty). Re-check exit 0, accepted:true, diagnostics:[], stderr empty (0 bytes). Slice still cancheck-clean under the current tree; concurrent compiler/internal/check edits (late.go/late_test.go/completions.go/program.go) and muse-resume.md changes were not read for content, written, or staged by this worker. Re-stage scratch removed after (ls confirms absent)."
+    }
+  ],
+  "coverage": {
+    "case_check_ids": [
+      "browser/apps-roots: app-count, app-account, app-forms, app-dashboard, app-native, stage-source, skip-dist, file-mode, dir-mode, assert-cmd, assert-exit, assert-diag-empty (browser-001-roots-green.can, package m12browser001roots)",
+      "browser/apps: env-gate, skip-needle, ctx-timeout-min, sandbox-profile, offline-path, canlc-bin, build-cmd, report-passed-key, report-assertions-key, report-evidence-key, evidence-needle, account-passed, account-nonempty, account-real, forms-passed, forms-nonempty, forms-real, dashboard-passed, dashboard-nonempty, dashboard-real, native-passed, native-nonempty, native-real (browser-001-apps-semantics.can, package m12browser001apps)",
+      "browser/apps-run: build-once, build-exit, build-id-key, build-id-nonempty, build-dir-key, build-dir-nonempty, entry-name, snapshot-name, snapshot-key, snapshot-value, snapshot-count, bun-entry, usage-args, usage-prefix, usage-exit, build-short (browser-001-run-shape.can, package m12browser001run)"
+    ],
+    "controls": [
+      "Positive: every case_body 'expected' root on the default variant yields ok (51 checks across 3 cases: 12 + 23 + 16).",
+      "Seeded defect: each of the 51 checks has its own seed refusing with the exact check id - apps-roots: seed-app-count-drift -> failed{app-count}; seed-app-account-drift -> failed{app-account}; seed-app-forms-drift -> failed{app-forms}; seed-app-dashboard-drift -> failed{app-dashboard}; seed-app-native-drift -> failed{app-native}; seed-stage-source-drift -> failed{stage-source}; seed-skip-dist-drift -> failed{skip-dist}; seed-file-mode-drift -> failed{file-mode}; seed-dir-mode-drift -> failed{dir-mode}; seed-assert-cmd-drift -> failed{assert-cmd}; seed-assert-exit-drift -> failed{assert-exit}; seed-assert-diag-empty-drift -> failed{assert-diag-empty}. apps: seed-env-gate-drift -> failed{env-gate}; seed-skip-needle-drift -> failed{skip-needle}; seed-ctx-timeout-min-drift -> failed{ctx-timeout-min}; seed-sandbox-profile-drift -> failed{sandbox-profile}; seed-offline-path-drift -> failed{offline-path}; seed-canlc-bin-drift -> failed{canlc-bin}; seed-build-cmd-drift -> failed{build-cmd}; seed-report-passed-key-drift -> failed{report-passed-key}; seed-report-assertions-key-drift -> failed{report-assertions-key}; seed-report-evidence-key-drift -> failed{report-evidence-key}; seed-evidence-needle-drift -> failed{evidence-needle}; seed-account-passed-drift -> failed{account-passed}; seed-account-nonempty-drift -> failed{account-nonempty}; seed-account-real-drift -> failed{account-real}; seed-forms-passed-drift -> failed{forms-passed}; seed-forms-nonempty-drift -> failed{forms-nonempty}; seed-forms-real-drift -> failed{forms-real}; seed-dashboard-passed-drift -> failed{dashboard-passed}; seed-dashboard-nonempty-drift -> failed{dashboard-nonempty}; seed-dashboard-real-drift -> failed{dashboard-real}; seed-native-passed-drift -> failed{native-passed}; seed-native-nonempty-drift -> failed{native-nonempty}; seed-native-real-drift -> failed{native-real}. apps-run: seed-build-once-drift -> failed{build-once}; seed-build-exit-drift -> failed{build-exit}; seed-build-id-key-drift -> failed{build-id-key}; seed-build-id-nonempty-drift -> failed{build-id-nonempty}; seed-build-dir-key-drift -> failed{build-dir-key}; seed-build-dir-nonempty-drift -> failed{build-dir-nonempty}; seed-entry-name-drift -> failed{entry-name}; seed-snapshot-name-drift -> failed{snapshot-name}; seed-snapshot-key-drift -> failed{snapshot-key}; seed-snapshot-value-drift -> failed{snapshot-value}; seed-snapshot-count-drift -> failed{snapshot-count}; seed-bun-entry-drift -> failed{bun-entry}; seed-usage-args-drift -> failed{usage-args}; seed-usage-prefix-drift -> failed{usage-prefix}; seed-usage-exit-drift -> failed{usage-exit}; seed-build-short-drift -> failed{build-short}.",
+      "Dead-seed diff (programmatic, from authored bytes; every seed differs in exactly its target field, assert tuple identical to its match arm): roots[12]: app-count f0 4->3; app-account f1 account-search->account-search-2; app-forms f2 form-validation->form-validation-2; app-dashboard f3 dashboard->dashboard-2; app-native f4 native-ai->native-ai-2; stage-source f5 examples->samples; skip-dist f6 dist->build; file-mode f7 0600->0644; dir-mode f8 0700->0755; assert-cmd f9 assert->check; assert-exit f10 0->1; assert-diag-empty f11 true->false. apps[23]: env-gate f0 CAN_BUN_ARCHIVE->CAN_BUN_ARCHIVE_2; skip-needle f1 staged-execution->staged-checks; ctx-timeout-min f2 8->7; sandbox-profile f3 deny-network-profile->allow-only; offline-path f4 PATH=/nonexistent->PATH=/usr/bin; canlc-bin f5 bin/canlc->bin/other; build-cmd f6 build->compile; report-passed-key f7 passed->pass; report-assertions-key f8 assertions->assertion; report-evidence-key f9 evidence->proof; evidence-needle f10 real-can->fake-can; account/forms/dashboard/native passed/nonempty/real f11-f22 true->false (12x). run[16]: build-once f0 1->2; build-exit f1 0->1; build-id-key f2 buildID->buildId; build-id-nonempty f3 true->false; build-dir-key f4 directory->dir; build-dir-nonempty f5 true->false; entry-name f6 entry.ts->main.ts; snapshot-name f7 snapshot-UNUSED.json->snapshot-OTHER.json; snapshot-key f8 UNUSED->USED; snapshot-value f9 dummy-url->dummy-other; snapshot-count f10 1->0; bun-entry f11 runtime/bun->runtime/node; usage-args f12 0->1; usage-prefix f13 usage:->Usage:; usage-exit f14 0->1; build-short f15 12->11. Zero dead seeds; zero multi-field diffs.",
+      "Missing evidence: short counts (app 3/4, build-once 2/1, snapshot-count 0/1, ctx 7/8, build-short 11/12, nonzero exits), empty/unset gates (false passed/nonempty/real/id/dir/diag flags) and drifted texts (renamed apps, samples source, build skip, 0644/0755 modes, check/compile commands, pass/assertion/proof keys, fake-can, buildId/dir keys, main.ts entry, OTHER snapshot, node runtime, Usage: prefix, allow-only profile, /usr/bin PATH) each refuse at their count/text gate rather than passing vacuously.",
+      "Controls are authored as Can assert roots and typecheck (0-error cancheck); live execution of the asserts needs P23 + an execution leg, so no execution credit is claimed here. Standalone negative control: one type mutation in a probe copy fired exactly 27 CAN-CHECK errors, all naming the mutated file."
+    ],
+    "retained_facets": [
+      "Discover and stage the four apps; each attached Can assertion passes with at least one real-can evidence row (protects 1; applications_test.go L286 loop, L30-66 staging, L288-312 assert leg): app-count 4 with the four loop names in order; examples source, dist skip, 0600/0700 modes; assert command with exit 0 and empty diagnostics; per-app passed/nonempty/real report predicates plus the passed/assertions/evidence keys and the real-can needle.",
+      "Build each once and require the compiled entry to print usage with no developer tools on PATH and a disposable snapshot input (protects 2; L313-331 build/usage leg): exactly one build exiting 0 with nonempty buildID/directory; entry.ts; snapshot-UNUSED.json carrying UNUSED plus the dummy postgres value, passed as one ExtraFiles file; zero-arg runtime/bun run printing the usage: prefix with exit 0; PATH=/nonexistent on both legs; 12-char staged log truncation.",
+      "Observes: Can assert report roots/evidence (per-variant passed/nonempty/real + report keys + real-can needle), one build ID (build-once + build-id-key + build-id-nonempty), CLI usage output (usage-prefix needle under the HasPrefix contract), process exit (assert-exit/build-exit/usage-exit).",
+      "Variants: account-search, form-validation, dashboard, native-ai (the L286 loop, in order); each carries its own passed/nonempty/real checks in browser/apps; roots pins the inventory, run pins the shared usage shape. Environment: requires can-bun-archive (row gate CAN_BUN_ARCHIVE); 480000ms timeout mirroring the Go 8-minute ctx (L280).",
+      "Delegated oracles: none (row lists none)."
+    ],
+    "unrun_or_blocked": [
+      "Live execution of the new Can asserts (canlc assert/build over the staged application projects, usage runs of the compiled entries): BLOCKED - CAN_BUN_ARCHIVE unset in this session (probe recorded above); accept gate P23 unmet, so no execution credit claimed or attempted; no bundles, no live assert, no qualification, no retirement.",
+      "Staged sandboxed runs (per-app assert, one build, bare-entry usage with fd snapshot, all under sandbox-exec with PATH=/nonexistent): BLOCKED - archive unset; all 51 pins are static Can expectations only.",
+      "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs, bundled runtime/bun): BLOCKED/CONDITIONAL - archive unset; pinned as requires can-bun-archive on every descriptor, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+      "Mandatory offline checks with R + new suite/artifact binding (suite_snapshot_acceptance): DEFERRED to P23 - R bundle not built/used here; identities identified below, not bound.",
+      "tests/native-can project cancheck delta from this slice: none - slice lives outside the src/ source root (M32 precedent); live-tree run shows only the 2 pre-existing reducer warnings with zero m12browser001/browser-001 mentions."
+    ]
+  },
+  "deletion_policy": "No shared old file is deleted by this slice. tests/integration/applications_test.go stays intact per its delete_when gates (every protected behavior, observation, variant, negative control and required environment reproduced with independent qualification evidence and callers rewired first); retirement_eligible=false; retirement is a later integrator decision. Nothing proposed for deletion.",
+  "executor": "worker M12-B001",
+  "identities": {
+    "artifact": "N/A: no built executable promoted; no live run, so no artifact identity to bind (binds at P23).",
+    "candidate": "N/A: no candidate executed; Can asserts are static/type-level only (provisional until P23, like P15-P17).",
+    "host_profile": "Darwin arm64; go1.27.1 darwin/arm64 (observed via uname/go version this session).",
+    "observer": "go run ./compiler check --json output (accepted flag + diagnostic counts/files/lines/codes) and go run ./compiler parse output (package + declaration counts) recorded verbatim in commands above.",
+    "owner": "N/A as an N artifact; this slice exercises no N admission path.",
+    "reference": "R-seed scope identified per docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md (R-core/P26 and suite acceptance/P23 unfinished). No R bundle built or used in this session; mandatory R checks deferred to P23.",
+    "suite": "3 standalone Can packages under the owned prefix (m12browser001roots, m12browser001apps, m12browser001run); uses [text] only; self-contained local shapes mirroring spec:: equivalents; S identity binding deferred to P23 (no execution credit)."
+  },
+  "limitations": [
+    "Static-only verification: parse + 0-error cancheck (standalone) + non-vacuous negative control + live-tree attribution + authored (unexecuted) Can assert controls + programmatic dead-seed diff + byte-truth audit. Assert bodies are unaudited by execution; P23 qualification + an execution leg must bind before any execution credit.",
+    "Slice packages avoid uses [spec] (outside the src/ source root, M32 precedent); at P23 the local test_case/check/evidence shapes map onto spec:: equivalents.",
+    "Slice follows the H023 provides shape on purpose: provides includes the shape types (context/check/evidence/observation/failed/test_case) because cancheck rejects exported signatures over private types.",
+    "Slices were emitted by a deterministic owned generator script from compact check specs (guaranteeing assert/match-arm/vector consistency); the script lived in owned /tmp scratch, was verified through the same gates as hand-written sources, and was removed at cleanup.",
+    "Count/text pins mirror the checked-in source verbatim (4 apps in loop order, examples, dist, 0600/0700, assert, exit 0 + empty diag, CAN_BUN_ARCHIVE + skip message, 8 minutes, deny-network profile, PATH=/nonexistent, bin/canlc, build, passed/assertions/evidence keys, real-can, one build + exit 0 + buildID/directory, entry.ts, snapshot-UNUSED.json + UNUSED + dummy URL, one snapshot file, runtime/bun, zero args, usage: prefix + exit 0, 12-char truncation); if the Go test ever changes them, these pins move with it at migration-update time.",
+    "Recorded adaptations (documented in slice headers): file modes pinned as their exact source spellings (Go octal literals 0600/0700); context timeout pinned as int minutes (8); snapshot-UNUSED.json composes snapshot-+id (L142) with +.json (L151) for id UNUSED (L317) since Go builds the name at runtime; usage-prefix pins the HasPrefix needle (L328) rather than exact stdout; build-short pins the firstID[:12] log truncation (L331).",
+    "Stub-provider and live/browser legs are out of scope for this row: the stub header assertion, raw-provider fixtures, seed/serve legs and Playwright harness belong to BROWSER-003/BROWSER-002/live/browser rows, not TestApplicationsStaged; nothing from those legs is pinned here, and the provider credential bytes visible only under display masking were never pinned.",
+    "Environment-gated legs (CAN_BUN_ARCHIVE execution, macOS sandbox-exec runs, bundled runtime/bun) are recorded blocked/conditional with probes above, never waived; the present /usr/bin/sandbox-exec host tool alone authorizes no live run.",
+    "M10 CORE-037/CORE-046 run concurrently per the row card: no sibling-worker file was read for content, written, or staged by this worker; the owned m12 directory holds only this row's triple. Shared compiler/catalogue/runtime paths, old Go harnesses and other evidence files untouched."
+  ],
+  "resource_and_cleanup_receipts": [
+    "No live runs, no R-seed use, no bundles built, no network, no persistent caches (default GOCACHE only; no temp cache created).",
+    "No repo writes outside the owned prefix + this evidence file; shared old files untouched; tests/integration/ untouched; nothing staged, nothing committed, nothing pushed.",
+    "/tmp/m12b001check (probe project, diff-verified identical) removed after gates with its check captures; /tmp/m12b001neg (negative control) and its captures removed after firing at gate c; /tmp/m12b001-live.json/.err (live-tree output) removed; /tmp/m12b001scratch (generator + dead-seed + byte-truth scripts) removed; ls confirms none remain. /tmp/m12b001re (re-verification probe) and its captures likewise removed.",
+    "No EMFILE or infrastructure failure in this session; all gates ran to completion."
+  ],
+  "retirement_eligible": false,
+  "reviewer_disposition": null,
+  "row_or_file_slice": "BROWSER-001",
+  "status": "complete",
+  "task_id": "M12",
+  "writing_owner": "migration-browser"
+}

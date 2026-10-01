@@ -1,0 +1,238 @@
+package m12browser001roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-001 "staged applications: roots green, staged inventory".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsStaged (L273-333); staging helper stageApplication
+/// (L30-66) plus copyDir (L68-92); assert leg canlcOffline (L94-117).
+/// Disposition: migrate (this row ports TestApplicationsStaged to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): static staged inventory as the green
+/// baseline: the four staged app names in loop order, the examples
+/// staging source, the dist skip, the staged file/dir modes, the
+/// assert command, and the assert leg green (exit 0, empty
+/// diagnostics).
+/// ADAPTATION (recorded, with source lines): the Go file modes are
+/// octal literals (L55: 0600, L74: 0700), pinned here as their exact
+/// source spellings; the assert exit/diag predicates (L289) pin the
+/// leg green without claiming a live run (accept_after P23 unmet).
+/// Facet map (applications_test.go legs): app-count pins the four
+/// staged apps (L286 loop); app-account, app-forms, app-dashboard and
+/// app-native pin the loop names in order (L286); stage-source pins
+/// examples (L37/L45); skip-dist pins dist (L42); file-mode pins 0600
+/// (L55); dir-mode pins 0700 (L74); assert-cmd pins assert (L288);
+/// assert-exit pins exit 0 (L289); assert-diag-empty pins empty
+/// diagnostics (L289).
+/// Report semantics live in browser-001-apps-semantics.can; the
+/// production build/usage shape lives in browser-001-run-shape.can.
+/// Variants: none in this file (default only); the four per-app
+/// report predicates live in apps-semantics.
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates CAN/BUILD/PROC/WORK/SUITE and C/R/N/S/A identities
+/// bind at P23; no live run now. The offline legs additionally use
+/// /usr/bin/sandbox-exec plus the bundled runtime/bun (recorded
+/// mechanism, not waived). Descriptor timeout 480000ms mirrors the Go
+/// 8-minute ctx (L280).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case browser/apps-roots checks: app-count, app-account, app-forms,
+/// app-dashboard, app-native, stage-source, skip-dist, file-mode,
+/// dir-mode, assert-cmd, assert-exit, assert-diag-empty.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int app_count
+    str app_account
+    str app_forms
+    str app_dashboard
+    str app_native
+    str stage_source
+    str skip_dist
+    str file_mode
+    str dir_mode
+    str assert_cmd
+    int assert_exit
+    bool assert_diag_empty
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/apps-roots", "default", "", "offline"), "app-count" => ok "case browser/apps-roots variant default root app-count run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/apps-roots", "default", "", "offline"), "assert-diag-empty" => ok evidence("assert-diag-empty", "true", "true", true, "case browser/apps-roots variant default root assert-diag-empty run offline")
+        different: false, true, context("browser/apps-roots", "default", "", "offline"), "assert-diag-empty" => failed{"assert-diag-empty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("browser/apps-roots", "default", "", "offline"), "app-count" => ok evidence("app-count", "4", "4", true, "case browser/apps-roots variant default root app-count run offline")
+        different: 3, 4, context("browser/apps-roots", "default", "", "offline"), "app-count" => failed{"app-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "account-search", "account-search", context("browser/apps-roots", "default", "", "offline"), "app-account" => ok evidence("app-account", "account-search", "account-search", true, "case browser/apps-roots variant default root app-account run offline")
+        different: "account-search-2", "account-search", context("browser/apps-roots", "default", "", "offline"), "app-account" => failed{"app-account"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_app_count: "seed-app-count-drift" => ok observation(3, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_app_account: "seed-app-account-drift" => ok observation(4, "account-search-2", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_app_forms: "seed-app-forms-drift" => ok observation(4, "account-search", "form-validation-2", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_app_dashboard: "seed-app-dashboard-drift" => ok observation(4, "account-search", "form-validation", "dashboard-2", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_app_native: "seed-app-native-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai-2", "examples", "dist", "0600", "0700", "assert", 0, true)
+        seed_stage_source: "seed-stage-source-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "samples", "dist", "0600", "0700", "assert", 0, true)
+        seed_skip_dist: "seed-skip-dist-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "build", "0600", "0700", "assert", 0, true)
+        seed_file_mode: "seed-file-mode-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0644", "0700", "assert", 0, true)
+        seed_dir_mode: "seed-dir-mode-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0755", "assert", 0, true)
+        seed_assert_cmd: "seed-assert-cmd-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "check", 0, true)
+        seed_assert_exit: "seed-assert-exit-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 1, true)
+        seed_assert_diag_empty: "seed-assert-diag-empty-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, false)
+    match variant_id
+        "seed-app-count-drift" => ok observation(3, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-app-account-drift" => ok observation(4, "account-search-2", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-app-forms-drift" => ok observation(4, "account-search", "form-validation-2", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-app-dashboard-drift" => ok observation(4, "account-search", "form-validation", "dashboard-2", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-app-native-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai-2", "examples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-stage-source-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "samples", "dist", "0600", "0700", "assert", 0, true)
+        "seed-skip-dist-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "build", "0600", "0700", "assert", 0, true)
+        "seed-file-mode-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0644", "0700", "assert", 0, true)
+        "seed-dir-mode-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0755", "assert", 0, true)
+        "seed-assert-cmd-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "check", 0, true)
+        "seed-assert-exit-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 1, true)
+        "seed-assert-diag-empty-drift" => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, false)
+        _ => ok observation(4, "account-search", "form-validation", "dashboard", "native-ai", "examples", "dist", "0600", "0700", "assert", 0, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b001: "m12-b001" => ok [check("app-count", "four applications stage in this row"), check("app-account", "first staged app is account-search"), check("app-forms", "second staged app is form-validation"), check("app-dashboard", "third staged app is dashboard"), check("app-native", "fourth staged app is native-ai"), check("stage-source", "staging copies out of examples/<name>"), check("skip-dist", "staging skips the dist subtree"), check("file-mode", "staged files land mode 0600"), check("dir-mode", "staged dirs land mode 0700"), check("assert-cmd", "assert leg invokes canlc assert"), check("assert-exit", "assert leg exits 0"), check("assert-diag-empty", "assert leg keeps diagnostics empty")]
+        other: "nope" => ok []
+    match scope is "m12-b001"
+        false => ok []
+        true => ok [check("app-count", "four applications stage in this row"), check("app-account", "first staged app is account-search"), check("app-forms", "second staged app is form-validation"), check("app-dashboard", "third staged app is dashboard"), check("app-native", "fourth staged app is native-ai"), check("stage-source", "staging copies out of examples/<name>"), check("skip-dist", "staging skips the dist subtree"), check("file-mode", "staged files land mode 0600"), check("dir-mode", "staged dirs land mode 0700"), check("assert-cmd", "assert leg invokes canlc assert"), check("assert-exit", "assert leg exits 0"), check("assert-diag-empty", "assert leg keeps diagnostics empty")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/apps-roots" => ok [expected_check("app-count", "4"), expected_check("app-account", "account-search"), expected_check("app-forms", "form-validation"), expected_check("app-dashboard", "dashboard"), expected_check("app-native", "native-ai"), expected_check("stage-source", "examples"), expected_check("skip-dist", "dist"), expected_check("file-mode", "0600"), expected_check("dir-mode", "0700"), expected_check("assert-cmd", "assert"), expected_check("assert-exit", "0"), expected_check("assert-diag-empty", "true")]
+        unknown: "nope" => ok []
+    match case is "browser/apps-roots"
+        false => ok []
+        true => ok [expected_check("app-count", "4"), expected_check("app-account", "account-search"), expected_check("app-forms", "form-validation"), expected_check("app-dashboard", "dashboard"), expected_check("app-native", "native-ai"), expected_check("stage-source", "examples"), expected_check("skip-dist", "dist"), expected_check("file-mode", "0600"), expected_check("dir-mode", "0700"), expected_check("assert-cmd", "assert"), expected_check("assert-exit", "0"), expected_check("assert-diag-empty", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/apps-roots", "default", "", "offline") => ok
+        seed_app_count: context("browser/apps-roots", "seed-app-count-drift", "", "offline") => failed{"app-count"}
+        seed_app_account: context("browser/apps-roots", "seed-app-account-drift", "", "offline") => failed{"app-account"}
+        seed_app_forms: context("browser/apps-roots", "seed-app-forms-drift", "", "offline") => failed{"app-forms"}
+        seed_app_dashboard: context("browser/apps-roots", "seed-app-dashboard-drift", "", "offline") => failed{"app-dashboard"}
+        seed_app_native: context("browser/apps-roots", "seed-app-native-drift", "", "offline") => failed{"app-native"}
+        seed_stage_source: context("browser/apps-roots", "seed-stage-source-drift", "", "offline") => failed{"stage-source"}
+        seed_skip_dist: context("browser/apps-roots", "seed-skip-dist-drift", "", "offline") => failed{"skip-dist"}
+        seed_file_mode: context("browser/apps-roots", "seed-file-mode-drift", "", "offline") => failed{"file-mode"}
+        seed_dir_mode: context("browser/apps-roots", "seed-dir-mode-drift", "", "offline") => failed{"dir-mode"}
+        seed_assert_cmd: context("browser/apps-roots", "seed-assert-cmd-drift", "", "offline") => failed{"assert-cmd"}
+        seed_assert_exit: context("browser/apps-roots", "seed-assert-exit-drift", "", "offline") => failed{"assert-exit"}
+        seed_assert_diag_empty: context("browser/apps-roots", "seed-assert-diag-empty-drift", "", "offline") => failed{"assert-diag-empty"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.app_count, 4, c, "app-count")
+            failed
+            ok evidence app_count_evidence => match call require_text(got.app_account, "account-search", c, "app-account")
+                failed
+                ok evidence app_account_evidence => match call require_text(got.app_forms, "form-validation", c, "app-forms")
+                    failed
+                    ok evidence app_forms_evidence => match call require_text(got.app_dashboard, "dashboard", c, "app-dashboard")
+                        failed
+                        ok evidence app_dashboard_evidence => match call require_text(got.app_native, "native-ai", c, "app-native")
+                            failed
+                            ok evidence app_native_evidence => match call require_text(got.stage_source, "examples", c, "stage-source")
+                                failed
+                                ok evidence stage_source_evidence => match call require_text(got.skip_dist, "dist", c, "skip-dist")
+                                    failed
+                                    ok evidence skip_dist_evidence => match call require_text(got.file_mode, "0600", c, "file-mode")
+                                        failed
+                                        ok evidence file_mode_evidence => match call require_text(got.dir_mode, "0700", c, "dir-mode")
+                                            failed
+                                            ok evidence dir_mode_evidence => match call require_text(got.assert_cmd, "assert", c, "assert-cmd")
+                                                failed
+                                                ok evidence assert_cmd_evidence => match call require_int(got.assert_exit, 0, c, "assert-exit")
+                                                    failed
+                                                    ok evidence assert_exit_evidence => match call require_bool(got.assert_diag_empty, true, c, "assert-diag-empty")
+                                                        failed
+                                                        ok evidence assert_diag_empty_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b001: "m12-b001" => ok test_case("browser/apps-roots", ["browser", "m12"], ["can-bun-archive"], 480000, [check_ref("app-count"), check_ref("app-account"), check_ref("app-forms"), check_ref("app-dashboard"), check_ref("app-native"), check_ref("stage-source"), check_ref("skip-dist"), check_ref("file-mode"), check_ref("dir-mode"), check_ref("assert-cmd"), check_ref("assert-exit"), check_ref("assert-diag-empty")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b001"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/apps-roots", ["browser", "m12"], ["can-bun-archive"], 480000, [check_ref("app-count"), check_ref("app-account"), check_ref("app-forms"), check_ref("app-dashboard"), check_ref("app-native"), check_ref("stage-source"), check_ref("skip-dist"), check_ref("file-mode"), check_ref("dir-mode"), check_ref("assert-cmd"), check_ref("assert-exit"), check_ref("assert-diag-empty")], callable case_body)

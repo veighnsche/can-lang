@@ -1,0 +1,269 @@
+package m12browser001run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-001 "staged applications: build/usage run shape".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsStaged (L273-333); build helper
+/// applicationBuildArgs (L124-138); snapshot helpers snapshotCredential
+/// (L140-144) and snapshotMap (L145-156).
+/// Disposition: migrate (this row ports TestApplicationsStaged to
+/// ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the production build/usage shape of each
+/// staged app: exactly one build with a nonempty ID and directory,
+/// the compiled entry.ts, the disposable UNUSED snapshot input passed
+/// as one file, the zero-arg runtime/bun usage run printing the
+/// usage: prefix with exit 0, and the 12-char staged log truncation.
+/// ADAPTATION (recorded, with source lines): the usage contract is
+/// HasPrefix (L328), so usage-prefix pins the "usage: " needle rather
+/// than exact stdout; snapshot-name composes "snapshot-"+id (L142)
+/// with name+".json" (L151) for id UNUSED (L317); build-short pins the
+/// firstID[:12] log truncation (L331); snapshot-count pins the single
+/// ExtraFiles entry (L325).
+/// Facet map (applications_test.go legs): build-once pins one build
+/// (L313-315); build-exit pins exit 0 (L127); build-id-key and
+/// build-dir-key pin buildID/directory (L131-132); build-id-nonempty
+/// and build-dir-nonempty pin the nonempty report (L134); entry-name
+/// pins entry.ts (L316); snapshot-name, snapshot-key and snapshot-value
+/// pin the disposable input (L142/L151/L317); snapshot-count pins one
+/// snapshot file (L325); bun-entry pins runtime/bun (L322); usage-args
+/// pins zero CLI args (L322); usage-prefix pins "usage: " (L328);
+/// usage-exit pins exit 0 (L328); build-short pins 12 (L331).
+/// The roots-green pin lives in browser-001-roots-green.can; report
+/// semantics live in browser-001-apps-semantics.can.
+/// Variants: the same four staged apps share one usage shape (a
+/// single default case; per-app divergence is not pinned because Go
+/// asserts the identical usage leg per loop app).
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates CAN/BUILD/PROC/WORK/SUITE and C/R/N/S/A identities
+/// bind at P23; no live run now. The offline legs additionally use
+/// /usr/bin/sandbox-exec plus the bundled runtime/bun (recorded
+/// mechanism, not waived). Descriptor timeout 480000ms mirrors the Go
+/// 8-minute ctx (L280).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case browser/apps-run checks: build-once, build-exit, build-id-key,
+/// build-id-nonempty, build-dir-key, build-dir-nonempty, entry-name,
+/// snapshot-name, snapshot-key, snapshot-value, snapshot-count,
+/// bun-entry, usage-args, usage-prefix, usage-exit, build-short.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    int build_once
+    int build_exit
+    str build_id_key
+    bool build_id_nonempty
+    str build_dir_key
+    bool build_dir_nonempty
+    str entry_name
+    str snapshot_name
+    str snapshot_key
+    str snapshot_value
+    int snapshot_count
+    str bun_entry
+    int usage_args
+    str usage_prefix
+    int usage_exit
+    int build_short
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/apps-run", "default", "", "offline"), "build-once" => ok "case browser/apps-run variant default root build-once run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/apps-run", "default", "", "offline"), "build-id-nonempty" => ok evidence("build-id-nonempty", "true", "true", true, "case browser/apps-run variant default root build-id-nonempty run offline")
+        different: false, true, context("browser/apps-run", "default", "", "offline"), "build-id-nonempty" => failed{"build-id-nonempty"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("browser/apps-run", "default", "", "offline"), "build-once" => ok evidence("build-once", "1", "1", true, "case browser/apps-run variant default root build-once run offline")
+        different: 2, 1, context("browser/apps-run", "default", "", "offline"), "build-once" => failed{"build-once"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "buildID", "buildID", context("browser/apps-run", "default", "", "offline"), "build-id-key" => ok evidence("build-id-key", "buildID", "buildID", true, "case browser/apps-run variant default root build-id-key run offline")
+        different: "buildId", "buildID", context("browser/apps-run", "default", "", "offline"), "build-id-key" => failed{"build-id-key"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_once: "seed-build-once-drift" => ok observation(2, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_exit: "seed-build-exit-drift" => ok observation(1, 1, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_id_key: "seed-build-id-key-drift" => ok observation(1, 0, "buildId", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_id_nonempty: "seed-build-id-nonempty-drift" => ok observation(1, 0, "buildID", false, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_dir_key: "seed-build-dir-key-drift" => ok observation(1, 0, "buildID", true, "dir", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_build_dir_nonempty: "seed-build-dir-nonempty-drift" => ok observation(1, 0, "buildID", true, "directory", false, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_entry_name: "seed-entry-name-drift" => ok observation(1, 0, "buildID", true, "directory", true, "main.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_snapshot_name: "seed-snapshot-name-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-OTHER.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_snapshot_key: "seed-snapshot-key-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "USED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_snapshot_value: "seed-snapshot-value-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/other", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_snapshot_count: "seed-snapshot-count-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 0, "runtime/bun", 0, "usage: ", 0, 12)
+        seed_bun_entry: "seed-bun-entry-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/node", 0, "usage: ", 0, 12)
+        seed_usage_args: "seed-usage-args-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 1, "usage: ", 0, 12)
+        seed_usage_prefix: "seed-usage-prefix-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "Usage: ", 0, 12)
+        seed_usage_exit: "seed-usage-exit-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 1, 12)
+        seed_build_short: "seed-build-short-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 11)
+    match variant_id
+        "seed-build-once-drift" => ok observation(2, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-build-exit-drift" => ok observation(1, 1, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-build-id-key-drift" => ok observation(1, 0, "buildId", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-build-id-nonempty-drift" => ok observation(1, 0, "buildID", false, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-build-dir-key-drift" => ok observation(1, 0, "buildID", true, "dir", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-build-dir-nonempty-drift" => ok observation(1, 0, "buildID", true, "directory", false, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-entry-name-drift" => ok observation(1, 0, "buildID", true, "directory", true, "main.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-snapshot-name-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-OTHER.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-snapshot-key-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "USED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-snapshot-value-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/other", 1, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-snapshot-count-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 0, "runtime/bun", 0, "usage: ", 0, 12)
+        "seed-bun-entry-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/node", 0, "usage: ", 0, 12)
+        "seed-usage-args-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 1, "usage: ", 0, 12)
+        "seed-usage-prefix-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "Usage: ", 0, 12)
+        "seed-usage-exit-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 1, 12)
+        "seed-build-short-drift" => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 11)
+        _ => ok observation(1, 0, "buildID", true, "directory", true, "entry.ts", "snapshot-UNUSED.json", "UNUSED", "postgres://127.0.0.1:1/nope", 1, "runtime/bun", 0, "usage: ", 0, 12)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b001: "m12-b001" => ok [check("build-once", "each app builds exactly once"), check("build-exit", "build leg exits 0"), check("build-id-key", "build report carries the buildID key"), check("build-id-nonempty", "build report carries a build ID"), check("build-dir-key", "build report carries the directory key"), check("build-dir-nonempty", "build report carries a directory"), check("entry-name", "compiled entry is entry.ts"), check("snapshot-name", "disposable input stages as snapshot-UNUSED.json"), check("snapshot-key", "snapshot input carries the UNUSED key"), check("snapshot-value", "snapshot input carries the dummy postgres value"), check("snapshot-count", "usage run passes one snapshot file"), check("bun-entry", "usage run executes runtime/bun"), check("usage-args", "usage run passes zero CLI args"), check("usage-prefix", "bare entry prints the usage: prefix"), check("usage-exit", "usage run exits 0"), check("build-short", "staged log truncates the build ID to 12")]
+        other: "nope" => ok []
+    match scope is "m12-b001"
+        false => ok []
+        true => ok [check("build-once", "each app builds exactly once"), check("build-exit", "build leg exits 0"), check("build-id-key", "build report carries the buildID key"), check("build-id-nonempty", "build report carries a build ID"), check("build-dir-key", "build report carries the directory key"), check("build-dir-nonempty", "build report carries a directory"), check("entry-name", "compiled entry is entry.ts"), check("snapshot-name", "disposable input stages as snapshot-UNUSED.json"), check("snapshot-key", "snapshot input carries the UNUSED key"), check("snapshot-value", "snapshot input carries the dummy postgres value"), check("snapshot-count", "usage run passes one snapshot file"), check("bun-entry", "usage run executes runtime/bun"), check("usage-args", "usage run passes zero CLI args"), check("usage-prefix", "bare entry prints the usage: prefix"), check("usage-exit", "usage run exits 0"), check("build-short", "staged log truncates the build ID to 12")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/apps-run" => ok [expected_check("build-once", "1"), expected_check("build-exit", "0"), expected_check("build-id-key", "buildID"), expected_check("build-id-nonempty", "true"), expected_check("build-dir-key", "directory"), expected_check("build-dir-nonempty", "true"), expected_check("entry-name", "entry.ts"), expected_check("snapshot-name", "snapshot-UNUSED.json"), expected_check("snapshot-key", "UNUSED"), expected_check("snapshot-value", "postgres://127.0.0.1:1/nope"), expected_check("snapshot-count", "1"), expected_check("bun-entry", "runtime/bun"), expected_check("usage-args", "0"), expected_check("usage-prefix", "usage: "), expected_check("usage-exit", "0"), expected_check("build-short", "12")]
+        unknown: "nope" => ok []
+    match case is "browser/apps-run"
+        false => ok []
+        true => ok [expected_check("build-once", "1"), expected_check("build-exit", "0"), expected_check("build-id-key", "buildID"), expected_check("build-id-nonempty", "true"), expected_check("build-dir-key", "directory"), expected_check("build-dir-nonempty", "true"), expected_check("entry-name", "entry.ts"), expected_check("snapshot-name", "snapshot-UNUSED.json"), expected_check("snapshot-key", "UNUSED"), expected_check("snapshot-value", "postgres://127.0.0.1:1/nope"), expected_check("snapshot-count", "1"), expected_check("bun-entry", "runtime/bun"), expected_check("usage-args", "0"), expected_check("usage-prefix", "usage: "), expected_check("usage-exit", "0"), expected_check("build-short", "12")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/apps-run", "default", "", "offline") => ok
+        seed_build_once: context("browser/apps-run", "seed-build-once-drift", "", "offline") => failed{"build-once"}
+        seed_build_exit: context("browser/apps-run", "seed-build-exit-drift", "", "offline") => failed{"build-exit"}
+        seed_build_id_key: context("browser/apps-run", "seed-build-id-key-drift", "", "offline") => failed{"build-id-key"}
+        seed_build_id_nonempty: context("browser/apps-run", "seed-build-id-nonempty-drift", "", "offline") => failed{"build-id-nonempty"}
+        seed_build_dir_key: context("browser/apps-run", "seed-build-dir-key-drift", "", "offline") => failed{"build-dir-key"}
+        seed_build_dir_nonempty: context("browser/apps-run", "seed-build-dir-nonempty-drift", "", "offline") => failed{"build-dir-nonempty"}
+        seed_entry_name: context("browser/apps-run", "seed-entry-name-drift", "", "offline") => failed{"entry-name"}
+        seed_snapshot_name: context("browser/apps-run", "seed-snapshot-name-drift", "", "offline") => failed{"snapshot-name"}
+        seed_snapshot_key: context("browser/apps-run", "seed-snapshot-key-drift", "", "offline") => failed{"snapshot-key"}
+        seed_snapshot_value: context("browser/apps-run", "seed-snapshot-value-drift", "", "offline") => failed{"snapshot-value"}
+        seed_snapshot_count: context("browser/apps-run", "seed-snapshot-count-drift", "", "offline") => failed{"snapshot-count"}
+        seed_bun_entry: context("browser/apps-run", "seed-bun-entry-drift", "", "offline") => failed{"bun-entry"}
+        seed_usage_args: context("browser/apps-run", "seed-usage-args-drift", "", "offline") => failed{"usage-args"}
+        seed_usage_prefix: context("browser/apps-run", "seed-usage-prefix-drift", "", "offline") => failed{"usage-prefix"}
+        seed_usage_exit: context("browser/apps-run", "seed-usage-exit-drift", "", "offline") => failed{"usage-exit"}
+        seed_build_short: context("browser/apps-run", "seed-build-short-drift", "", "offline") => failed{"build-short"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_int(got.build_once, 1, c, "build-once")
+            failed
+            ok evidence build_once_evidence => match call require_int(got.build_exit, 0, c, "build-exit")
+                failed
+                ok evidence build_exit_evidence => match call require_text(got.build_id_key, "buildID", c, "build-id-key")
+                    failed
+                    ok evidence build_id_key_evidence => match call require_bool(got.build_id_nonempty, true, c, "build-id-nonempty")
+                        failed
+                        ok evidence build_id_nonempty_evidence => match call require_text(got.build_dir_key, "directory", c, "build-dir-key")
+                            failed
+                            ok evidence build_dir_key_evidence => match call require_bool(got.build_dir_nonempty, true, c, "build-dir-nonempty")
+                                failed
+                                ok evidence build_dir_nonempty_evidence => match call require_text(got.entry_name, "entry.ts", c, "entry-name")
+                                    failed
+                                    ok evidence entry_name_evidence => match call require_text(got.snapshot_name, "snapshot-UNUSED.json", c, "snapshot-name")
+                                        failed
+                                        ok evidence snapshot_name_evidence => match call require_text(got.snapshot_key, "UNUSED", c, "snapshot-key")
+                                            failed
+                                            ok evidence snapshot_key_evidence => match call require_text(got.snapshot_value, "postgres://127.0.0.1:1/nope", c, "snapshot-value")
+                                                failed
+                                                ok evidence snapshot_value_evidence => match call require_int(got.snapshot_count, 1, c, "snapshot-count")
+                                                    failed
+                                                    ok evidence snapshot_count_evidence => match call require_text(got.bun_entry, "runtime/bun", c, "bun-entry")
+                                                        failed
+                                                        ok evidence bun_entry_evidence => match call require_int(got.usage_args, 0, c, "usage-args")
+                                                            failed
+                                                            ok evidence usage_args_evidence => match call require_text(got.usage_prefix, "usage: ", c, "usage-prefix")
+                                                                failed
+                                                                ok evidence usage_prefix_evidence => match call require_int(got.usage_exit, 0, c, "usage-exit")
+                                                                    failed
+                                                                    ok evidence usage_exit_evidence => match call require_int(got.build_short, 12, c, "build-short")
+                                                                        failed
+                                                                        ok evidence build_short_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b001: "m12-b001" => ok test_case("browser/apps-run", ["browser", "m12"], ["can-bun-archive"], 480000, [check_ref("build-once"), check_ref("build-exit"), check_ref("build-id-key"), check_ref("build-id-nonempty"), check_ref("build-dir-key"), check_ref("build-dir-nonempty"), check_ref("entry-name"), check_ref("snapshot-name"), check_ref("snapshot-key"), check_ref("snapshot-value"), check_ref("snapshot-count"), check_ref("bun-entry"), check_ref("usage-args"), check_ref("usage-prefix"), check_ref("usage-exit"), check_ref("build-short")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b001"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/apps-run", ["browser", "m12"], ["can-bun-archive"], 480000, [check_ref("build-once"), check_ref("build-exit"), check_ref("build-id-key"), check_ref("build-id-nonempty"), check_ref("build-dir-key"), check_ref("build-dir-nonempty"), check_ref("entry-name"), check_ref("snapshot-name"), check_ref("snapshot-key"), check_ref("snapshot-value"), check_ref("snapshot-count"), check_ref("bun-entry"), check_ref("usage-args"), check_ref("usage-prefix"), check_ref("usage-exit"), check_ref("build-short")], callable case_body)
