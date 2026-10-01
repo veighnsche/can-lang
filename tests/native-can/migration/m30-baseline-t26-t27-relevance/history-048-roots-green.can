@@ -1,0 +1,308 @@
+package m30history048roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-048 "DI guard: pairs plus words".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27DIInventoryComplete (L35-78) guard
+/// remark (L53) plus range legs (L54-55) plus the
+/// word list (L45).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27DIInventoryComplete offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the guard pairs as the
+/// green root: the two ambiguous stems plus full
+/// ids plus suffix bytes, the four range bounds,
+/// the guard remark, the five word spellings in Go
+/// order, and the three totals.
+/// ADAPTATION (recorded, with source lines): stem
+/// pins hold the short id bytes; full pins hold the
+/// long id bytes; suffix pins hold the single
+/// distinguishing byte; bound pins hold the rune
+/// inner bytes; the remark pins the L53 remark inner
+/// bytes; word pins hold the L45 literal bytes in Go
+/// order; counts pin ints tallied from the guard.
+/// amb-09-stem pins DI-09 (L40); amb-09b-full pins
+/// DI-09b (L40); amb-09-suffix pins b; amb-14-stem
+/// pins DI-14 (L41); amb-14a-full pins DI-14a (L41);
+/// amb-14-suffix pins a; guard-lo-alpha pins a
+/// (L55); guard-hi-alpha pins z (L55); guard-lo-digit
+/// pins 0 (L55); guard-hi-digit pins 9 (L55);
+/// guard-comment pins the remark (L53);
+/// vocab-accepted pins accepted (L45); vocab-retained
+/// pins retained (L45); vocab-deferred pins deferred
+/// (L45); vocab-unselected pins unselected (L45);
+/// vocab-unattested pins unattested (L45);
+/// ambiguous-pair-count pins int (2);
+/// guard-range-count pins int (2); vocab-count pins
+/// int (5).
+/// Facet map (guard in Go order): amb-09-stem,
+/// amb-09b-full, amb-09-suffix, amb-14-stem,
+/// amb-14a-full, amb-14-suffix, guard-lo-alpha,
+/// guard-hi-alpha, guard-lo-digit, guard-hi-digit,
+/// guard-comment, vocab-accepted, vocab-retained,
+/// vocab-deferred, vocab-unselected, vocab-unattested,
+/// ambiguous-pair-count, guard-range-count, vocab-count.
+/// The inventory legs live in
+/// history-048-base-semantics.can; the run shape plus
+/// diagnostics live in history-048-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates SUITE/DOC/FILES/PROC/BUILD/WORK bind
+/// at P23; no live run now. Accept gate P23 is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23
+/// unmet).
+/// Case history/t27-di-roots checks: amb-09-stem,
+/// amb-09b-full, amb-09-suffix, amb-14-stem, amb-14a-full,
+/// amb-14-suffix, guard-lo-alpha, guard-hi-alpha,
+/// guard-lo-digit, guard-hi-digit, guard-comment,
+/// vocab-accepted, vocab-retained, vocab-deferred,
+/// vocab-unselected, vocab-unattested, ambiguous-pair-count,
+/// guard-range-count, vocab-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str amb_09_stem
+    str amb_09b_full
+    str amb_09_suffix
+    str amb_14_stem
+    str amb_14a_full
+    str amb_14_suffix
+    str guard_lo_alpha
+    str guard_hi_alpha
+    str guard_lo_digit
+    str guard_hi_digit
+    str guard_comment
+    str vocab_accepted
+    str vocab_retained
+    str vocab_deferred
+    str vocab_unselected
+    str vocab_unattested
+    int ambiguous_pair_count
+    int guard_range_count
+    int vocab_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-di-roots", "default", "", "offline"), "amb-09-stem" => ok "case history/t27-di-roots variant default root amb-09-stem run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-di-roots", "default", "", "offline"), "amb-09-stem" => ok evidence("amb-09-stem", "true", "true", true, "case history/t27-di-roots variant default root amb-09-stem run offline")
+        different: false, true, context("history/t27-di-roots", "default", "", "offline"), "amb-09-stem" => failed{"amb-09-stem"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/t27-di-roots", "default", "", "offline"), "ambiguous-pair-count" => ok evidence("ambiguous-pair-count", "2", "2", true, "case history/t27-di-roots variant default root ambiguous-pair-count run offline")
+        different: 1, 2, context("history/t27-di-roots", "default", "", "offline"), "ambiguous-pair-count" => failed{"ambiguous-pair-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "DI-09", "DI-09", context("history/t27-di-roots", "default", "", "offline"), "amb-09-stem" => ok evidence("amb-09-stem", "DI-09", "DI-09", true, "case history/t27-di-roots variant default root amb-09-stem run offline")
+        different: "DI-09_2", "DI-09", context("history/t27-di-roots", "default", "", "offline"), "amb-09-stem" => failed{"amb-09-stem"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_09_stem: "seed-amb-09-stem-drift" => ok observation("DI-09_2", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_09b_full: "seed-amb-09b-full-drift" => ok observation("DI-09", "DI-09b_2", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_09_suffix: "seed-amb-09-suffix-drift" => ok observation("DI-09", "DI-09b", "b_2", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_14_stem: "seed-amb-14-stem-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14_2", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_14a_full: "seed-amb-14a-full-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a_2", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_amb_14_suffix: "seed-amb-14-suffix-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a_2", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_guard_lo_alpha: "seed-guard-lo-alpha-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a_2", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_guard_hi_alpha: "seed-guard-hi-alpha-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z_2", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_guard_lo_digit: "seed-guard-lo-digit-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0_2", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_guard_hi_digit: "seed-guard-hi-digit-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9_2", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_guard_comment: "seed-guard-comment-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row._2", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_vocab_accepted: "seed-vocab-accepted-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted_2", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_vocab_retained: "seed-vocab-retained-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained_2", "deferred", "unselected", "unattested", 2, 2, 5)
+        seed_vocab_deferred: "seed-vocab-deferred-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred_2", "unselected", "unattested", 2, 2, 5)
+        seed_vocab_unselected: "seed-vocab-unselected-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected_2", "unattested", 2, 2, 5)
+        seed_vocab_unattested: "seed-vocab-unattested-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested_2", 2, 2, 5)
+        seed_ambiguous_pair_count: "seed-ambiguous-pair-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 1, 2, 5)
+        seed_guard_range_count: "seed-guard-range-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 1, 5)
+        seed_vocab_count: "seed-vocab-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 4)
+    match variant_id
+        "seed-amb-09-stem-drift" => ok observation("DI-09_2", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-amb-09b-full-drift" => ok observation("DI-09", "DI-09b_2", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-amb-09-suffix-drift" => ok observation("DI-09", "DI-09b", "b_2", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-amb-14-stem-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14_2", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-amb-14a-full-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a_2", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-amb-14-suffix-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a_2", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-guard-lo-alpha-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a_2", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-guard-hi-alpha-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z_2", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-guard-lo-digit-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0_2", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-guard-hi-digit-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9_2", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-guard-comment-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row._2", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-vocab-accepted-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted_2", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-vocab-retained-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained_2", "deferred", "unselected", "unattested", 2, 2, 5)
+        "seed-vocab-deferred-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred_2", "unselected", "unattested", 2, 2, 5)
+        "seed-vocab-unselected-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected_2", "unattested", 2, 2, 5)
+        "seed-vocab-unattested-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested_2", 2, 2, 5)
+        "seed-ambiguous-pair-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 1, 2, 5)
+        "seed-guard-range-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 1, 5)
+        "seed-vocab-count-drift" => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 4)
+        _ => ok observation("DI-09", "DI-09b", "b", "DI-14", "DI-14a", "a", "a", "z", "0", "9", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", "accepted", "retained", "deferred", "unselected", "unattested", 2, 2, 5)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h048: "m30-h048" => ok [check("amb-09-stem", "DI-09 stem keeps its bytes"), check("amb-09b-full", "DI-09b full id keeps its bytes"), check("amb-09-suffix", "DI-09b suffix pins b"), check("amb-14-stem", "DI-14 stem keeps its bytes"), check("amb-14a-full", "DI-14a full id keeps its bytes"), check("amb-14-suffix", "DI-14a suffix pins a"), check("guard-lo-alpha", "alpha guard starts at a"), check("guard-hi-alpha", "alpha guard ends at z"), check("guard-lo-digit", "digit guard starts at 0"), check("guard-hi-digit", "digit guard ends at 9"), check("guard-comment", "guard remark pins the 09 plus 14 pairs"), check("vocab-accepted", "word list keeps accepted"), check("vocab-retained", "word list keeps retained"), check("vocab-deferred", "word list keeps deferred"), check("vocab-unselected", "word list keeps unselected"), check("vocab-unattested", "word list keeps unattested"), check("ambiguous-pair-count", "two ambiguous pairs exist"), check("guard-range-count", "two guard ranges exist"), check("vocab-count", "five word spellings exist")]
+        other: "nope" => ok []
+    match scope is "m30-h048"
+        false => ok []
+        true => ok [check("amb-09-stem", "DI-09 stem keeps its bytes"), check("amb-09b-full", "DI-09b full id keeps its bytes"), check("amb-09-suffix", "DI-09b suffix pins b"), check("amb-14-stem", "DI-14 stem keeps its bytes"), check("amb-14a-full", "DI-14a full id keeps its bytes"), check("amb-14-suffix", "DI-14a suffix pins a"), check("guard-lo-alpha", "alpha guard starts at a"), check("guard-hi-alpha", "alpha guard ends at z"), check("guard-lo-digit", "digit guard starts at 0"), check("guard-hi-digit", "digit guard ends at 9"), check("guard-comment", "guard remark pins the 09 plus 14 pairs"), check("vocab-accepted", "word list keeps accepted"), check("vocab-retained", "word list keeps retained"), check("vocab-deferred", "word list keeps deferred"), check("vocab-unselected", "word list keeps unselected"), check("vocab-unattested", "word list keeps unattested"), check("ambiguous-pair-count", "two ambiguous pairs exist"), check("guard-range-count", "two guard ranges exist"), check("vocab-count", "five word spellings exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-di-roots" => ok [expected_check("amb-09-stem", "DI-09"), expected_check("amb-09b-full", "DI-09b"), expected_check("amb-09-suffix", "b"), expected_check("amb-14-stem", "DI-14"), expected_check("amb-14a-full", "DI-14a"), expected_check("amb-14-suffix", "a"), expected_check("guard-lo-alpha", "a"), expected_check("guard-hi-alpha", "z"), expected_check("guard-lo-digit", "0"), expected_check("guard-hi-digit", "9"), expected_check("guard-comment", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row."), expected_check("vocab-accepted", "accepted"), expected_check("vocab-retained", "retained"), expected_check("vocab-deferred", "deferred"), expected_check("vocab-unselected", "unselected"), expected_check("vocab-unattested", "unattested"), expected_check("ambiguous-pair-count", "2"), expected_check("guard-range-count", "2"), expected_check("vocab-count", "5")]
+        unknown: "nope" => ok []
+    match case is "history/t27-di-roots"
+        false => ok []
+        true => ok [expected_check("amb-09-stem", "DI-09"), expected_check("amb-09b-full", "DI-09b"), expected_check("amb-09-suffix", "b"), expected_check("amb-14-stem", "DI-14"), expected_check("amb-14a-full", "DI-14a"), expected_check("amb-14-suffix", "a"), expected_check("guard-lo-alpha", "a"), expected_check("guard-hi-alpha", "z"), expected_check("guard-lo-digit", "0"), expected_check("guard-hi-digit", "9"), expected_check("guard-comment", "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row."), expected_check("vocab-accepted", "accepted"), expected_check("vocab-retained", "retained"), expected_check("vocab-deferred", "deferred"), expected_check("vocab-unselected", "unselected"), expected_check("vocab-unattested", "unattested"), expected_check("ambiguous-pair-count", "2"), expected_check("guard-range-count", "2"), expected_check("vocab-count", "5")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-di-roots", "default", "", "offline") => ok
+        seed_amb_09_stem: context("history/t27-di-roots", "seed-amb-09-stem-drift", "", "offline") => failed{"amb-09-stem"}
+        seed_amb_09b_full: context("history/t27-di-roots", "seed-amb-09b-full-drift", "", "offline") => failed{"amb-09b-full"}
+        seed_amb_09_suffix: context("history/t27-di-roots", "seed-amb-09-suffix-drift", "", "offline") => failed{"amb-09-suffix"}
+        seed_amb_14_stem: context("history/t27-di-roots", "seed-amb-14-stem-drift", "", "offline") => failed{"amb-14-stem"}
+        seed_amb_14a_full: context("history/t27-di-roots", "seed-amb-14a-full-drift", "", "offline") => failed{"amb-14a-full"}
+        seed_amb_14_suffix: context("history/t27-di-roots", "seed-amb-14-suffix-drift", "", "offline") => failed{"amb-14-suffix"}
+        seed_guard_lo_alpha: context("history/t27-di-roots", "seed-guard-lo-alpha-drift", "", "offline") => failed{"guard-lo-alpha"}
+        seed_guard_hi_alpha: context("history/t27-di-roots", "seed-guard-hi-alpha-drift", "", "offline") => failed{"guard-hi-alpha"}
+        seed_guard_lo_digit: context("history/t27-di-roots", "seed-guard-lo-digit-drift", "", "offline") => failed{"guard-lo-digit"}
+        seed_guard_hi_digit: context("history/t27-di-roots", "seed-guard-hi-digit-drift", "", "offline") => failed{"guard-hi-digit"}
+        seed_guard_comment: context("history/t27-di-roots", "seed-guard-comment-drift", "", "offline") => failed{"guard-comment"}
+        seed_vocab_accepted: context("history/t27-di-roots", "seed-vocab-accepted-drift", "", "offline") => failed{"vocab-accepted"}
+        seed_vocab_retained: context("history/t27-di-roots", "seed-vocab-retained-drift", "", "offline") => failed{"vocab-retained"}
+        seed_vocab_deferred: context("history/t27-di-roots", "seed-vocab-deferred-drift", "", "offline") => failed{"vocab-deferred"}
+        seed_vocab_unselected: context("history/t27-di-roots", "seed-vocab-unselected-drift", "", "offline") => failed{"vocab-unselected"}
+        seed_vocab_unattested: context("history/t27-di-roots", "seed-vocab-unattested-drift", "", "offline") => failed{"vocab-unattested"}
+        seed_ambiguous_pair_count: context("history/t27-di-roots", "seed-ambiguous-pair-count-drift", "", "offline") => failed{"ambiguous-pair-count"}
+        seed_guard_range_count: context("history/t27-di-roots", "seed-guard-range-count-drift", "", "offline") => failed{"guard-range-count"}
+        seed_vocab_count: context("history/t27-di-roots", "seed-vocab-count-drift", "", "offline") => failed{"vocab-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.amb_09_stem, "DI-09", c, "amb-09-stem")
+            failed
+            ok evidence amb_09_stem_evidence => match call require_text(got.amb_09b_full, "DI-09b", c, "amb-09b-full")
+                failed
+                ok evidence amb_09b_full_evidence => match call require_text(got.amb_09_suffix, "b", c, "amb-09-suffix")
+                    failed
+                    ok evidence amb_09_suffix_evidence => match call require_text(got.amb_14_stem, "DI-14", c, "amb-14-stem")
+                        failed
+                        ok evidence amb_14_stem_evidence => match call require_text(got.amb_14a_full, "DI-14a", c, "amb-14a-full")
+                            failed
+                            ok evidence amb_14a_full_evidence => match call require_text(got.amb_14_suffix, "a", c, "amb-14-suffix")
+                                failed
+                                ok evidence amb_14_suffix_evidence => match call require_text(got.guard_lo_alpha, "a", c, "guard-lo-alpha")
+                                    failed
+                                    ok evidence guard_lo_alpha_evidence => match call require_text(got.guard_hi_alpha, "z", c, "guard-hi-alpha")
+                                        failed
+                                        ok evidence guard_hi_alpha_evidence => match call require_text(got.guard_lo_digit, "0", c, "guard-lo-digit")
+                                            failed
+                                            ok evidence guard_lo_digit_evidence => match call require_text(got.guard_hi_digit, "9", c, "guard-hi-digit")
+                                                failed
+                                                ok evidence guard_hi_digit_evidence => match call require_text(got.guard_comment, "Do not let DI-09 match the DI-09b row or DI-14 the DI-14a row.", c, "guard-comment")
+                                                    failed
+                                                    ok evidence guard_comment_evidence => match call require_text(got.vocab_accepted, "accepted", c, "vocab-accepted")
+                                                        failed
+                                                        ok evidence vocab_accepted_evidence => match call require_text(got.vocab_retained, "retained", c, "vocab-retained")
+                                                            failed
+                                                            ok evidence vocab_retained_evidence => match call require_text(got.vocab_deferred, "deferred", c, "vocab-deferred")
+                                                                failed
+                                                                ok evidence vocab_deferred_evidence => match call require_text(got.vocab_unselected, "unselected", c, "vocab-unselected")
+                                                                    failed
+                                                                    ok evidence vocab_unselected_evidence => match call require_text(got.vocab_unattested, "unattested", c, "vocab-unattested")
+                                                                        failed
+                                                                        ok evidence vocab_unattested_evidence => match call require_int(got.ambiguous_pair_count, 2, c, "ambiguous-pair-count")
+                                                                            failed
+                                                                            ok evidence ambiguous_pair_count_evidence => match call require_int(got.guard_range_count, 2, c, "guard-range-count")
+                                                                                failed
+                                                                                ok evidence guard_range_count_evidence => match call require_int(got.vocab_count, 5, c, "vocab-count")
+                                                                                    failed
+                                                                                    ok evidence vocab_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h048: "m30-h048" => ok test_case("history/t27-di-roots", ["history", "m30"], [], 120000, [check_ref("amb-09-stem"), check_ref("amb-09b-full"), check_ref("amb-09-suffix"), check_ref("amb-14-stem"), check_ref("amb-14a-full"), check_ref("amb-14-suffix"), check_ref("guard-lo-alpha"), check_ref("guard-hi-alpha"), check_ref("guard-lo-digit"), check_ref("guard-hi-digit"), check_ref("guard-comment"), check_ref("vocab-accepted"), check_ref("vocab-retained"), check_ref("vocab-deferred"), check_ref("vocab-unselected"), check_ref("vocab-unattested"), check_ref("ambiguous-pair-count"), check_ref("guard-range-count"), check_ref("vocab-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h048"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-di-roots", ["history", "m30"], [], 120000, [check_ref("amb-09-stem"), check_ref("amb-09b-full"), check_ref("amb-09-suffix"), check_ref("amb-14-stem"), check_ref("amb-14a-full"), check_ref("amb-14-suffix"), check_ref("guard-lo-alpha"), check_ref("guard-hi-alpha"), check_ref("guard-lo-digit"), check_ref("guard-hi-digit"), check_ref("guard-comment"), check_ref("vocab-accepted"), check_ref("vocab-retained"), check_ref("vocab-deferred"), check_ref("vocab-unselected"), check_ref("vocab-unattested"), check_ref("ambiguous-pair-count"), check_ref("guard-range-count"), check_ref("vocab-count")], callable case_body)
