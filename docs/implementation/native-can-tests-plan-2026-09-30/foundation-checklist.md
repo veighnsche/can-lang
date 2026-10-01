@@ -478,7 +478,7 @@ Each checkbox is a task acceptance, not merely source completion. Draft after `s
 
 ## P29 — Own external service resources and recovery grants
 
-- [ ] **P29: blocked** — owner lane: `native-owner`. Evidence: [evidence/P29.json](evidence/P29.json).
+- [x] **P29: complete** — owner lane: `native-owner`. Evidence: [evidence/P29.json](evidence/P29.json). Revalidated after P12 re-acceptance; local controls re-pass unchanged, no source change.
 
 **Audit correction:** Historical local controls remain recorded, but accepted prerequisites were invalidated by this audit. Revalidate their current receipts before restoring aggregate completion.
 
