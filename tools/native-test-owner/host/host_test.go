@@ -303,7 +303,8 @@ func TestAdmitBindsP12Gate(t *testing.T) {
 	}
 	root := t.TempDir()
 	req := admission.Request{Demand: admission.Demand{Live: true},
-		Budget: 30 * time.Second, Body: time.Second, CleanupReserve: time.Second}
+		Capability: admission.Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: 1 << 30},
+		Budget:     30 * time.Second, Body: time.Second, CleanupReserve: time.Second}
 	b, err := Admit(h, root, req, q, t.TempDir())
 	if err != nil {
 		t.Fatalf("admit: %v", err)
@@ -382,7 +383,8 @@ func TestAdmitReprobesFreshFacts(t *testing.T) {
 	}
 	root := t.TempDir()
 	req := admission.Request{Demand: admission.Demand{Live: true},
-		Budget: 30 * time.Second, Body: time.Second, CleanupReserve: time.Second}
+		Capability: admission.Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: 1 << 30},
+		Budget:     30 * time.Second, Body: time.Second, CleanupReserve: time.Second}
 
 	f.mu.Lock()
 	f.avail = false

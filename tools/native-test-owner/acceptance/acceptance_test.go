@@ -82,6 +82,7 @@ func testSubject(t *testing.T) NSubject {
 func testRequest() admission.Request {
 	return admission.Request{
 		Demand:         admission.Demand{Live: true},
+		Capability:     admission.Capability{MaxHandles: 64, MaxPending: 16, MaxBytes: 1 << 30},
 		Budget:         60 * time.Second,
 		Body:           20 * time.Second,
 		CleanupReserve: 5 * time.Second,
