@@ -1,0 +1,259 @@
+package m30history047roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-047 "Generated fresh: roots green".
+/// Source: tests/baseline/t26_product_guide_test.go
+/// static baseline for TestT26GeneratedArtifactsFresh
+/// (L209-213) plus the probe args (L213), the dir
+/// bind (L214), the run call (L215), the stat join
+/// (L218) and the Fatal call shape (L216, L220).
+/// Disposition: replace_support (this row ports the
+/// generated-fresh offline pact to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the static baseline as the
+/// green root: the test symbol plus param, the two
+/// comment lines, the root helper, the cataloguegen
+/// path plus check flag, the catalogue seg, the
+/// stat plus CombinedOutput plus Join call shapes,
+/// and the Fatal call shape.
+/// ADAPTATION (recorded, with source lines): test-name
+/// pins the TestT26GeneratedArtifactsFresh symbol
+/// (L211); test-param pins t *testing.T (L211);
+/// comment-fresh pins the fresh line (L209);
+/// comment-truth pins the truth line (L210);
+/// root-helper pins the repoRoot call (L212);
+/// cataloguegen-path pins the probe path (L213);
+/// check-flag pins --check (L213, L216);
+/// catalogue-seg pins catalogue.ts (L218, L220);
+/// stat-call pins os.Stat (L218); combined-call pins
+/// cmd.CombinedOutput() (L215); join-head pins the
+/// Join head before the quoted segs (L218);
+/// fatal-call pins t.Fatalf (L216, L220).
+/// Facet map (static baseline): test-name pins the
+/// symbol (L211); test-param pins the param (L211);
+/// comment-fresh pins the line (L209); comment-truth
+/// pins the line (L210); root-helper pins the call
+/// (L212); cataloguegen-path pins the path (L213);
+/// check-flag pins the flag (L213, L216);
+/// catalogue-seg pins the seg (L218, L220);
+/// stat-call pins the call (L218); combined-call pins
+/// the call (L215); join-head pins the head (L218);
+/// fatal-call pins the call (L216, L220).
+/// The verdict pins live in
+/// history-047-base-semantics.can; the run shape plus
+/// diagnostics live in history-047-run-shape.can.
+/// Variants: none (row lists zero variants; the single
+/// passing path in Go order).
+/// Environment: none (row lists zero gates; requires
+/// [] offline; binds at P23).
+/// Logical gates SUITE/WORK/FILES/BUILD/CHILD/PROC/CLOCK
+/// bind at P23; no live run now. Accept gate P23 is
+/// unmet. Timeout 120000ms is the offline default bound
+/// (no Go test timeout in this row; binds at P23 like
+/// the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/generated-fresh-roots checks: test-name,
+/// test-param, comment-fresh, comment-truth,
+/// root-helper, cataloguegen-path, check-flag,
+/// catalogue-seg, stat-call, combined-call, join-head,
+/// fatal-call.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str test_param
+    str comment_fresh
+    str comment_truth
+    str root_helper
+    str cataloguegen_path
+    str check_flag
+    str catalogue_seg
+    str stat_call
+    str combined_call
+    str join_head
+    str fatal_call
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => ok "case history/generated-fresh-roots variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/generated-fresh-roots variant default root test-name run offline")
+        different: false, true, context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "1", "1", true, "case history/generated-fresh-roots variant default root test-name run offline")
+        different: 2, 1, context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT26GeneratedArtifactsFresh", "TestT26GeneratedArtifactsFresh", context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT26GeneratedArtifactsFresh", "TestT26GeneratedArtifactsFresh", true, "case history/generated-fresh-roots variant default root test-name run offline")
+        different: "TestT26GeneratedArtifactsFresh_2", "TestT26GeneratedArtifactsFresh", context("history/generated-fresh-roots", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT26GeneratedArtifactsFresh_2", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_test_param: "seed-test-param-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T_2", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_comment_fresh: "seed-comment-fresh-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source_2", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_comment_truth: "seed-comment-truth-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs._2", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_root_helper: "seed-root-helper-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)_2", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_cataloguegen_path: "seed-cataloguegen-path-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen_2", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_check_flag: "seed-check-flag-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check_2", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_catalogue_seg: "seed-catalogue-seg-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts_2", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_stat_call: "seed-stat-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat_2", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        seed_combined_call: "seed-combined-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()_2", "filepath.Join(root, ", "t.Fatalf")
+        seed_join_head: "seed-join-head-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, _2", "t.Fatalf")
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf_2")
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT26GeneratedArtifactsFresh_2", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-test-param-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T_2", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-comment-fresh-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source_2", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-comment-truth-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs._2", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-root-helper-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)_2", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-cataloguegen-path-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen_2", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-check-flag-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check_2", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-catalogue-seg-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts_2", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-stat-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat_2", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+        "seed-combined-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()_2", "filepath.Join(root, ", "t.Fatalf")
+        "seed-join-head-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, _2", "t.Fatalf")
+        "seed-fatal-call-drift" => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf_2")
+        _ => ok observation("TestT26GeneratedArtifactsFresh", "t *testing.T", "// Generated reference artifacts must be fresh: the catalogue source", "// of truth regenerates byte-identical outputs.", "root := repoRoot(t)", "./compiler/internal/catalogue/cmd/cataloguegen", "--check", "catalogue.ts", "os.Stat", "cmd.CombinedOutput()", "filepath.Join(root, ", "t.Fatalf")
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok [check("test-name", "TestT26GeneratedArtifactsFresh symbol is pinned"), check("test-param", "test param spelling is pinned"), check("comment-fresh", "fresh comment line is pinned"), check("comment-truth", "truth comment line is pinned"), check("root-helper", "repoRoot call shape is pinned"), check("cataloguegen-path", "cataloguegen path is pinned"), check("check-flag", "check flag spelling is pinned"), check("catalogue-seg", "catalogue file seg is pinned"), check("stat-call", "os.Stat call shape is pinned"), check("combined-call", "CombinedOutput call shape is pinned"), check("join-head", "Join head shape is pinned"), check("fatal-call", "Fatal call shape is pinned")]
+        other: "nope" => ok []
+    match scope is "m30-h047"
+        false => ok []
+        true => ok [check("test-name", "TestT26GeneratedArtifactsFresh symbol is pinned"), check("test-param", "test param spelling is pinned"), check("comment-fresh", "fresh comment line is pinned"), check("comment-truth", "truth comment line is pinned"), check("root-helper", "repoRoot call shape is pinned"), check("cataloguegen-path", "cataloguegen path is pinned"), check("check-flag", "check flag spelling is pinned"), check("catalogue-seg", "catalogue file seg is pinned"), check("stat-call", "os.Stat call shape is pinned"), check("combined-call", "CombinedOutput call shape is pinned"), check("join-head", "Join head shape is pinned"), check("fatal-call", "Fatal call shape is pinned")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/generated-fresh-roots" => ok [expected_check("test-name", "TestT26GeneratedArtifactsFresh"), expected_check("test-param", "t *testing.T"), expected_check("comment-fresh", "// Generated reference artifacts must be fresh: the catalogue source"), expected_check("comment-truth", "// of truth regenerates byte-identical outputs."), expected_check("root-helper", "root := repoRoot(t)"), expected_check("cataloguegen-path", "./compiler/internal/catalogue/cmd/cataloguegen"), expected_check("check-flag", "--check"), expected_check("catalogue-seg", "catalogue.ts"), expected_check("stat-call", "os.Stat"), expected_check("combined-call", "cmd.CombinedOutput()"), expected_check("join-head", "filepath.Join(root, "), expected_check("fatal-call", "t.Fatalf")]
+        unknown: "nope" => ok []
+    match case is "history/generated-fresh-roots"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT26GeneratedArtifactsFresh"), expected_check("test-param", "t *testing.T"), expected_check("comment-fresh", "// Generated reference artifacts must be fresh: the catalogue source"), expected_check("comment-truth", "// of truth regenerates byte-identical outputs."), expected_check("root-helper", "root := repoRoot(t)"), expected_check("cataloguegen-path", "./compiler/internal/catalogue/cmd/cataloguegen"), expected_check("check-flag", "--check"), expected_check("catalogue-seg", "catalogue.ts"), expected_check("stat-call", "os.Stat"), expected_check("combined-call", "cmd.CombinedOutput()"), expected_check("join-head", "filepath.Join(root, "), expected_check("fatal-call", "t.Fatalf")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/generated-fresh-roots", "default", "", "offline") => ok
+        seed_test_name: context("history/generated-fresh-roots", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_test_param: context("history/generated-fresh-roots", "seed-test-param-drift", "", "offline") => failed{"test-param"}
+        seed_comment_fresh: context("history/generated-fresh-roots", "seed-comment-fresh-drift", "", "offline") => failed{"comment-fresh"}
+        seed_comment_truth: context("history/generated-fresh-roots", "seed-comment-truth-drift", "", "offline") => failed{"comment-truth"}
+        seed_root_helper: context("history/generated-fresh-roots", "seed-root-helper-drift", "", "offline") => failed{"root-helper"}
+        seed_cataloguegen_path: context("history/generated-fresh-roots", "seed-cataloguegen-path-drift", "", "offline") => failed{"cataloguegen-path"}
+        seed_check_flag: context("history/generated-fresh-roots", "seed-check-flag-drift", "", "offline") => failed{"check-flag"}
+        seed_catalogue_seg: context("history/generated-fresh-roots", "seed-catalogue-seg-drift", "", "offline") => failed{"catalogue-seg"}
+        seed_stat_call: context("history/generated-fresh-roots", "seed-stat-call-drift", "", "offline") => failed{"stat-call"}
+        seed_combined_call: context("history/generated-fresh-roots", "seed-combined-call-drift", "", "offline") => failed{"combined-call"}
+        seed_join_head: context("history/generated-fresh-roots", "seed-join-head-drift", "", "offline") => failed{"join-head"}
+        seed_fatal_call: context("history/generated-fresh-roots", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT26GeneratedArtifactsFresh", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.test_param, "t *testing.T", c, "test-param")
+                failed
+                ok evidence test_param_evidence => match call require_text(got.comment_fresh, "// Generated reference artifacts must be fresh: the catalogue source", c, "comment-fresh")
+                    failed
+                    ok evidence comment_fresh_evidence => match call require_text(got.comment_truth, "// of truth regenerates byte-identical outputs.", c, "comment-truth")
+                        failed
+                        ok evidence comment_truth_evidence => match call require_text(got.root_helper, "root := repoRoot(t)", c, "root-helper")
+                            failed
+                            ok evidence root_helper_evidence => match call require_text(got.cataloguegen_path, "./compiler/internal/catalogue/cmd/cataloguegen", c, "cataloguegen-path")
+                                failed
+                                ok evidence cataloguegen_path_evidence => match call require_text(got.check_flag, "--check", c, "check-flag")
+                                    failed
+                                    ok evidence check_flag_evidence => match call require_text(got.catalogue_seg, "catalogue.ts", c, "catalogue-seg")
+                                        failed
+                                        ok evidence catalogue_seg_evidence => match call require_text(got.stat_call, "os.Stat", c, "stat-call")
+                                            failed
+                                            ok evidence stat_call_evidence => match call require_text(got.combined_call, "cmd.CombinedOutput()", c, "combined-call")
+                                                failed
+                                                ok evidence combined_call_evidence => match call require_text(got.join_head, "filepath.Join(root, ", c, "join-head")
+                                                    failed
+                                                    ok evidence join_head_evidence => match call require_text(got.fatal_call, "t.Fatalf", c, "fatal-call")
+                                                        failed
+                                                        ok evidence fatal_call_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok test_case("history/generated-fresh-roots", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("comment-fresh"), check_ref("comment-truth"), check_ref("root-helper"), check_ref("cataloguegen-path"), check_ref("check-flag"), check_ref("catalogue-seg"), check_ref("stat-call"), check_ref("combined-call"), check_ref("join-head"), check_ref("fatal-call")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h047"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/generated-fresh-roots", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("test-param"), check_ref("comment-fresh"), check_ref("comment-truth"), check_ref("root-helper"), check_ref("cataloguegen-path"), check_ref("check-flag"), check_ref("catalogue-seg"), check_ref("stat-call"), check_ref("combined-call"), check_ref("join-head"), check_ref("fatal-call")], callable case_body)

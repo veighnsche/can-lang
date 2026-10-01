@@ -1,0 +1,234 @@
+package m30history047run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-047 "Generated fresh: run shape".
+/// Source: tests/baseline/t26_product_guide_test.go
+/// symbol TestT26GeneratedArtifactsFresh (L211-222):
+/// exec (L213); dir (L214); run (L215); check args
+/// (L216); stat (L218); size guard (L219); plus the
+/// exec arg count and the dir/run/stat orders.
+/// Disposition: replace_support (this row ports the
+/// generated-fresh offline pact to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the exec
+/// plus dir plus run spine, the check-failure args,
+/// the stat head, the size guard, the exec arg count,
+/// plus the dir-before-run and run-before-stat
+/// orders.
+/// ADAPTATION (recorded, with source lines): shapes pin
+/// the Go statement inner bytes without leading tabs
+/// (L213-215, L218-219); exec-stmt pins the Command
+/// head before the quoted args (L213); stat-stmt pins
+/// the Stat head before the quoted segs (L218);
+/// check-args pins err plus out (L216); exec-arg-count
+/// pins int (4) from the four exec args (L213);
+/// dir-before-run pins true since the Dir bind (L214)
+/// precedes the run guard (L215); run-before-stat
+/// pins true since the run guard (L215) precedes the
+/// Stat (L218).
+/// Facet map (launch plus diagnostics): exec-stmt pins
+/// the L213 head; dir-stmt pins the L214 bind;
+/// run-stmt pins the L215 guard; stat-stmt pins the
+/// L218 head; size-guard pins the L219 guard;
+/// check-args pins err plus out (L216); exec-arg-count
+/// pins 4 (L213); dir-before-run pins true (L214,
+/// L215); run-before-stat pins true (L215, L218).
+/// The verdict pins live in
+/// history-047-base-semantics.can; the roots-green pin
+/// lives in history-047-roots-green.can.
+/// Variants: none (row lists zero variants; the single
+/// passing path in Go order).
+/// Environment: none (row lists zero gates; requires
+/// [] offline; binds at P23).
+/// Logical gates SUITE/WORK/FILES/BUILD/CHILD/PROC/CLOCK
+/// bind at P23; no live run now. Accept gate P23 is
+/// unmet. Timeout 120000ms is the offline default bound
+/// (no Go test timeout in this row; binds at P23 like
+/// the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/generated-fresh-run checks: exec-stmt,
+/// dir-stmt, run-stmt, stat-stmt, size-guard,
+/// check-args, exec-arg-count, dir-before-run,
+/// run-before-stat.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str exec_stmt
+    str dir_stmt
+    str run_stmt
+    str stat_stmt
+    str size_guard
+    str check_args
+    int exec_arg_count
+    bool dir_before_run
+    bool run_before_stat
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/generated-fresh-run", "default", "", "offline"), "exec-stmt" => ok "case history/generated-fresh-run variant default root exec-stmt run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/generated-fresh-run", "default", "", "offline"), "dir-before-run" => ok evidence("dir-before-run", "true", "true", true, "case history/generated-fresh-run variant default root dir-before-run run offline")
+        different: false, true, context("history/generated-fresh-run", "default", "", "offline"), "dir-before-run" => failed{"dir-before-run"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("history/generated-fresh-run", "default", "", "offline"), "exec-arg-count" => ok evidence("exec-arg-count", "4", "4", true, "case history/generated-fresh-run variant default root exec-arg-count run offline")
+        different: 3, 4, context("history/generated-fresh-run", "default", "", "offline"), "exec-arg-count" => failed{"exec-arg-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "cmd := exec.Command(", "cmd := exec.Command(", context("history/generated-fresh-run", "default", "", "offline"), "exec-stmt" => ok evidence("exec-stmt", "cmd := exec.Command(", "cmd := exec.Command(", true, "case history/generated-fresh-run variant default root exec-stmt run offline")
+        different: "cmd := exec.Command(_2", "cmd := exec.Command(", context("history/generated-fresh-run", "default", "", "offline"), "exec-stmt" => failed{"exec-stmt"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        seed_exec_stmt: "seed-exec-stmt-drift" => ok observation("cmd := exec.Command(_2", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        seed_dir_stmt: "seed-dir-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root_2", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        seed_run_stmt: "seed-run-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {_2", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        seed_stat_stmt: "seed-stat-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, _2", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        seed_size_guard: "seed-size-guard-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {_2", "err, out", 4, true, true)
+        seed_check_args: "seed-check-args-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out_2", 4, true, true)
+        seed_exec_arg_count: "seed-exec-arg-count-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 3, true, true)
+        seed_dir_before_run: "seed-dir-before-run-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, false, true)
+        seed_run_before_stat: "seed-run-before-stat-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, false)
+    match variant_id
+        "seed-exec-stmt-drift" => ok observation("cmd := exec.Command(_2", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        "seed-dir-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root_2", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        "seed-run-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {_2", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        "seed-stat-stmt-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, _2", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+        "seed-size-guard-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {_2", "err, out", 4, true, true)
+        "seed-check-args-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out_2", 4, true, true)
+        "seed-exec-arg-count-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 3, true, true)
+        "seed-dir-before-run-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, false, true)
+        "seed-run-before-stat-drift" => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, false)
+        _ => ok observation("cmd := exec.Command(", "cmd.Dir = root", "if out, err := cmd.CombinedOutput(); err != nil {", "info, err := os.Stat(filepath.Join(root, ", "if err != nil || info.Size() == 0 {", "err, out", 4, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok [check("exec-stmt", "exec statement is pinned"), check("dir-stmt", "dir statement is pinned"), check("run-stmt", "run guard statement is pinned"), check("stat-stmt", "stat statement is pinned"), check("size-guard", "size guard shape is pinned"), check("check-args", "check failure args are pinned"), check("exec-arg-count", "exec arg count pins four"), check("dir-before-run", "dir precedes run"), check("run-before-stat", "run precedes stat")]
+        other: "nope" => ok []
+    match scope is "m30-h047"
+        false => ok []
+        true => ok [check("exec-stmt", "exec statement is pinned"), check("dir-stmt", "dir statement is pinned"), check("run-stmt", "run guard statement is pinned"), check("stat-stmt", "stat statement is pinned"), check("size-guard", "size guard shape is pinned"), check("check-args", "check failure args are pinned"), check("exec-arg-count", "exec arg count pins four"), check("dir-before-run", "dir precedes run"), check("run-before-stat", "run precedes stat")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/generated-fresh-run" => ok [expected_check("exec-stmt", "cmd := exec.Command("), expected_check("dir-stmt", "cmd.Dir = root"), expected_check("run-stmt", "if out, err := cmd.CombinedOutput(); err != nil {"), expected_check("stat-stmt", "info, err := os.Stat(filepath.Join(root, "), expected_check("size-guard", "if err != nil || info.Size() == 0 {"), expected_check("check-args", "err, out"), expected_check("exec-arg-count", "4"), expected_check("dir-before-run", "true"), expected_check("run-before-stat", "true")]
+        unknown: "nope" => ok []
+    match case is "history/generated-fresh-run"
+        false => ok []
+        true => ok [expected_check("exec-stmt", "cmd := exec.Command("), expected_check("dir-stmt", "cmd.Dir = root"), expected_check("run-stmt", "if out, err := cmd.CombinedOutput(); err != nil {"), expected_check("stat-stmt", "info, err := os.Stat(filepath.Join(root, "), expected_check("size-guard", "if err != nil || info.Size() == 0 {"), expected_check("check-args", "err, out"), expected_check("exec-arg-count", "4"), expected_check("dir-before-run", "true"), expected_check("run-before-stat", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/generated-fresh-run", "default", "", "offline") => ok
+        seed_exec_stmt: context("history/generated-fresh-run", "seed-exec-stmt-drift", "", "offline") => failed{"exec-stmt"}
+        seed_dir_stmt: context("history/generated-fresh-run", "seed-dir-stmt-drift", "", "offline") => failed{"dir-stmt"}
+        seed_run_stmt: context("history/generated-fresh-run", "seed-run-stmt-drift", "", "offline") => failed{"run-stmt"}
+        seed_stat_stmt: context("history/generated-fresh-run", "seed-stat-stmt-drift", "", "offline") => failed{"stat-stmt"}
+        seed_size_guard: context("history/generated-fresh-run", "seed-size-guard-drift", "", "offline") => failed{"size-guard"}
+        seed_check_args: context("history/generated-fresh-run", "seed-check-args-drift", "", "offline") => failed{"check-args"}
+        seed_exec_arg_count: context("history/generated-fresh-run", "seed-exec-arg-count-drift", "", "offline") => failed{"exec-arg-count"}
+        seed_dir_before_run: context("history/generated-fresh-run", "seed-dir-before-run-drift", "", "offline") => failed{"dir-before-run"}
+        seed_run_before_stat: context("history/generated-fresh-run", "seed-run-before-stat-drift", "", "offline") => failed{"run-before-stat"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.exec_stmt, "cmd := exec.Command(", c, "exec-stmt")
+            failed
+            ok evidence exec_stmt_evidence => match call require_text(got.dir_stmt, "cmd.Dir = root", c, "dir-stmt")
+                failed
+                ok evidence dir_stmt_evidence => match call require_text(got.run_stmt, "if out, err := cmd.CombinedOutput(); err != nil {", c, "run-stmt")
+                    failed
+                    ok evidence run_stmt_evidence => match call require_text(got.stat_stmt, "info, err := os.Stat(filepath.Join(root, ", c, "stat-stmt")
+                        failed
+                        ok evidence stat_stmt_evidence => match call require_text(got.size_guard, "if err != nil || info.Size() == 0 {", c, "size-guard")
+                            failed
+                            ok evidence size_guard_evidence => match call require_text(got.check_args, "err, out", c, "check-args")
+                                failed
+                                ok evidence check_args_evidence => match call require_int(got.exec_arg_count, 4, c, "exec-arg-count")
+                                    failed
+                                    ok evidence exec_arg_count_evidence => match call require_bool(got.dir_before_run, true, c, "dir-before-run")
+                                        failed
+                                        ok evidence dir_before_run_evidence => match call require_bool(got.run_before_stat, true, c, "run-before-stat")
+                                            failed
+                                            ok evidence run_before_stat_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok test_case("history/generated-fresh-run", ["history", "m30"], [], 120000, [check_ref("exec-stmt"), check_ref("dir-stmt"), check_ref("run-stmt"), check_ref("stat-stmt"), check_ref("size-guard"), check_ref("check-args"), check_ref("exec-arg-count"), check_ref("dir-before-run"), check_ref("run-before-stat")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h047"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/generated-fresh-run", ["history", "m30"], [], 120000, [check_ref("exec-stmt"), check_ref("dir-stmt"), check_ref("run-stmt"), check_ref("stat-stmt"), check_ref("size-guard"), check_ref("check-args"), check_ref("exec-arg-count"), check_ref("dir-before-run"), check_ref("run-before-stat")], callable case_body)

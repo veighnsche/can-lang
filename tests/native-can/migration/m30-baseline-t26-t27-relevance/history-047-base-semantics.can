@@ -1,0 +1,229 @@
+package m30history047base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-047 "Generated fresh: base verdicts".
+/// Source: tests/baseline/t26_product_guide_test.go
+/// symbol TestT26GeneratedArtifactsFresh (L211-222)
+/// plus the fresh comments (L209-210).
+/// Disposition: replace_support (this row ports the
+/// generated-fresh offline pact to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the passing-path verdicts in
+/// Go order: the two diagnostic wordings, the three
+/// comparison spellings, the fatal count, plus the
+/// check-before-stat and stat-before-guard order
+/// verdicts.
+/// ADAPTATION (recorded, with source lines):
+/// check-wording pins the Fatalf format head before
+/// the newline escape (L216); missing-wording pins
+/// the full format (L220); run-compare pins the
+/// CombinedOutput guard fragment (L215);
+/// stat-err-compare pins the err-or fragment (L219);
+/// size-compare pins the size-or fragment (L219);
+/// fatal-count pins int (2) from the two Fatalf call
+/// sites (L216, L220); check-before-stat pins true
+/// since the cataloguegen probe (L213) precedes the
+/// catalogue stat (L218); stat-before-guard pins
+/// true since the Stat (L218) precedes the size
+/// guard (L219).
+/// Facet map (Go verdict legs): check-wording pins
+/// the check-failure head (L216); missing-wording
+/// pins the missing-file wording (L220);
+/// run-compare pins the run guard (L215);
+/// stat-err-compare pins the err-or (L219);
+/// size-compare pins the size-or (L219); fatal-count
+/// pins 2; check-before-stat pins true (L213, L218);
+/// stat-before-guard pins true (L218, L219).
+/// The roots-green pin lives in
+/// history-047-roots-green.can; the run shape plus
+/// diagnostics live in history-047-run-shape.can.
+/// Variants: none (row lists zero variants; the single
+/// passing path in Go order).
+/// Environment: none (row lists zero gates; requires
+/// [] offline; binds at P23).
+/// Logical gates SUITE/WORK/FILES/BUILD/CHILD/PROC/CLOCK
+/// bind at P23; no live run now. Accept gate P23 is
+/// unmet. Timeout 120000ms is the offline default bound
+/// (no Go test timeout in this row; binds at P23 like
+/// the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/generated-fresh-base checks:
+/// check-wording, missing-wording, run-compare,
+/// stat-err-compare, size-compare, fatal-count,
+/// check-before-stat, stat-before-guard.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str check_wording
+    str missing_wording
+    str run_compare
+    str stat_err_compare
+    str size_compare
+    int fatal_count
+    bool check_before_stat
+    bool stat_before_guard
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/generated-fresh-base", "default", "", "offline"), "check-wording" => ok "case history/generated-fresh-base variant default root check-wording run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/generated-fresh-base", "default", "", "offline"), "check-before-stat" => ok evidence("check-before-stat", "true", "true", true, "case history/generated-fresh-base variant default root check-before-stat run offline")
+        different: false, true, context("history/generated-fresh-base", "default", "", "offline"), "check-before-stat" => failed{"check-before-stat"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/generated-fresh-base", "default", "", "offline"), "fatal-count" => ok evidence("fatal-count", "2", "2", true, "case history/generated-fresh-base variant default root fatal-count run offline")
+        different: 1, 2, context("history/generated-fresh-base", "default", "", "offline"), "fatal-count" => failed{"fatal-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "cataloguegen --check: %v", "cataloguegen --check: %v", context("history/generated-fresh-base", "default", "", "offline"), "check-wording" => ok evidence("check-wording", "cataloguegen --check: %v", "cataloguegen --check: %v", true, "case history/generated-fresh-base variant default root check-wording run offline")
+        different: "cataloguegen --check: %v_2", "cataloguegen --check: %v", context("history/generated-fresh-base", "default", "", "offline"), "check-wording" => failed{"check-wording"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        seed_check_wording: "seed-check-wording-drift" => ok observation("cataloguegen --check: %v_2", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        seed_missing_wording: "seed-missing-wording-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v_2", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        seed_run_compare: "seed-run-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil_2", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        seed_stat_err_compare: "seed-stat-err-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||_2", "|| info.Size() == 0", 2, true, true)
+        seed_size_compare: "seed-size-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0_2", 2, true, true)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 1, true, true)
+        seed_check_before_stat: "seed-check-before-stat-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, false, true)
+        seed_stat_before_guard: "seed-stat-before-guard-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, false)
+    match variant_id
+        "seed-check-wording-drift" => ok observation("cataloguegen --check: %v_2", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        "seed-missing-wording-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v_2", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        "seed-run-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil_2", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+        "seed-stat-err-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||_2", "|| info.Size() == 0", 2, true, true)
+        "seed-size-compare-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0_2", 2, true, true)
+        "seed-fatal-count-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 1, true, true)
+        "seed-check-before-stat-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, false, true)
+        "seed-stat-before-guard-drift" => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, false)
+        _ => ok observation("cataloguegen --check: %v", "runtime/catalogue.ts missing or empty: %v", "cmd.CombinedOutput(); err != nil", "err != nil ||", "|| info.Size() == 0", 2, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok [check("check-wording", "check failure wording is pinned"), check("missing-wording", "missing catalogue wording is pinned"), check("run-compare", "run guard spelling is pinned"), check("stat-err-compare", "stat err guard spelling is pinned"), check("size-compare", "size guard spelling is pinned"), check("fatal-count", "fatal call count pins two"), check("check-before-stat", "check precedes stat"), check("stat-before-guard", "stat precedes size guard")]
+        other: "nope" => ok []
+    match scope is "m30-h047"
+        false => ok []
+        true => ok [check("check-wording", "check failure wording is pinned"), check("missing-wording", "missing catalogue wording is pinned"), check("run-compare", "run guard spelling is pinned"), check("stat-err-compare", "stat err guard spelling is pinned"), check("size-compare", "size guard spelling is pinned"), check("fatal-count", "fatal call count pins two"), check("check-before-stat", "check precedes stat"), check("stat-before-guard", "stat precedes size guard")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/generated-fresh-base" => ok [expected_check("check-wording", "cataloguegen --check: %v"), expected_check("missing-wording", "runtime/catalogue.ts missing or empty: %v"), expected_check("run-compare", "cmd.CombinedOutput(); err != nil"), expected_check("stat-err-compare", "err != nil ||"), expected_check("size-compare", "|| info.Size() == 0"), expected_check("fatal-count", "2"), expected_check("check-before-stat", "true"), expected_check("stat-before-guard", "true")]
+        unknown: "nope" => ok []
+    match case is "history/generated-fresh-base"
+        false => ok []
+        true => ok [expected_check("check-wording", "cataloguegen --check: %v"), expected_check("missing-wording", "runtime/catalogue.ts missing or empty: %v"), expected_check("run-compare", "cmd.CombinedOutput(); err != nil"), expected_check("stat-err-compare", "err != nil ||"), expected_check("size-compare", "|| info.Size() == 0"), expected_check("fatal-count", "2"), expected_check("check-before-stat", "true"), expected_check("stat-before-guard", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/generated-fresh-base", "default", "", "offline") => ok
+        seed_check_wording: context("history/generated-fresh-base", "seed-check-wording-drift", "", "offline") => failed{"check-wording"}
+        seed_missing_wording: context("history/generated-fresh-base", "seed-missing-wording-drift", "", "offline") => failed{"missing-wording"}
+        seed_run_compare: context("history/generated-fresh-base", "seed-run-compare-drift", "", "offline") => failed{"run-compare"}
+        seed_stat_err_compare: context("history/generated-fresh-base", "seed-stat-err-compare-drift", "", "offline") => failed{"stat-err-compare"}
+        seed_size_compare: context("history/generated-fresh-base", "seed-size-compare-drift", "", "offline") => failed{"size-compare"}
+        seed_fatal_count: context("history/generated-fresh-base", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+        seed_check_before_stat: context("history/generated-fresh-base", "seed-check-before-stat-drift", "", "offline") => failed{"check-before-stat"}
+        seed_stat_before_guard: context("history/generated-fresh-base", "seed-stat-before-guard-drift", "", "offline") => failed{"stat-before-guard"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.check_wording, "cataloguegen --check: %v", c, "check-wording")
+            failed
+            ok evidence check_wording_evidence => match call require_text(got.missing_wording, "runtime/catalogue.ts missing or empty: %v", c, "missing-wording")
+                failed
+                ok evidence missing_wording_evidence => match call require_text(got.run_compare, "cmd.CombinedOutput(); err != nil", c, "run-compare")
+                    failed
+                    ok evidence run_compare_evidence => match call require_text(got.stat_err_compare, "err != nil ||", c, "stat-err-compare")
+                        failed
+                        ok evidence stat_err_compare_evidence => match call require_text(got.size_compare, "|| info.Size() == 0", c, "size-compare")
+                            failed
+                            ok evidence size_compare_evidence => match call require_int(got.fatal_count, 2, c, "fatal-count")
+                                failed
+                                ok evidence fatal_count_evidence => match call require_bool(got.check_before_stat, true, c, "check-before-stat")
+                                    failed
+                                    ok evidence check_before_stat_evidence => match call require_bool(got.stat_before_guard, true, c, "stat-before-guard")
+                                        failed
+                                        ok evidence stat_before_guard_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h047: "m30-h047" => ok test_case("history/generated-fresh-base", ["history", "m30"], [], 120000, [check_ref("check-wording"), check_ref("missing-wording"), check_ref("run-compare"), check_ref("stat-err-compare"), check_ref("size-compare"), check_ref("fatal-count"), check_ref("check-before-stat"), check_ref("stat-before-guard")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h047"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/generated-fresh-base", ["history", "m30"], [], 120000, [check_ref("check-wording"), check_ref("missing-wording"), check_ref("run-compare"), check_ref("stat-err-compare"), check_ref("size-compare"), check_ref("fatal-count"), check_ref("check-before-stat"), check_ref("stat-before-guard")], callable case_body)
