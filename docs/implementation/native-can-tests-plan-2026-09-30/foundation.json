@@ -617,7 +617,7 @@
       "acceptance": "Predecessor-compatible checks plus independently reviewed fixed/native controls catch wrong transport, wrong target/emission, changed runtime and bypassed assertion behavior. R-seed stays authoritative where expressible; record explicit bootstrap bridge assumptions for new capabilities. No candidate self-promotion.",
       "evidence": "evidence/P26.json with exact identities, checks, controls, cleanup and independent review",
       "commit": "test(testing): accept the core reference generation",
-      "status": "active",
+      "status": "complete",
       "start_after": [
         "P05",
         "P06",
