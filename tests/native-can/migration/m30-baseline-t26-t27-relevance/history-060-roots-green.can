@@ -1,0 +1,199 @@
+/// M30 HISTORY-060 roots green: live readers of tests/baseline/candidates/T26-native-ai/candidate.json.
+/// Caller pins name the 2 Go legs that open the record bytes and the deferr
+/// needle each asserts: t26 guide leg (L195 ReadFile, L200 needle) and t27
+/// release audit leg (L281 readRepoFile, L282 needle).
+/// Sibling pins name the co-located README pointer (L43) as a doc reference,
+/// not a code caller. run.sh, baseline_test.go and tools/ hold no reader.
+/// checks: caller-t26-path, caller-t26-reads, caller-t27-path,
+/// caller-t27-reads, doc-sibling-path, doc-sibling-mention, caller-t26-line,
+/// caller-t27-line, doc-sibling-line.
+package m30history060roots
+    provides [context, check, check_ref, expected_check, evidence, observation, failed, test_case, selector, require_bool, require_int, require_text, observe, checks, expected_vector, case_body, descriptor]
+    uses [text]
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str caller_t26_path
+    str caller_t26_reads
+    str caller_t27_path
+    str caller_t27_reads
+    str doc_sibling_path
+    str doc_sibling_mention
+    int caller_t26_line
+    int caller_t27_line
+    int doc_sibling_line
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-path" => ok "case history/candidate-record-roots variant default root caller-t26-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-path" => ok evidence("caller-t26-path", "true", "true", true, "case history/candidate-record-roots variant default root caller-t26-path run offline")
+        different: true, false, context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-path" => failed{"caller-t26-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-line" => ok evidence("caller-t26-line", "3", "3", true, "case history/candidate-record-roots variant default root caller-t26-line run offline")
+        different: 3, 4, context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-line" => failed{"caller-t26-line"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "a", "a", context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-path" => ok evidence("caller-t26-path", "a", "a", true, "case history/candidate-record-roots variant default root caller-t26-path run offline")
+        different: "a", "b", context("history/candidate-record-roots", "default", "", "offline"), "caller-t26-path" => failed{"caller-t26-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str probe
+    asserts
+        default: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_caller_t26_path: "seed-caller-t26-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go_2", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_caller_t26_reads: "seed-caller-t26-reads-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr_2", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_caller_t27_path: "seed-caller-t27-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go_2", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_caller_t27_reads: "seed-caller-t27-reads-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr_2", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_doc_sibling_path: "seed-doc-sibling-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md_2", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        seed_doc_sibling_mention: "seed-doc-sibling-mention-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status_2", 195, 281, 43)
+        seed_caller_t26_line: "seed-caller-t26-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 194, 281, 43)
+        seed_caller_t27_line: "seed-caller-t27-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 280, 43)
+        seed_doc_sibling_line: "seed-doc-sibling-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 42)
+    match probe
+        "seed-caller-t26-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go_2", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        "seed-caller-t26-reads-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr_2", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        "seed-caller-t27-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go_2", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        "seed-caller-t27-reads-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr_2", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        "seed-doc-sibling-path-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md_2", "See candidate.json for machine-readable slot status", 195, 281, 43)
+        "seed-doc-sibling-mention-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status_2", 195, 281, 43)
+        "seed-caller-t26-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 194, 281, 43)
+        "seed-caller-t27-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 280, 43)
+        "seed-doc-sibling-line-drift" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 42)
+        _ => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        known: "candidate-record-roots" => ok [check("caller-t26-path", "live caller path t26"), check("caller-t26-reads", "live caller reads t26"), check("caller-t27-path", "live caller path t27"), check("caller-t27-reads", "live caller reads t27"), check("doc-sibling-path", "sibling doc path"), check("doc-sibling-mention", "sibling doc mention"), check("caller-t26-line", "live caller line t26"), check("caller-t27-line", "live caller line t27"), check("doc-sibling-line", "sibling doc line")]
+        unknown: "other" => ok []
+    match scope is "candidate-record-roots"
+        false => ok []
+        true => ok [check("caller-t26-path", "live caller path t26"), check("caller-t26-reads", "live caller reads t26"), check("caller-t27-path", "live caller path t27"), check("caller-t27-reads", "live caller reads t27"), check("doc-sibling-path", "sibling doc path"), check("doc-sibling-mention", "sibling doc mention"), check("caller-t26-line", "live caller line t26"), check("caller-t27-line", "live caller line t27"), check("doc-sibling-line", "sibling doc line")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-roots" => ok [expected_check("caller-t26-path", "tests/baseline/t26_product_guide_test.go"), expected_check("caller-t26-reads", "ReadFile bytes; lower contains deferr"), expected_check("caller-t27-path", "tests/baseline/t27_release_audit_test.go"), expected_check("caller-t27-reads", "readRepoFile bytes; lower contains deferr"), expected_check("doc-sibling-path", "tests/baseline/candidates/T26-native-ai/README.md"), expected_check("doc-sibling-mention", "See candidate.json for machine-readable slot status"), expected_check("caller-t26-line", "195"), expected_check("caller-t27-line", "281"), expected_check("doc-sibling-line", "43")]
+        unknown: "nope" => ok []
+    match case_id is "history/candidate-record-roots"
+        false => ok []
+        true => ok [expected_check("caller-t26-path", "tests/baseline/t26_product_guide_test.go"), expected_check("caller-t26-reads", "ReadFile bytes; lower contains deferr"), expected_check("caller-t27-path", "tests/baseline/t27_release_audit_test.go"), expected_check("caller-t27-reads", "readRepoFile bytes; lower contains deferr"), expected_check("doc-sibling-path", "tests/baseline/candidates/T26-native-ai/README.md"), expected_check("doc-sibling-mention", "See candidate.json for machine-readable slot status"), expected_check("caller-t26-line", "195"), expected_check("caller-t27-line", "281"), expected_check("doc-sibling-line", "43")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/candidate-record-roots", "default", "", "offline") => ok
+        seed_caller_t26_path: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t26-path"}
+        seed_caller_t26_reads: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t26-reads"}
+        seed_caller_t27_path: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t27-path"}
+        seed_caller_t27_reads: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t27-reads"}
+        seed_doc_sibling_path: context("history/candidate-record-roots", "default", "", "offline") => failed{"doc-sibling-path"}
+        seed_doc_sibling_mention: context("history/candidate-record-roots", "default", "", "offline") => failed{"doc-sibling-mention"}
+        seed_caller_t26_line: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t26-line"}
+        seed_caller_t27_line: context("history/candidate-record-roots", "default", "", "offline") => failed{"caller-t27-line"}
+        seed_doc_sibling_line: context("history/candidate-record-roots", "default", "", "offline") => failed{"doc-sibling-line"}
+    match call observe("default")
+        when
+            expected: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_caller_t26_path: "default" => ok observation("tests/baseline/t26_product_guide_test.go_2", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_caller_t26_reads: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr_2", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_caller_t27_path: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go_2", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_caller_t27_reads: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr_2", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_doc_sibling_path: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md_2", "See candidate.json for machine-readable slot status", 195, 281, 43)
+            seed_doc_sibling_mention: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status_2", 195, 281, 43)
+            seed_caller_t26_line: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 194, 281, 43)
+            seed_caller_t27_line: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 280, 43)
+            seed_doc_sibling_line: "default" => ok observation("tests/baseline/t26_product_guide_test.go", "ReadFile bytes; lower contains deferr", "tests/baseline/t27_release_audit_test.go", "readRepoFile bytes; lower contains deferr", "tests/baseline/candidates/T26-native-ai/README.md", "See candidate.json for machine-readable slot status", 195, 281, 42)
+        ok observation got => match call require_text(got.caller_t26_path, "tests/baseline/t26_product_guide_test.go", c, "caller-t26-path")
+            failed
+            ok evidence caller_t26_path_evidence => match call require_text(got.caller_t26_reads, "ReadFile bytes; lower contains deferr", c, "caller-t26-reads")
+                failed
+                ok evidence caller_t26_reads_evidence => match call require_text(got.caller_t27_path, "tests/baseline/t27_release_audit_test.go", c, "caller-t27-path")
+                    failed
+                    ok evidence caller_t27_path_evidence => match call require_text(got.caller_t27_reads, "readRepoFile bytes; lower contains deferr", c, "caller-t27-reads")
+                        failed
+                        ok evidence caller_t27_reads_evidence => match call require_text(got.doc_sibling_path, "tests/baseline/candidates/T26-native-ai/README.md", c, "doc-sibling-path")
+                            failed
+                            ok evidence doc_sibling_path_evidence => match call require_text(got.doc_sibling_mention, "See candidate.json for machine-readable slot status", c, "doc-sibling-mention")
+                                failed
+                                ok evidence doc_sibling_mention_evidence => match call require_int(got.caller_t26_line, 195, c, "caller-t26-line")
+                                    failed
+                                    ok evidence caller_t26_line_evidence => match call require_int(got.caller_t27_line, 281, c, "caller-t27-line")
+                                        failed
+                                        ok evidence caller_t27_line_evidence => match call require_int(got.doc_sibling_line, 43, c, "doc-sibling-line")
+                                            failed
+                                            ok evidence doc_sibling_line_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-roots" => ok test_case("history/candidate-record-roots", ["history"], [], 15000, [check_ref("caller-t26-path"), check_ref("caller-t26-reads"), check_ref("caller-t27-path"), check_ref("caller-t27-reads"), check_ref("doc-sibling-path"), check_ref("doc-sibling-mention"), check_ref("caller-t26-line"), check_ref("caller-t27-line"), check_ref("doc-sibling-line")], callable case_body)
+        unknown: "nope" => ok test_case("nope", [], [], 0, [], callable case_body)
+    match case_id is "history/candidate-record-roots"
+        false => ok test_case("nope", [], [], 0, [], callable case_body)
+        true => ok test_case("history/candidate-record-roots", ["history"], [], 15000, [check_ref("caller-t26-path"), check_ref("caller-t26-reads"), check_ref("caller-t27-path"), check_ref("caller-t27-reads"), check_ref("doc-sibling-path"), check_ref("doc-sibling-mention"), check_ref("caller-t26-line"), check_ref("caller-t27-line"), check_ref("doc-sibling-line")], callable case_body)

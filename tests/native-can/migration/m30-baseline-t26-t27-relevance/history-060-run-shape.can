@@ -1,0 +1,212 @@
+/// M30 HISTORY-060 run shape: reviewed disposition of tests/baseline/candidates/T26-native-ai/candidate.json.
+/// Decision pins hold the retain verdict and its rationale slug.
+/// Count pins hold coverage-map tallies (1 protects, 0 variants, 0 env gates),
+/// caller tallies (2 live code legs, 1 live doc pointer), execution credit 0
+/// and retirement eligibility 0. Preserved history is not execution evidence.
+/// checks: record-date, record-owner-task, decision, rationale,
+/// protects-count, variant-count, env-gate-count, live-caller-count,
+/// doc-ref-count, execution-credit, retirement-eligible.
+package m30history060run
+    provides [context, check, check_ref, expected_check, evidence, observation, failed, test_case, selector, require_bool, require_int, require_text, observe, checks, expected_vector, case_body, descriptor]
+    uses [text]
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str record_date
+    str record_owner_task
+    str decision
+    str rationale
+    int protects_count
+    int variant_count
+    int env_gate_count
+    int live_caller_count
+    int doc_ref_count
+    int execution_credit
+    int retirement_eligible
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/candidate-record-run", "default", "", "offline"), "record-date" => ok "case history/candidate-record-run variant default root record-date run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/candidate-record-run", "default", "", "offline"), "record-date" => ok evidence("record-date", "true", "true", true, "case history/candidate-record-run variant default root record-date run offline")
+        different: true, false, context("history/candidate-record-run", "default", "", "offline"), "record-date" => failed{"record-date"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/candidate-record-run", "default", "", "offline"), "protects-count" => ok evidence("protects-count", "3", "3", true, "case history/candidate-record-run variant default root protects-count run offline")
+        different: 3, 4, context("history/candidate-record-run", "default", "", "offline"), "protects-count" => failed{"protects-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "a", "a", context("history/candidate-record-run", "default", "", "offline"), "record-date" => ok evidence("record-date", "a", "a", true, "case history/candidate-record-run variant default root record-date run offline")
+        different: "a", "b", context("history/candidate-record-run", "default", "", "offline"), "record-date" => failed{"record-date"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str probe
+    asserts
+        default: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        seed_record_date: "seed-record-date-drift" => ok observation("2026-09-24_2", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        seed_record_owner_task: "seed-record-owner-task-drift" => ok observation("2026-09-24", "T26-deferred-or-later_2", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        seed_decision: "seed-decision-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain_2", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        seed_rationale: "seed-rationale-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral_2", 1, 0, 0, 2, 1, 0, 0)
+        seed_protects_count: "seed-protects-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 0, 0, 0, 2, 1, 0, 0)
+        seed_variant_count: "seed-variant-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, -1, 0, 2, 1, 0, 0)
+        seed_env_gate_count: "seed-env-gate-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, -1, 2, 1, 0, 0)
+        seed_live_caller_count: "seed-live-caller-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 1, 1, 0, 0)
+        seed_doc_ref_count: "seed-doc-ref-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 0, 0, 0)
+        seed_execution_credit: "seed-execution-credit-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, -1, 0)
+        seed_retirement_eligible: "seed-retirement-eligible-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, -1)
+    match probe
+        "seed-record-date-drift" => ok observation("2026-09-24_2", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        "seed-record-owner-task-drift" => ok observation("2026-09-24", "T26-deferred-or-later_2", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        "seed-decision-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain_2", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+        "seed-rationale-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral_2", 1, 0, 0, 2, 1, 0, 0)
+        "seed-protects-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 0, 0, 0, 2, 1, 0, 0)
+        "seed-variant-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, -1, 0, 2, 1, 0, 0)
+        "seed-env-gate-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, -1, 2, 1, 0, 0)
+        "seed-live-caller-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 1, 1, 0, 0)
+        "seed-doc-ref-count-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 0, 0, 0)
+        "seed-execution-credit-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, -1, 0)
+        "seed-retirement-eligible-drift" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, -1)
+        _ => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        known: "candidate-record-run" => ok [check("record-date", "record date"), check("record-owner-task", "record owner task"), check("decision", "review decision"), check("rationale", "review rationale"), check("protects-count", "coverage protects count"), check("variant-count", "coverage variant count"), check("env-gate-count", "coverage env gate count"), check("live-caller-count", "live code caller count"), check("doc-ref-count", "live doc reference count"), check("execution-credit", "execution credit"), check("retirement-eligible", "retirement eligible marker")]
+        unknown: "other" => ok []
+    match scope is "candidate-record-run"
+        false => ok []
+        true => ok [check("record-date", "record date"), check("record-owner-task", "record owner task"), check("decision", "review decision"), check("rationale", "review rationale"), check("protects-count", "coverage protects count"), check("variant-count", "coverage variant count"), check("env-gate-count", "coverage env gate count"), check("live-caller-count", "live code caller count"), check("doc-ref-count", "live doc reference count"), check("execution-credit", "execution credit"), check("retirement-eligible", "retirement eligible marker")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-run" => ok [expected_check("record-date", "2026-09-24"), expected_check("record-owner-task", "T26-deferred-or-later"), expected_check("decision", "retain"), expected_check("rationale", "live-legs-assert-frozen-deferral"), expected_check("protects-count", "1"), expected_check("variant-count", "0"), expected_check("env-gate-count", "0"), expected_check("live-caller-count", "2"), expected_check("doc-ref-count", "1"), expected_check("execution-credit", "0"), expected_check("retirement-eligible", "0")]
+        unknown: "nope" => ok []
+    match case_id is "history/candidate-record-run"
+        false => ok []
+        true => ok [expected_check("record-date", "2026-09-24"), expected_check("record-owner-task", "T26-deferred-or-later"), expected_check("decision", "retain"), expected_check("rationale", "live-legs-assert-frozen-deferral"), expected_check("protects-count", "1"), expected_check("variant-count", "0"), expected_check("env-gate-count", "0"), expected_check("live-caller-count", "2"), expected_check("doc-ref-count", "1"), expected_check("execution-credit", "0"), expected_check("retirement-eligible", "0")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/candidate-record-run", "default", "", "offline") => ok
+        seed_record_date: context("history/candidate-record-run", "default", "", "offline") => failed{"record-date"}
+        seed_record_owner_task: context("history/candidate-record-run", "default", "", "offline") => failed{"record-owner-task"}
+        seed_decision: context("history/candidate-record-run", "default", "", "offline") => failed{"decision"}
+        seed_rationale: context("history/candidate-record-run", "default", "", "offline") => failed{"rationale"}
+        seed_protects_count: context("history/candidate-record-run", "default", "", "offline") => failed{"protects-count"}
+        seed_variant_count: context("history/candidate-record-run", "default", "", "offline") => failed{"variant-count"}
+        seed_env_gate_count: context("history/candidate-record-run", "default", "", "offline") => failed{"env-gate-count"}
+        seed_live_caller_count: context("history/candidate-record-run", "default", "", "offline") => failed{"live-caller-count"}
+        seed_doc_ref_count: context("history/candidate-record-run", "default", "", "offline") => failed{"doc-ref-count"}
+        seed_execution_credit: context("history/candidate-record-run", "default", "", "offline") => failed{"execution-credit"}
+        seed_retirement_eligible: context("history/candidate-record-run", "default", "", "offline") => failed{"retirement-eligible"}
+    match call observe("default")
+        when
+            expected: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+            seed_record_date: "default" => ok observation("2026-09-24_2", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+            seed_record_owner_task: "default" => ok observation("2026-09-24", "T26-deferred-or-later_2", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+            seed_decision: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain_2", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, 0)
+            seed_rationale: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral_2", 1, 0, 0, 2, 1, 0, 0)
+            seed_protects_count: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 0, 0, 0, 2, 1, 0, 0)
+            seed_variant_count: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, -1, 0, 2, 1, 0, 0)
+            seed_env_gate_count: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, -1, 2, 1, 0, 0)
+            seed_live_caller_count: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 1, 1, 0, 0)
+            seed_doc_ref_count: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 0, 0, 0)
+            seed_execution_credit: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, -1, 0)
+            seed_retirement_eligible: "default" => ok observation("2026-09-24", "T26-deferred-or-later", "retain", "live-legs-assert-frozen-deferral", 1, 0, 0, 2, 1, 0, -1)
+        ok observation got => match call require_text(got.record_date, "2026-09-24", c, "record-date")
+            failed
+            ok evidence record_date_evidence => match call require_text(got.record_owner_task, "T26-deferred-or-later", c, "record-owner-task")
+                failed
+                ok evidence record_owner_task_evidence => match call require_text(got.decision, "retain", c, "decision")
+                    failed
+                    ok evidence decision_evidence => match call require_text(got.rationale, "live-legs-assert-frozen-deferral", c, "rationale")
+                        failed
+                        ok evidence rationale_evidence => match call require_int(got.protects_count, 1, c, "protects-count")
+                            failed
+                            ok evidence protects_count_evidence => match call require_int(got.variant_count, 0, c, "variant-count")
+                                failed
+                                ok evidence variant_count_evidence => match call require_int(got.env_gate_count, 0, c, "env-gate-count")
+                                    failed
+                                    ok evidence env_gate_count_evidence => match call require_int(got.live_caller_count, 2, c, "live-caller-count")
+                                        failed
+                                        ok evidence live_caller_count_evidence => match call require_int(got.doc_ref_count, 1, c, "doc-ref-count")
+                                            failed
+                                            ok evidence doc_ref_count_evidence => match call require_int(got.execution_credit, 0, c, "execution-credit")
+                                                failed
+                                                ok evidence execution_credit_evidence => match call require_int(got.retirement_eligible, 0, c, "retirement-eligible")
+                                                    failed
+                                                    ok evidence retirement_eligible_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-run" => ok test_case("history/candidate-record-run", ["history"], [], 15000, [check_ref("record-date"), check_ref("record-owner-task"), check_ref("decision"), check_ref("rationale"), check_ref("protects-count"), check_ref("variant-count"), check_ref("env-gate-count"), check_ref("live-caller-count"), check_ref("doc-ref-count"), check_ref("execution-credit"), check_ref("retirement-eligible")], callable case_body)
+        unknown: "nope" => ok test_case("nope", [], [], 0, [], callable case_body)
+    match case_id is "history/candidate-record-run"
+        false => ok test_case("nope", [], [], 0, [], callable case_body)
+        true => ok test_case("history/candidate-record-run", ["history"], [], 15000, [check_ref("record-date"), check_ref("record-owner-task"), check_ref("decision"), check_ref("rationale"), check_ref("protects-count"), check_ref("variant-count"), check_ref("env-gate-count"), check_ref("live-caller-count"), check_ref("doc-ref-count"), check_ref("execution-credit"), check_ref("retirement-eligible")], callable case_body)

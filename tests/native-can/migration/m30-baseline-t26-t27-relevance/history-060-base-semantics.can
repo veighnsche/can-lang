@@ -1,0 +1,257 @@
+/// M30 HISTORY-060 base semantics: frozen bytes of tests/baseline/candidates/T26-native-ai/candidate.json.
+/// Source lock: md5 ad053f1b74b72d971ba98e2bd2ab0d1f, 323 bytes, 1 line.
+/// Key pins hold the 7 top-level JSON key spellings in file order.
+/// Value pins hold the exact JSON scalar bytes for case, date, disposition,
+/// mechanism, ownerTask, significance and slot.
+/// Count pins hold ints tallied from the JSON: keys, byte size and line count.
+/// Dates and unrun trials stay history; no execution credit is claimed.
+/// checks: key-case, key-date, key-disposition, key-mechanism,
+/// key-owner-task, key-significance, key-slot, case-value, date-value,
+/// disposition-value, mechanism-value, owner-task-value, significance-value,
+/// slot-value, key-count, byte-size, line-count.
+package m30history060base
+    provides [context, check, check_ref, expected_check, evidence, observation, failed, test_case, selector, require_bool, require_int, require_text, observe, checks, expected_vector, case_body, descriptor]
+    uses [text]
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str key_case
+    str key_date
+    str key_disposition
+    str key_mechanism
+    str key_owner_task
+    str key_significance
+    str key_slot
+    str case_value
+    str date_value
+    str disposition_value
+    str mechanism_value
+    str owner_task_value
+    str significance_value
+    str slot_value
+    int key_count
+    int byte_size
+    int line_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/candidate-record-base", "default", "", "offline"), "key-case" => ok "case history/candidate-record-base variant default root key-case run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/candidate-record-base", "default", "", "offline"), "key-case" => ok evidence("key-case", "true", "true", true, "case history/candidate-record-base variant default root key-case run offline")
+        different: true, false, context("history/candidate-record-base", "default", "", "offline"), "key-case" => failed{"key-case"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 3, 3, context("history/candidate-record-base", "default", "", "offline"), "key-count" => ok evidence("key-count", "3", "3", true, "case history/candidate-record-base variant default root key-count run offline")
+        different: 3, 4, context("history/candidate-record-base", "default", "", "offline"), "key-count" => failed{"key-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "a", "a", context("history/candidate-record-base", "default", "", "offline"), "key-case" => ok evidence("key-case", "a", "a", true, "case history/candidate-record-base variant default root key-case run offline")
+        different: "a", "b", context("history/candidate-record-base", "default", "", "offline"), "key-case" => failed{"key-case"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str probe
+    asserts
+        default: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_case: "seed-key-case-drift" => ok observation("case_2", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_date: "seed-key-date-drift" => ok observation("case", "date_2", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_disposition: "seed-key-disposition-drift" => ok observation("case", "date", "disposition_2", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_mechanism: "seed-key-mechanism-drift" => ok observation("case", "date", "disposition", "mechanism_2", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_owner_task: "seed-key-owner-task-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask_2", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_significance: "seed-key-significance-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance_2", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_key_slot: "seed-key-slot-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot_2", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_case_value: "seed-case-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment_2", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_date_value: "seed-date-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24_2", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_disposition_value: "seed-disposition-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred_2", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_mechanism_value: "seed-mechanism-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule_2", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_owner_task_value: "seed-owner-task-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later_2", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_significance_value: "seed-significance-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed_2", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        seed_slot_value: "seed-slot-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/_2", 7, 323, 1)
+        seed_key_count: "seed-key-count-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 6, 323, 1)
+        seed_byte_size: "seed-byte-size-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 322, 1)
+        seed_line_count: "seed-line-count-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 0)
+    match probe
+        "seed-key-case-drift" => ok observation("case_2", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-date-drift" => ok observation("case", "date_2", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-disposition-drift" => ok observation("case", "date", "disposition_2", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-mechanism-drift" => ok observation("case", "date", "disposition", "mechanism_2", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-owner-task-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask_2", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-significance-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance_2", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-key-slot-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot_2", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-case-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment_2", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-date-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24_2", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-disposition-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred_2", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-mechanism-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule_2", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-owner-task-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later_2", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-significance-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed_2", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+        "seed-slot-value-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/_2", 7, 323, 1)
+        "seed-key-count-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 6, 323, 1)
+        "seed-byte-size-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 322, 1)
+        "seed-line-count-drift" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 0)
+        _ => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        known: "candidate-record-base" => ok [check("key-case", "top-level key case"), check("key-date", "top-level key date"), check("key-disposition", "top-level key disposition"), check("key-mechanism", "top-level key mechanism"), check("key-owner-task", "top-level key ownerTask"), check("key-significance", "top-level key significance"), check("key-slot", "top-level key slot"), check("case-value", "frozen record case"), check("date-value", "frozen record date"), check("disposition-value", "frozen record disposition"), check("mechanism-value", "frozen record mechanism"), check("owner-task-value", "frozen record owner task"), check("significance-value", "frozen record significance"), check("slot-value", "frozen record slot"), check("key-count", "top-level key count"), check("byte-size", "frozen byte size"), check("line-count", "frozen line count")]
+        unknown: "other" => ok []
+    match scope is "candidate-record-base"
+        false => ok []
+        true => ok [check("key-case", "top-level key case"), check("key-date", "top-level key date"), check("key-disposition", "top-level key disposition"), check("key-mechanism", "top-level key mechanism"), check("key-owner-task", "top-level key ownerTask"), check("key-significance", "top-level key significance"), check("key-slot", "top-level key slot"), check("case-value", "frozen record case"), check("date-value", "frozen record date"), check("disposition-value", "frozen record disposition"), check("mechanism-value", "frozen record mechanism"), check("owner-task-value", "frozen record owner task"), check("significance-value", "frozen record significance"), check("slot-value", "frozen record slot"), check("key-count", "top-level key count"), check("byte-size", "frozen byte size"), check("line-count", "frozen line count")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-base" => ok [expected_check("key-case", "case"), expected_check("key-date", "date"), expected_check("key-disposition", "disposition"), expected_check("key-mechanism", "mechanism"), expected_check("key-owner-task", "ownerTask"), expected_check("key-significance", "significance"), expected_check("key-slot", "slot"), expected_check("case-value", "native-judgment"), expected_check("date-value", "2026-09-24"), expected_check("disposition-value", "deferred"), expected_check("mechanism-value", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule"), expected_check("owner-task-value", "T26-deferred-or-later"), expected_check("significance-value", "none claimed"), expected_check("slot-value", "tests/baseline/candidates/T26-native-ai/"), expected_check("key-count", "7"), expected_check("byte-size", "323"), expected_check("line-count", "1")]
+        unknown: "nope" => ok []
+    match case_id is "history/candidate-record-base"
+        false => ok []
+        true => ok [expected_check("key-case", "case"), expected_check("key-date", "date"), expected_check("key-disposition", "disposition"), expected_check("key-mechanism", "mechanism"), expected_check("key-owner-task", "ownerTask"), expected_check("key-significance", "significance"), expected_check("key-slot", "slot"), expected_check("case-value", "native-judgment"), expected_check("date-value", "2026-09-24"), expected_check("disposition-value", "deferred"), expected_check("mechanism-value", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule"), expected_check("owner-task-value", "T26-deferred-or-later"), expected_check("significance-value", "none claimed"), expected_check("slot-value", "tests/baseline/candidates/T26-native-ai/"), expected_check("key-count", "7"), expected_check("byte-size", "323"), expected_check("line-count", "1")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/candidate-record-base", "default", "", "offline") => ok
+        seed_key_case: context("history/candidate-record-base", "default", "", "offline") => failed{"key-case"}
+        seed_key_date: context("history/candidate-record-base", "default", "", "offline") => failed{"key-date"}
+        seed_key_disposition: context("history/candidate-record-base", "default", "", "offline") => failed{"key-disposition"}
+        seed_key_mechanism: context("history/candidate-record-base", "default", "", "offline") => failed{"key-mechanism"}
+        seed_key_owner_task: context("history/candidate-record-base", "default", "", "offline") => failed{"key-owner-task"}
+        seed_key_significance: context("history/candidate-record-base", "default", "", "offline") => failed{"key-significance"}
+        seed_key_slot: context("history/candidate-record-base", "default", "", "offline") => failed{"key-slot"}
+        seed_case_value: context("history/candidate-record-base", "default", "", "offline") => failed{"case-value"}
+        seed_date_value: context("history/candidate-record-base", "default", "", "offline") => failed{"date-value"}
+        seed_disposition_value: context("history/candidate-record-base", "default", "", "offline") => failed{"disposition-value"}
+        seed_mechanism_value: context("history/candidate-record-base", "default", "", "offline") => failed{"mechanism-value"}
+        seed_owner_task_value: context("history/candidate-record-base", "default", "", "offline") => failed{"owner-task-value"}
+        seed_significance_value: context("history/candidate-record-base", "default", "", "offline") => failed{"significance-value"}
+        seed_slot_value: context("history/candidate-record-base", "default", "", "offline") => failed{"slot-value"}
+        seed_key_count: context("history/candidate-record-base", "default", "", "offline") => failed{"key-count"}
+        seed_byte_size: context("history/candidate-record-base", "default", "", "offline") => failed{"byte-size"}
+        seed_line_count: context("history/candidate-record-base", "default", "", "offline") => failed{"line-count"}
+    match call observe("default")
+        when
+            expected: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_case: "default" => ok observation("case_2", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_date: "default" => ok observation("case", "date_2", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_disposition: "default" => ok observation("case", "date", "disposition_2", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_mechanism: "default" => ok observation("case", "date", "disposition", "mechanism_2", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_owner_task: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask_2", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_significance: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance_2", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_key_slot: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot_2", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_case_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment_2", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_date_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24_2", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_disposition_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred_2", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_mechanism_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule_2", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_owner_task_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later_2", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_significance_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed_2", "tests/baseline/candidates/T26-native-ai/", 7, 323, 1)
+            seed_slot_value: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/_2", 7, 323, 1)
+            seed_key_count: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 6, 323, 1)
+            seed_byte_size: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 322, 1)
+            seed_line_count: "default" => ok observation("case", "date", "disposition", "mechanism", "ownerTask", "significance", "slot", "native-judgment", "2026-09-24", "deferred", "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", "T26-deferred-or-later", "none claimed", "tests/baseline/candidates/T26-native-ai/", 7, 323, 0)
+        ok observation got => match call require_text(got.key_case, "case", c, "key-case")
+            failed
+            ok evidence key_case_evidence => match call require_text(got.key_date, "date", c, "key-date")
+                failed
+                ok evidence key_date_evidence => match call require_text(got.key_disposition, "disposition", c, "key-disposition")
+                    failed
+                    ok evidence key_disposition_evidence => match call require_text(got.key_mechanism, "mechanism", c, "key-mechanism")
+                        failed
+                        ok evidence key_mechanism_evidence => match call require_text(got.key_owner_task, "ownerTask", c, "key-owner-task")
+                            failed
+                            ok evidence key_owner_task_evidence => match call require_text(got.key_significance, "significance", c, "key-significance")
+                                failed
+                                ok evidence key_significance_evidence => match call require_text(got.key_slot, "slot", c, "key-slot")
+                                    failed
+                                    ok evidence key_slot_evidence => match call require_text(got.case_value, "native-judgment", c, "case-value")
+                                        failed
+                                        ok evidence case_value_evidence => match call require_text(got.date_value, "2026-09-24", c, "date-value")
+                                            failed
+                                            ok evidence date_value_evidence => match call require_text(got.disposition_value, "deferred", c, "disposition-value")
+                                                failed
+                                                ok evidence disposition_value_evidence => match call require_text(got.mechanism_value, "DI-17 new native AI wrapper/batch/callable forms: not proposed; current idiom retained per T01 mechanism acceptance rule", c, "mechanism-value")
+                                                    failed
+                                                    ok evidence mechanism_value_evidence => match call require_text(got.owner_task_value, "T26-deferred-or-later", c, "owner-task-value")
+                                                        failed
+                                                        ok evidence owner_task_value_evidence => match call require_text(got.significance_value, "none claimed", c, "significance-value")
+                                                            failed
+                                                            ok evidence significance_value_evidence => match call require_text(got.slot_value, "tests/baseline/candidates/T26-native-ai/", c, "slot-value")
+                                                                failed
+                                                                ok evidence slot_value_evidence => match call require_int(got.key_count, 7, c, "key-count")
+                                                                    failed
+                                                                    ok evidence key_count_evidence => match call require_int(got.byte_size, 323, c, "byte-size")
+                                                                        failed
+                                                                        ok evidence byte_size_evidence => match call require_int(got.line_count, 1, c, "line-count")
+                                                                            failed
+                                                                            ok evidence line_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str case_id
+    asserts
+        known: "history/candidate-record-base" => ok test_case("history/candidate-record-base", ["history"], [], 15000, [check_ref("key-case"), check_ref("key-date"), check_ref("key-disposition"), check_ref("key-mechanism"), check_ref("key-owner-task"), check_ref("key-significance"), check_ref("key-slot"), check_ref("case-value"), check_ref("date-value"), check_ref("disposition-value"), check_ref("mechanism-value"), check_ref("owner-task-value"), check_ref("significance-value"), check_ref("slot-value"), check_ref("key-count"), check_ref("byte-size"), check_ref("line-count")], callable case_body)
+        unknown: "nope" => ok test_case("nope", [], [], 0, [], callable case_body)
+    match case_id is "history/candidate-record-base"
+        false => ok test_case("nope", [], [], 0, [], callable case_body)
+        true => ok test_case("history/candidate-record-base", ["history"], [], 15000, [check_ref("key-case"), check_ref("key-date"), check_ref("key-disposition"), check_ref("key-mechanism"), check_ref("key-owner-task"), check_ref("key-significance"), check_ref("key-slot"), check_ref("case-value"), check_ref("date-value"), check_ref("disposition-value"), check_ref("mechanism-value"), check_ref("owner-task-value"), check_ref("significance-value"), check_ref("slot-value"), check_ref("key-count"), check_ref("byte-size"), check_ref("line-count")], callable case_body)
