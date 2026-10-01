@@ -11,7 +11,13 @@ import { failure, success, type AssertionContext, type Completion } from "../com
 import { record, recordIdentity } from "../data.ts";
 import { byteLength, type Bytes } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
-import { ownerTag, type OwnerHandle, type TestOwner } from "./owner.ts";
+import {
+  createTestOwner,
+  ownerTag,
+  type OwnerHandle,
+  type TestOwner,
+  type TestOwnerErrors,
+} from "./owner.ts";
 
 const channelBrand = Symbol("can.test.channel");
 export type ChannelHandle = Readonly<{ readonly [channelBrand]: number }>;
@@ -187,3 +193,21 @@ export function createTestTransport(
 }
 
 export type TestTransport = ReturnType<typeof createTestTransport>;
+
+export type TestSupportErrors = TestOwnerErrors & TestTransportErrors;
+
+// createTestSupport composes the owner and transport adapters into the one
+// $canTest contribution the emitter wires: a single owner table shared by
+// every channel, with the JSON value codec for envelope framing.
+export function createTestSupport(
+  domain: ReturnType<typeof createDomainRuntime>,
+  errors: TestSupportErrors,
+  codec: EnvelopeCodec,
+  jsonObjectIdentity: string,
+) {
+  const owner = createTestOwner(domain, errors);
+  const transport = createTestTransport(domain, errors, codec, owner, jsonObjectIdentity);
+  return Object.freeze({ owner, transport });
+}
+
+export type TestSupport = ReturnType<typeof createTestSupport>;

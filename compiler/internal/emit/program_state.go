@@ -70,6 +70,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if !browser {
 		builder.declareFileState()
 		builder.declareProcessState()
+		builder.declareTestState()
 		builder.declareStreamState()
 		builder.declareWebSocketState()
 	}
@@ -108,6 +109,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if !browser {
 		builder.initializeFileState()
 		builder.initializeProcessState()
+		builder.initializeTestState()
 		builder.initializeStreamState()
 		builder.initializeWebSocketState()
 	}
@@ -466,6 +468,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
 		imports = append(imports, builder.assembly.fileStateImports(runtime)...)
 		imports = append(imports, builder.assembly.processStateImports(runtime)...)
+		imports = append(imports, builder.assembly.testStateImports(runtime)...)
 		imports = append(imports, builder.assembly.streamStateImports(runtime)...)
 		imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
 	}
@@ -492,6 +495,7 @@ func stateValueImportNames() []ImportName {
 	names = append(names, utilitiesStateValueImportNames()...)
 	names = append(names, fileStateValueImportNames()...)
 	names = append(names, processStateValueImportNames()...)
+	names = append(names, testStateValueImportNames()...)
 	names = append(names, streamStateValueImportNames()...)
 	names = append(names, websocketStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)

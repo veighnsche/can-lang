@@ -14,7 +14,11 @@ import { array, dataProperty, record } from "../data.ts";
 import { ownBytes } from "../bytes.ts";
 import { createJSONValueCodec, type JSONValueIds } from "../codec/value.ts";
 import { createTestOwner } from "../test-support/owner.ts";
-import { CHANNEL_KINDS, createTestTransport } from "../test-support/transport.ts";
+import {
+  CHANNEL_KINDS,
+  createTestSupport,
+  createTestTransport,
+} from "../test-support/transport.ts";
 
 const identity = (kind: string, declaration: string) =>
   createHash("sha256")
@@ -302,6 +306,32 @@ test("codec and frame faults map onto test::transport_failure reasons", async ()
   await scalar.sendEnvelope(scalarChannel, envelope());
   const shapeFault = await failed(scalar.recvEnvelope(scalarChannel) as Promise<Completion<never>>);
   expect(shapeFault.payload).toMatchObject({ reason: "non-object-frame" });
+});
+
+test("createTestSupport composes one shared owner table for $canTest", async () => {
+  const support = createTestSupport(
+    domain,
+    {
+      invalidGrant: err("test::invalid_grant"),
+      staleHandle: err("test::stale_handle"),
+      closedHandle: err("test::closed_handle"),
+      transportFailure: err("test::transport_failure"),
+      channelFull: err("test::channel_full"),
+      detachedTransport: err("test::detached_transport"),
+      channelEmpty: err("test::channel_empty"),
+      invalidKind: err("test::invalid_kind"),
+    },
+    codec,
+    ids.object,
+  );
+  expect(Object.isFrozen(support)).toBe(true);
+  const handle = value(await support.owner.admitGrant(GRANT));
+  const channel = value(await support.transport.openChannel(handle, "dispatch"));
+  await support.transport.sendEnvelope(channel, envelope());
+  expect(value(await support.transport.pendingDepth(channel))).toBe(1n);
+  await support.owner.releaseGrant(handle);
+  const stale = await failed(support.transport.pendingDepth(channel) as Promise<Completion<never>>);
+  expect(stale.declaration.name).toBe("test::stale_handle");
 });
 
 test("oversize frames fail without queueing", async () => {
