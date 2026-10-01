@@ -1,0 +1,318 @@
+package m30history042base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-042 "Toolchain freeze: base semantics".
+/// Source: tests/baseline/baseline_test.go symbol
+/// TestBaselineToolchainMatchesFreeze (L68-102) plus
+/// frozen values in tests/baseline/baseline.json.
+/// Disposition: consolidate (this row ports
+/// TestBaselineToolchainMatchesFreeze to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the frozen comparison legs in
+/// Go order (task/date freeze vs bun version vs bun
+/// revision vs go minimum vs full-sha shape vs
+/// ancestor), the exact frozen values, the guard
+/// spellings, the seven refusal wordings, and the go
+/// minor floor.
+/// ADAPTATION (recorded, with source lines): task-value
+/// pins T01 (J task); task-guard pins the task
+/// not-equal spelling (L73); date-guard pins the date
+/// empty spelling (L73); task-fatal pins the task/date
+/// inner bytes (L74); bun-version pins 1.4.2 (J
+/// bun/version); bun-version-guard pins the version
+/// not-equal spelling (L76); bun-version-fatal pins
+/// the version inner bytes (L77); bun-revision pins
+/// 1.4.2+744846f84 (J bun/revision);
+/// bun-revision-guard pins the revision not-equal
+/// spelling (L79); bun-revision-fatal pins the
+/// revision inner bytes (L80); go-minimum pins the
+/// minimum wording (J go/minimum); go-minor-guard pins
+/// the below-floor spelling (L91); go-below-fatal pins
+/// the below-floor inner bytes (L92);
+/// unparseable-fatal pins the unparseable inner bytes
+/// (L85); compiler-revision pins the frozen sha (J
+/// compiler/revision); sha-shape pins the 40-nibble
+/// shape (L94); sha-fatal pins the not-a-sha inner
+/// bytes (L95); ancestor-fatal pins the not-ancestor
+/// inner bytes (L100); go-minor-floor pins int (25)
+/// from the floor guard (L91); guards pin spellings
+/// only (no probe or ancestry re-implementation
+/// anywhere).
+/// Facet map (freeze legs): task-value pins T01 (J);
+/// task-guard pins the task not-equal (L73);
+/// date-guard pins the date empty (L73); task-fatal
+/// pins task/date refusal (L74); bun-version pins
+/// 1.4.2 (J); bun-version-guard pins the version
+/// not-equal (L76); bun-version-fatal pins version
+/// refusal (L77); bun-revision pins 1.4.2+744846f84
+/// (J); bun-revision-guard pins the revision
+/// not-equal (L79); bun-revision-fatal pins revision
+/// refusal (L80); go-minimum pins the minimum wording
+/// (J); go-minor-guard pins below-floor (L91);
+/// go-below-fatal pins below-floor refusal (L92);
+/// unparseable-fatal pins unparseable refusal (L85);
+/// compiler-revision pins the frozen sha (J);
+/// sha-shape pins the 40-nibble shape (L94); sha-fatal
+/// pins not-a-sha refusal (L95); ancestor-fatal pins
+/// not-ancestor refusal (L100); go-minor-floor pins 25
+/// (L91).
+/// The roots-green pin lives in
+/// history-042-roots-green.can; the run shape plus
+/// diagnostics live in history-042-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/toolchain-freeze checks: task-value,
+/// task-guard, date-guard, task-fatal, bun-version,
+/// bun-version-guard, bun-version-fatal, bun-revision,
+/// bun-revision-guard, bun-revision-fatal, go-minimum,
+/// go-minor-guard, go-below-fatal, unparseable-fatal,
+/// compiler-revision, sha-shape, sha-fatal,
+/// ancestor-fatal, go-minor-floor.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str task_value
+    str task_guard
+    str date_guard
+    str task_fatal
+    str bun_version
+    str bun_version_guard
+    str bun_version_fatal
+    str bun_revision
+    str bun_revision_guard
+    str bun_revision_fatal
+    str go_minimum
+    str go_minor_guard
+    str go_below_fatal
+    str unparseable_fatal
+    str compiler_revision
+    str sha_shape
+    str sha_fatal
+    str ancestor_fatal
+    int go_minor_floor
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/toolchain-freeze", "default", "", "offline"), "task-value" => ok "case history/toolchain-freeze variant default root task-value run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/toolchain-freeze", "default", "", "offline"), "task-value" => ok evidence("task-value", "true", "true", true, "case history/toolchain-freeze variant default root task-value run offline")
+        different: false, true, context("history/toolchain-freeze", "default", "", "offline"), "task-value" => failed{"task-value"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 25, 25, context("history/toolchain-freeze", "default", "", "offline"), "go-minor-floor" => ok evidence("go-minor-floor", "25", "25", true, "case history/toolchain-freeze variant default root go-minor-floor run offline")
+        different: 24, 25, context("history/toolchain-freeze", "default", "", "offline"), "go-minor-floor" => failed{"go-minor-floor"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "T01", "T01", context("history/toolchain-freeze", "default", "", "offline"), "task-value" => ok evidence("task-value", "T01", "T01", true, "case history/toolchain-freeze variant default root task-value run offline")
+        different: "T01_2", "T01", context("history/toolchain-freeze", "default", "", "offline"), "task-value" => failed{"task-value"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_task_value: "seed-task-value-drift" => ok observation("T01_2", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_task_guard: "seed-task-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"_2", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_date_guard: "seed-date-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"_2", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_task_fatal: "seed-task-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v_2", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_version: "seed-bun-version-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2_2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_version_guard: "seed-bun-version-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version_2", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_version_fatal: "seed-bun-version-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q_2", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_revision: "seed-bun-revision-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84_2", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_revision_guard: "seed-bun-revision-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision_2", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_bun_revision_fatal: "seed-bun-revision-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q_2", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_go_minimum: "seed-go-minimum-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod_2", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_go_minor_guard: "seed-go-minor-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25_2", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_go_below_fatal: "seed-go-below-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s_2", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_unparseable_fatal: "seed-unparseable-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q_2", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_compiler_revision: "seed-compiler-revision-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947_2", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_sha_shape: "seed-sha-shape-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$_2", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_sha_fatal: "seed-sha-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha_2", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        seed_ancestor_fatal: "seed-ancestor-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v_2", 25)
+        seed_go_minor_floor: "seed-go-minor-floor-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 24)
+    match variant_id
+        "seed-task-value-drift" => ok observation("T01_2", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-task-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"_2", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-date-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"_2", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-task-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v_2", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-version-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2_2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-version-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version_2", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-version-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q_2", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-revision-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84_2", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-revision-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision_2", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-bun-revision-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q_2", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-go-minimum-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod_2", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-go-minor-guard-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25_2", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-go-below-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s_2", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-unparseable-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q_2", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-compiler-revision-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947_2", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-sha-shape-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$_2", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-sha-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha_2", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+        "seed-ancestor-fatal-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v_2", 25)
+        "seed-go-minor-floor-drift" => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 24)
+        _ => ok observation("T01", "frozen.Task != \"T01\"", "frozen.Date == \"\"", "baseline task/date not frozen: %+v", "1.4.2", "got != frozen.Toolchain.Bun.Version", "bun --version = %q, frozen %q", "1.4.2+744846f84", "got != frozen.Toolchain.Bun.Revision", "bun --revision = %q, frozen %q", "go1.25.0 per go.mod", "minor < 25", "go version %q below frozen minimum %s", "unparseable go version: %q", "b53030bc54def806bee5f71891c3a9f8504d5947", "^[0-9a-f]{40}$", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", 25)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h042: "m30-h042" => ok [check("task-value", "freeze pins task T01"), check("task-guard", "task leg pins the not-equal guard"), check("date-guard", "date leg pins the empty guard"), check("task-fatal", "task/date leg refusal wording is pinned"), check("bun-version", "freeze pins bun version 1.4.2"), check("bun-version-guard", "bun version leg pins the not-equal guard"), check("bun-version-fatal", "bun version leg refusal wording is pinned"), check("bun-revision", "freeze pins bun revision 1.4.2+744846f84"), check("bun-revision-guard", "bun revision leg pins the not-equal guard"), check("bun-revision-fatal", "bun revision leg refusal wording is pinned"), check("go-minimum", "freeze pins the go minimum wording"), check("go-minor-guard", "go leg pins the below-floor guard"), check("go-below-fatal", "go below-floor refusal wording is pinned"), check("unparseable-fatal", "go unparseable refusal wording is pinned"), check("compiler-revision", "freeze pins the compiler revision sha"), check("sha-shape", "sha leg pins the full-sha shape"), check("sha-fatal", "sha leg refusal wording is pinned"), check("ancestor-fatal", "ancestor leg refusal wording is pinned"), check("go-minor-floor", "go floor is minor 25")]
+        other: "nope" => ok []
+    match scope is "m30-h042"
+        false => ok []
+        true => ok [check("task-value", "freeze pins task T01"), check("task-guard", "task leg pins the not-equal guard"), check("date-guard", "date leg pins the empty guard"), check("task-fatal", "task/date leg refusal wording is pinned"), check("bun-version", "freeze pins bun version 1.4.2"), check("bun-version-guard", "bun version leg pins the not-equal guard"), check("bun-version-fatal", "bun version leg refusal wording is pinned"), check("bun-revision", "freeze pins bun revision 1.4.2+744846f84"), check("bun-revision-guard", "bun revision leg pins the not-equal guard"), check("bun-revision-fatal", "bun revision leg refusal wording is pinned"), check("go-minimum", "freeze pins the go minimum wording"), check("go-minor-guard", "go leg pins the below-floor guard"), check("go-below-fatal", "go below-floor refusal wording is pinned"), check("unparseable-fatal", "go unparseable refusal wording is pinned"), check("compiler-revision", "freeze pins the compiler revision sha"), check("sha-shape", "sha leg pins the full-sha shape"), check("sha-fatal", "sha leg refusal wording is pinned"), check("ancestor-fatal", "ancestor leg refusal wording is pinned"), check("go-minor-floor", "go floor is minor 25")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/toolchain-freeze" => ok [expected_check("task-value", "T01"), expected_check("task-guard", "frozen.Task != \"T01\""), expected_check("date-guard", "frozen.Date == \"\""), expected_check("task-fatal", "baseline task/date not frozen: %+v"), expected_check("bun-version", "1.4.2"), expected_check("bun-version-guard", "got != frozen.Toolchain.Bun.Version"), expected_check("bun-version-fatal", "bun --version = %q, frozen %q"), expected_check("bun-revision", "1.4.2+744846f84"), expected_check("bun-revision-guard", "got != frozen.Toolchain.Bun.Revision"), expected_check("bun-revision-fatal", "bun --revision = %q, frozen %q"), expected_check("go-minimum", "go1.25.0 per go.mod"), expected_check("go-minor-guard", "minor < 25"), expected_check("go-below-fatal", "go version %q below frozen minimum %s"), expected_check("unparseable-fatal", "unparseable go version: %q"), expected_check("compiler-revision", "b53030bc54def806bee5f71891c3a9f8504d5947"), expected_check("sha-shape", "^[0-9a-f]{40}$"), expected_check("sha-fatal", "compiler revision %q is not a full sha"), expected_check("ancestor-fatal", "frozen revision %s is not an ancestor of HEAD: %v"), expected_check("go-minor-floor", "25")]
+        unknown: "nope" => ok []
+    match case is "history/toolchain-freeze"
+        false => ok []
+        true => ok [expected_check("task-value", "T01"), expected_check("task-guard", "frozen.Task != \"T01\""), expected_check("date-guard", "frozen.Date == \"\""), expected_check("task-fatal", "baseline task/date not frozen: %+v"), expected_check("bun-version", "1.4.2"), expected_check("bun-version-guard", "got != frozen.Toolchain.Bun.Version"), expected_check("bun-version-fatal", "bun --version = %q, frozen %q"), expected_check("bun-revision", "1.4.2+744846f84"), expected_check("bun-revision-guard", "got != frozen.Toolchain.Bun.Revision"), expected_check("bun-revision-fatal", "bun --revision = %q, frozen %q"), expected_check("go-minimum", "go1.25.0 per go.mod"), expected_check("go-minor-guard", "minor < 25"), expected_check("go-below-fatal", "go version %q below frozen minimum %s"), expected_check("unparseable-fatal", "unparseable go version: %q"), expected_check("compiler-revision", "b53030bc54def806bee5f71891c3a9f8504d5947"), expected_check("sha-shape", "^[0-9a-f]{40}$"), expected_check("sha-fatal", "compiler revision %q is not a full sha"), expected_check("ancestor-fatal", "frozen revision %s is not an ancestor of HEAD: %v"), expected_check("go-minor-floor", "25")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/toolchain-freeze", "default", "", "offline") => ok
+        seed_task_value: context("history/toolchain-freeze", "seed-task-value-drift", "", "offline") => failed{"task-value"}
+        seed_task_guard: context("history/toolchain-freeze", "seed-task-guard-drift", "", "offline") => failed{"task-guard"}
+        seed_date_guard: context("history/toolchain-freeze", "seed-date-guard-drift", "", "offline") => failed{"date-guard"}
+        seed_task_fatal: context("history/toolchain-freeze", "seed-task-fatal-drift", "", "offline") => failed{"task-fatal"}
+        seed_bun_version: context("history/toolchain-freeze", "seed-bun-version-drift", "", "offline") => failed{"bun-version"}
+        seed_bun_version_guard: context("history/toolchain-freeze", "seed-bun-version-guard-drift", "", "offline") => failed{"bun-version-guard"}
+        seed_bun_version_fatal: context("history/toolchain-freeze", "seed-bun-version-fatal-drift", "", "offline") => failed{"bun-version-fatal"}
+        seed_bun_revision: context("history/toolchain-freeze", "seed-bun-revision-drift", "", "offline") => failed{"bun-revision"}
+        seed_bun_revision_guard: context("history/toolchain-freeze", "seed-bun-revision-guard-drift", "", "offline") => failed{"bun-revision-guard"}
+        seed_bun_revision_fatal: context("history/toolchain-freeze", "seed-bun-revision-fatal-drift", "", "offline") => failed{"bun-revision-fatal"}
+        seed_go_minimum: context("history/toolchain-freeze", "seed-go-minimum-drift", "", "offline") => failed{"go-minimum"}
+        seed_go_minor_guard: context("history/toolchain-freeze", "seed-go-minor-guard-drift", "", "offline") => failed{"go-minor-guard"}
+        seed_go_below_fatal: context("history/toolchain-freeze", "seed-go-below-fatal-drift", "", "offline") => failed{"go-below-fatal"}
+        seed_unparseable_fatal: context("history/toolchain-freeze", "seed-unparseable-fatal-drift", "", "offline") => failed{"unparseable-fatal"}
+        seed_compiler_revision: context("history/toolchain-freeze", "seed-compiler-revision-drift", "", "offline") => failed{"compiler-revision"}
+        seed_sha_shape: context("history/toolchain-freeze", "seed-sha-shape-drift", "", "offline") => failed{"sha-shape"}
+        seed_sha_fatal: context("history/toolchain-freeze", "seed-sha-fatal-drift", "", "offline") => failed{"sha-fatal"}
+        seed_ancestor_fatal: context("history/toolchain-freeze", "seed-ancestor-fatal-drift", "", "offline") => failed{"ancestor-fatal"}
+        seed_go_minor_floor: context("history/toolchain-freeze", "seed-go-minor-floor-drift", "", "offline") => failed{"go-minor-floor"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.task_value, "T01", c, "task-value")
+            failed
+            ok evidence task_value_evidence => match call require_text(got.task_guard, "frozen.Task != \"T01\"", c, "task-guard")
+                failed
+                ok evidence task_guard_evidence => match call require_text(got.date_guard, "frozen.Date == \"\"", c, "date-guard")
+                    failed
+                    ok evidence date_guard_evidence => match call require_text(got.task_fatal, "baseline task/date not frozen: %+v", c, "task-fatal")
+                        failed
+                        ok evidence task_fatal_evidence => match call require_text(got.bun_version, "1.4.2", c, "bun-version")
+                            failed
+                            ok evidence bun_version_evidence => match call require_text(got.bun_version_guard, "got != frozen.Toolchain.Bun.Version", c, "bun-version-guard")
+                                failed
+                                ok evidence bun_version_guard_evidence => match call require_text(got.bun_version_fatal, "bun --version = %q, frozen %q", c, "bun-version-fatal")
+                                    failed
+                                    ok evidence bun_version_fatal_evidence => match call require_text(got.bun_revision, "1.4.2+744846f84", c, "bun-revision")
+                                        failed
+                                        ok evidence bun_revision_evidence => match call require_text(got.bun_revision_guard, "got != frozen.Toolchain.Bun.Revision", c, "bun-revision-guard")
+                                            failed
+                                            ok evidence bun_revision_guard_evidence => match call require_text(got.bun_revision_fatal, "bun --revision = %q, frozen %q", c, "bun-revision-fatal")
+                                                failed
+                                                ok evidence bun_revision_fatal_evidence => match call require_text(got.go_minimum, "go1.25.0 per go.mod", c, "go-minimum")
+                                                    failed
+                                                    ok evidence go_minimum_evidence => match call require_text(got.go_minor_guard, "minor < 25", c, "go-minor-guard")
+                                                        failed
+                                                        ok evidence go_minor_guard_evidence => match call require_text(got.go_below_fatal, "go version %q below frozen minimum %s", c, "go-below-fatal")
+                                                            failed
+                                                            ok evidence go_below_fatal_evidence => match call require_text(got.unparseable_fatal, "unparseable go version: %q", c, "unparseable-fatal")
+                                                                failed
+                                                                ok evidence unparseable_fatal_evidence => match call require_text(got.compiler_revision, "b53030bc54def806bee5f71891c3a9f8504d5947", c, "compiler-revision")
+                                                                    failed
+                                                                    ok evidence compiler_revision_evidence => match call require_text(got.sha_shape, "^[0-9a-f]{40}$", c, "sha-shape")
+                                                                        failed
+                                                                        ok evidence sha_shape_evidence => match call require_text(got.sha_fatal, "compiler revision %q is not a full sha", c, "sha-fatal")
+                                                                            failed
+                                                                            ok evidence sha_fatal_evidence => match call require_text(got.ancestor_fatal, "frozen revision %s is not an ancestor of HEAD: %v", c, "ancestor-fatal")
+                                                                                failed
+                                                                                ok evidence ancestor_fatal_evidence => match call require_int(got.go_minor_floor, 25, c, "go-minor-floor")
+                                                                                    failed
+                                                                                    ok evidence go_minor_floor_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h042: "m30-h042" => ok test_case("history/toolchain-freeze", ["history", "m30"], [], 120000, [check_ref("task-value"), check_ref("task-guard"), check_ref("date-guard"), check_ref("task-fatal"), check_ref("bun-version"), check_ref("bun-version-guard"), check_ref("bun-version-fatal"), check_ref("bun-revision"), check_ref("bun-revision-guard"), check_ref("bun-revision-fatal"), check_ref("go-minimum"), check_ref("go-minor-guard"), check_ref("go-below-fatal"), check_ref("unparseable-fatal"), check_ref("compiler-revision"), check_ref("sha-shape"), check_ref("sha-fatal"), check_ref("ancestor-fatal"), check_ref("go-minor-floor")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h042"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/toolchain-freeze", ["history", "m30"], [], 120000, [check_ref("task-value"), check_ref("task-guard"), check_ref("date-guard"), check_ref("task-fatal"), check_ref("bun-version"), check_ref("bun-version-guard"), check_ref("bun-version-fatal"), check_ref("bun-revision"), check_ref("bun-revision-guard"), check_ref("bun-revision-fatal"), check_ref("go-minimum"), check_ref("go-minor-guard"), check_ref("go-below-fatal"), check_ref("unparseable-fatal"), check_ref("compiler-revision"), check_ref("sha-shape"), check_ref("sha-fatal"), check_ref("ancestor-fatal"), check_ref("go-minor-floor")], callable case_body)

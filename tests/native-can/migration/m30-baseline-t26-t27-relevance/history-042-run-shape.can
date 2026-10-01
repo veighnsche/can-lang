@@ -1,0 +1,292 @@
+package m30history042run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-042 "Toolchain freeze: run shape".
+/// Source: tests/baseline/baseline_test.go symbol
+/// TestBaselineToolchainMatchesFreeze (L68-102): load
+/// plus task/date guard (L70-74); bun version leg
+/// (L76-77); bun revision leg (L79-80); go parse plus
+/// floor legs (L82-92); sha leg (L94-95); ancestor leg
+/// (L97-100).
+/// Disposition: consolidate (this row ports
+/// TestBaselineToolchainMatchesFreeze to ordinary Can
+/// functions; the old Go harness stays until the
+/// integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the test
+/// name, the loadJSON open, the seven refusal wordings
+/// in leg order, the Fatalf call, the goVer/minor
+/// bindings, the dir set, and the fatal/run/bun-leg
+/// counts.
+/// ADAPTATION (recorded, with source lines): test-name
+/// pins TestBaselineToolchainMatchesFreeze (L68);
+/// load-call pins the full load spelling (L71);
+/// task-fatal pins the task/date inner bytes (L74);
+/// bun-version-fatal pins the version inner bytes
+/// (L77); bun-revision-fatal pins the revision inner
+/// bytes (L80); unparseable-fatal pins the
+/// unparseable inner bytes (L85); go-below-fatal pins
+/// the below-floor inner bytes (L92); sha-fatal pins
+/// the not-a-sha inner bytes (L95); ancestor-fatal
+/// pins the not-ancestor inner bytes (L100);
+/// fatal-call pins t.Fatalf (L74); go-ver-name pins
+/// goVer (L82); minor-name pins minor (L87); cmd-dir
+/// pins the dir set spelling (L98); fatal-count pins
+/// int (7) from the seven legs
+/// (L74/L77/L80/L85/L92/L95/L100); run-count pins int
+/// (3) from the three probes (L76/L79/L82);
+/// bun-leg-count pins int (2) from the two bun legs
+/// (L76/L79).
+/// Facet map (launch plus diagnostics): test-name pins
+/// TestBaselineToolchainMatchesFreeze (L68); load-call
+/// pins the load (L71); task-fatal pins task/date
+/// refusal (L74); bun-version-fatal pins version
+/// refusal (L77); bun-revision-fatal pins revision
+/// refusal (L80); unparseable-fatal pins unparseable
+/// refusal (L85); go-below-fatal pins below-floor
+/// refusal (L92); sha-fatal pins not-a-sha refusal
+/// (L95); ancestor-fatal pins not-ancestor refusal
+/// (L100); fatal-call pins t.Fatalf (L74); go-ver-name
+/// pins goVer (L82); minor-name pins minor (L87);
+/// cmd-dir pins the dir set (L98); fatal-count pins 7
+/// (L74/L77/L80/L85/L92/L95/L100); run-count pins 3
+/// (L76/L79/L82); bun-leg-count pins 2 (L76/L79).
+/// The base pins live in
+/// history-042-base-semantics.can; the roots-green pin
+/// lives in history-042-roots-green.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no
+/// live run now. Accept gate P23 is unmet. Timeout 120000ms
+/// is the offline default bound (no Go timeout in this row;
+/// binds at P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/toolchain-run checks: test-name,
+/// load-call, task-fatal, bun-version-fatal,
+/// bun-revision-fatal, unparseable-fatal,
+/// go-below-fatal, sha-fatal, ancestor-fatal,
+/// fatal-call, go-ver-name, minor-name, cmd-dir,
+/// fatal-count, run-count, bun-leg-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str load_call
+    str task_fatal
+    str bun_version_fatal
+    str bun_revision_fatal
+    str unparseable_fatal
+    str go_below_fatal
+    str sha_fatal
+    str ancestor_fatal
+    str fatal_call
+    str go_ver_name
+    str minor_name
+    str cmd_dir
+    int fatal_count
+    int run_count
+    int bun_leg_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/toolchain-run", "default", "", "offline"), "test-name" => ok "case history/toolchain-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/toolchain-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/toolchain-run variant default root test-name run offline")
+        different: false, true, context("history/toolchain-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 7, 7, context("history/toolchain-run", "default", "", "offline"), "fatal-count" => ok evidence("fatal-count", "7", "7", true, "case history/toolchain-run variant default root fatal-count run offline")
+        different: 6, 7, context("history/toolchain-run", "default", "", "offline"), "fatal-count" => failed{"fatal-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestBaselineToolchainMatchesFreeze", "TestBaselineToolchainMatchesFreeze", context("history/toolchain-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestBaselineToolchainMatchesFreeze", "TestBaselineToolchainMatchesFreeze", true, "case history/toolchain-run variant default root test-name run offline")
+        different: "TestBaselineToolchainMatchesFreeze_2", "TestBaselineToolchainMatchesFreeze", context("history/toolchain-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze_2", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_load_call: "seed-load-call-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)_2", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_task_fatal: "seed-task-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v_2", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_bun_version_fatal: "seed-bun-version-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q_2", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_bun_revision_fatal: "seed-bun-revision-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q_2", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_unparseable_fatal: "seed-unparseable-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q_2", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_go_below_fatal: "seed-go-below-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s_2", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_sha_fatal: "seed-sha-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha_2", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_ancestor_fatal: "seed-ancestor-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v_2", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf_2", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_go_ver_name: "seed-go-ver-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer_2", "minor", "cmd.Dir = root", 7, 3, 2)
+        seed_minor_name: "seed-minor-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor_2", "cmd.Dir = root", 7, 3, 2)
+        seed_cmd_dir: "seed-cmd-dir-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root_2", 7, 3, 2)
+        seed_fatal_count: "seed-fatal-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 6, 3, 2)
+        seed_run_count: "seed-run-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 2, 2)
+        seed_bun_leg_count: "seed-bun-leg-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze_2", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-load-call-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)_2", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-task-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v_2", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-bun-version-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q_2", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-bun-revision-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q_2", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-unparseable-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q_2", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-go-below-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s_2", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-sha-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha_2", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-ancestor-fatal-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v_2", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-fatal-call-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf_2", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-go-ver-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer_2", "minor", "cmd.Dir = root", 7, 3, 2)
+        "seed-minor-name-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor_2", "cmd.Dir = root", 7, 3, 2)
+        "seed-cmd-dir-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root_2", 7, 3, 2)
+        "seed-fatal-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 6, 3, 2)
+        "seed-run-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 2, 2)
+        "seed-bun-leg-count-drift" => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 1)
+        _ => ok observation("TestBaselineToolchainMatchesFreeze", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", "baseline task/date not frozen: %+v", "bun --version = %q, frozen %q", "bun --revision = %q, frozen %q", "unparseable go version: %q", "go version %q below frozen minimum %s", "compiler revision %q is not a full sha", "frozen revision %s is not an ancestor of HEAD: %v", "t.Fatalf", "goVer", "minor", "cmd.Dir = root", 7, 3, 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h042: "m30-h042" => ok [check("test-name", "row pins the ToolchainMatchesFreeze name"), check("load-call", "run opens with the loadJSON call"), check("task-fatal", "task/date leg refusal wording is pinned"), check("bun-version-fatal", "bun version leg refusal wording is pinned"), check("bun-revision-fatal", "bun revision leg refusal wording is pinned"), check("unparseable-fatal", "go unparseable refusal wording is pinned"), check("go-below-fatal", "go below-floor refusal wording is pinned"), check("sha-fatal", "sha leg refusal wording is pinned"), check("ancestor-fatal", "ancestor leg refusal wording is pinned"), check("fatal-call", "legs refuse with Fatalf"), check("go-ver-name", "go probe binding is named goVer"), check("minor-name", "parsed minor binding is named minor"), check("cmd-dir", "ancestor probe pins the dir set"), check("fatal-count", "seven legs face the Fatal refusal"), check("run-count", "exactly three run probes fire"), check("bun-leg-count", "exactly two bun legs run")]
+        other: "nope" => ok []
+    match scope is "m30-h042"
+        false => ok []
+        true => ok [check("test-name", "row pins the ToolchainMatchesFreeze name"), check("load-call", "run opens with the loadJSON call"), check("task-fatal", "task/date leg refusal wording is pinned"), check("bun-version-fatal", "bun version leg refusal wording is pinned"), check("bun-revision-fatal", "bun revision leg refusal wording is pinned"), check("unparseable-fatal", "go unparseable refusal wording is pinned"), check("go-below-fatal", "go below-floor refusal wording is pinned"), check("sha-fatal", "sha leg refusal wording is pinned"), check("ancestor-fatal", "ancestor leg refusal wording is pinned"), check("fatal-call", "legs refuse with Fatalf"), check("go-ver-name", "go probe binding is named goVer"), check("minor-name", "parsed minor binding is named minor"), check("cmd-dir", "ancestor probe pins the dir set"), check("fatal-count", "seven legs face the Fatal refusal"), check("run-count", "exactly three run probes fire"), check("bun-leg-count", "exactly two bun legs run")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/toolchain-run" => ok [expected_check("test-name", "TestBaselineToolchainMatchesFreeze"), expected_check("load-call", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)"), expected_check("task-fatal", "baseline task/date not frozen: %+v"), expected_check("bun-version-fatal", "bun --version = %q, frozen %q"), expected_check("bun-revision-fatal", "bun --revision = %q, frozen %q"), expected_check("unparseable-fatal", "unparseable go version: %q"), expected_check("go-below-fatal", "go version %q below frozen minimum %s"), expected_check("sha-fatal", "compiler revision %q is not a full sha"), expected_check("ancestor-fatal", "frozen revision %s is not an ancestor of HEAD: %v"), expected_check("fatal-call", "t.Fatalf"), expected_check("go-ver-name", "goVer"), expected_check("minor-name", "minor"), expected_check("cmd-dir", "cmd.Dir = root"), expected_check("fatal-count", "7"), expected_check("run-count", "3"), expected_check("bun-leg-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/toolchain-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestBaselineToolchainMatchesFreeze"), expected_check("load-call", "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)"), expected_check("task-fatal", "baseline task/date not frozen: %+v"), expected_check("bun-version-fatal", "bun --version = %q, frozen %q"), expected_check("bun-revision-fatal", "bun --revision = %q, frozen %q"), expected_check("unparseable-fatal", "unparseable go version: %q"), expected_check("go-below-fatal", "go version %q below frozen minimum %s"), expected_check("sha-fatal", "compiler revision %q is not a full sha"), expected_check("ancestor-fatal", "frozen revision %s is not an ancestor of HEAD: %v"), expected_check("fatal-call", "t.Fatalf"), expected_check("go-ver-name", "goVer"), expected_check("minor-name", "minor"), expected_check("cmd-dir", "cmd.Dir = root"), expected_check("fatal-count", "7"), expected_check("run-count", "3"), expected_check("bun-leg-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/toolchain-run", "default", "", "offline") => ok
+        seed_test_name: context("history/toolchain-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_load_call: context("history/toolchain-run", "seed-load-call-drift", "", "offline") => failed{"load-call"}
+        seed_task_fatal: context("history/toolchain-run", "seed-task-fatal-drift", "", "offline") => failed{"task-fatal"}
+        seed_bun_version_fatal: context("history/toolchain-run", "seed-bun-version-fatal-drift", "", "offline") => failed{"bun-version-fatal"}
+        seed_bun_revision_fatal: context("history/toolchain-run", "seed-bun-revision-fatal-drift", "", "offline") => failed{"bun-revision-fatal"}
+        seed_unparseable_fatal: context("history/toolchain-run", "seed-unparseable-fatal-drift", "", "offline") => failed{"unparseable-fatal"}
+        seed_go_below_fatal: context("history/toolchain-run", "seed-go-below-fatal-drift", "", "offline") => failed{"go-below-fatal"}
+        seed_sha_fatal: context("history/toolchain-run", "seed-sha-fatal-drift", "", "offline") => failed{"sha-fatal"}
+        seed_ancestor_fatal: context("history/toolchain-run", "seed-ancestor-fatal-drift", "", "offline") => failed{"ancestor-fatal"}
+        seed_fatal_call: context("history/toolchain-run", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_go_ver_name: context("history/toolchain-run", "seed-go-ver-name-drift", "", "offline") => failed{"go-ver-name"}
+        seed_minor_name: context("history/toolchain-run", "seed-minor-name-drift", "", "offline") => failed{"minor-name"}
+        seed_cmd_dir: context("history/toolchain-run", "seed-cmd-dir-drift", "", "offline") => failed{"cmd-dir"}
+        seed_fatal_count: context("history/toolchain-run", "seed-fatal-count-drift", "", "offline") => failed{"fatal-count"}
+        seed_run_count: context("history/toolchain-run", "seed-run-count-drift", "", "offline") => failed{"run-count"}
+        seed_bun_leg_count: context("history/toolchain-run", "seed-bun-leg-count-drift", "", "offline") => failed{"bun-leg-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestBaselineToolchainMatchesFreeze", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.load_call, "loadJSON(t, filepath.Join(root, \"tests\", \"baseline\", \"baseline.json\"), &frozen)", c, "load-call")
+                failed
+                ok evidence load_call_evidence => match call require_text(got.task_fatal, "baseline task/date not frozen: %+v", c, "task-fatal")
+                    failed
+                    ok evidence task_fatal_evidence => match call require_text(got.bun_version_fatal, "bun --version = %q, frozen %q", c, "bun-version-fatal")
+                        failed
+                        ok evidence bun_version_fatal_evidence => match call require_text(got.bun_revision_fatal, "bun --revision = %q, frozen %q", c, "bun-revision-fatal")
+                            failed
+                            ok evidence bun_revision_fatal_evidence => match call require_text(got.unparseable_fatal, "unparseable go version: %q", c, "unparseable-fatal")
+                                failed
+                                ok evidence unparseable_fatal_evidence => match call require_text(got.go_below_fatal, "go version %q below frozen minimum %s", c, "go-below-fatal")
+                                    failed
+                                    ok evidence go_below_fatal_evidence => match call require_text(got.sha_fatal, "compiler revision %q is not a full sha", c, "sha-fatal")
+                                        failed
+                                        ok evidence sha_fatal_evidence => match call require_text(got.ancestor_fatal, "frozen revision %s is not an ancestor of HEAD: %v", c, "ancestor-fatal")
+                                            failed
+                                            ok evidence ancestor_fatal_evidence => match call require_text(got.fatal_call, "t.Fatalf", c, "fatal-call")
+                                                failed
+                                                ok evidence fatal_call_evidence => match call require_text(got.go_ver_name, "goVer", c, "go-ver-name")
+                                                    failed
+                                                    ok evidence go_ver_name_evidence => match call require_text(got.minor_name, "minor", c, "minor-name")
+                                                        failed
+                                                        ok evidence minor_name_evidence => match call require_text(got.cmd_dir, "cmd.Dir = root", c, "cmd-dir")
+                                                            failed
+                                                            ok evidence cmd_dir_evidence => match call require_int(got.fatal_count, 7, c, "fatal-count")
+                                                                failed
+                                                                ok evidence fatal_count_evidence => match call require_int(got.run_count, 3, c, "run-count")
+                                                                    failed
+                                                                    ok evidence run_count_evidence => match call require_int(got.bun_leg_count, 2, c, "bun-leg-count")
+                                                                        failed
+                                                                        ok evidence bun_leg_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h042: "m30-h042" => ok test_case("history/toolchain-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("load-call"), check_ref("task-fatal"), check_ref("bun-version-fatal"), check_ref("bun-revision-fatal"), check_ref("unparseable-fatal"), check_ref("go-below-fatal"), check_ref("sha-fatal"), check_ref("ancestor-fatal"), check_ref("fatal-call"), check_ref("go-ver-name"), check_ref("minor-name"), check_ref("cmd-dir"), check_ref("fatal-count"), check_ref("run-count"), check_ref("bun-leg-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h042"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/toolchain-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("load-call"), check_ref("task-fatal"), check_ref("bun-version-fatal"), check_ref("bun-revision-fatal"), check_ref("unparseable-fatal"), check_ref("go-below-fatal"), check_ref("sha-fatal"), check_ref("ancestor-fatal"), check_ref("fatal-call"), check_ref("go-ver-name"), check_ref("minor-name"), check_ref("cmd-dir"), check_ref("fatal-count"), check_ref("run-count"), check_ref("bun-leg-count")], callable case_body)
