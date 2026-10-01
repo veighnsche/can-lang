@@ -1,0 +1,354 @@
+package m29history037run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-037 "Symlink marker refused: run shape".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryRejectsSymlinkMarker (L122-150); impl
+/// tests/support/tempcache/cache.go O_NOFOLLOW refusal
+/// (L239/L261) plus OpenRoot (L229).
+/// Disposition: migrate (this row ports
+/// TestRecoveryRejectsSymlinkMarker to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the live run shape in Go order:
+/// the parent/path/marker/data/outside/old vars, the
+/// TempDir plus candidate calls, the two Join calls with
+/// read/write/remove/symlink/chtimes legs, the age call,
+/// the recovery call with its liveness refusal, the Stat
+/// leg, the Fatal call shape plus Fatal diag, the
+/// tempdir/line/now/fatalf counts, and the remove/recovery
+/// ordering verdicts.
+/// ADAPTATION (recorded, with source lines): tempdir-count
+/// pins 1 from the in-range TempDir site (L123; five exist
+/// file-wide); func-line-count pins 29 from L122-150
+/// inclusive; time-now-count pins 2 from the in-range Now
+/// sites (L140/L144; six exist file-wide); fatalf-count
+/// pins 0 from the absent Fatalf in range (nine exist
+/// file-wide); ordering verdicts pin bools from line order
+/// (remove L134 precedes symlink L137; recovery L144
+/// precedes stat L147); call spellings pin exact Go bytes
+/// without leading tabs or trailing braces or guards.
+/// Facet map (run order): parent-var pins parent (L123);
+/// path-var pins path (L124); marker-var pins marker
+/// (L125); data-var pins data (L126); outside-var pins
+/// outside (L130); old-var pins old (L140); tempdir-call
+/// pins t.TempDir() (L123); candidate-call pins
+/// candidate(t, parent, deadPID, true) (L124);
+/// join-marker-call pins filepath.Join(path, markerName)
+/// (L125); read-call pins os.ReadFile(marker) (L126);
+/// join-outside-call pins filepath.Join(parent,
+/// "foreign-marker") (L130); write-call pins
+/// os.WriteFile(outside, data, 0600) (L131); remove-call
+/// pins os.Remove(marker) (L134); symlink-call pins
+/// os.Symlink(outside, marker) (L137); age-call pins
+/// time.Now().Add(-2 * recoveryAge) (L140); chtimes-call
+/// pins os.Chtimes(path, old, old) (L141); recover-call
+/// pins the full recovery line minus guard (L144);
+/// stat-leg pins os.Stat(path) (L147); fatal-call pins
+/// t.Fatal(err) (L128); fatal-diag pins the symlink
+/// refusal call (L144); tempdir-count pins 1 (L123);
+/// func-line-count pins 29 (L122-150); time-now-count
+/// pins 2 (L140/L144); fatalf-count pins 0 (none in
+/// range); remove-before-symlink pins true (L134 before
+/// L137); recover-before-stat pins true (L144 before
+/// L147).
+/// Answer verdicts live in history-037-cache-semantics.can;
+/// the roots-green pin lives in history-037-roots-green.can.
+/// Variants: single symlink candidate shares one run shape
+/// (a single default case; per-leg verdicts pin in
+/// cache-semantics).
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the run-shape probe
+/// (no Go guard exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-symlink-run checks: parent-var,
+/// path-var, marker-var, data-var, outside-var, old-var,
+/// tempdir-call, candidate-call, join-marker-call,
+/// read-call, join-outside-call, write-call, remove-call,
+/// symlink-call, age-call, chtimes-call, recover-call,
+/// stat-leg, fatal-call, fatal-diag, tempdir-count,
+/// func-line-count, time-now-count, fatalf-count,
+/// remove-before-symlink, recover-before-stat.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str parent_var
+    str path_var
+    str marker_var
+    str data_var
+    str outside_var
+    str old_var
+    str tempdir_call
+    str candidate_call
+    str join_marker_call
+    str read_call
+    str join_outside_call
+    str write_call
+    str remove_call
+    str symlink_call
+    str age_call
+    str chtimes_call
+    str recover_call
+    str stat_leg
+    str fatal_call
+    str fatal_diag
+    int tempdir_count
+    int func_line_count
+    int time_now_count
+    int fatalf_count
+    bool remove_before_symlink
+    bool recover_before_stat
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-symlink-run", "default", "", "offline"), "parent-var" => ok "case history/cache-symlink-run variant default root parent-var run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-symlink-run", "default", "", "offline"), "remove-before-symlink" => ok evidence("remove-before-symlink", "true", "true", true, "case history/cache-symlink-run variant default root remove-before-symlink run offline")
+        different: false, true, context("history/cache-symlink-run", "default", "", "offline"), "remove-before-symlink" => failed{"remove-before-symlink"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("history/cache-symlink-run", "default", "", "offline"), "tempdir-count" => ok evidence("tempdir-count", "1", "1", true, "case history/cache-symlink-run variant default root tempdir-count run offline")
+        different: 2, 1, context("history/cache-symlink-run", "default", "", "offline"), "tempdir-count" => failed{"tempdir-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "parent", "parent", context("history/cache-symlink-run", "default", "", "offline"), "parent-var" => ok evidence("parent-var", "parent", "parent", true, "case history/cache-symlink-run variant default root parent-var run offline")
+        different: "parent_2", "parent", context("history/cache-symlink-run", "default", "", "offline"), "parent-var" => failed{"parent-var"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_parent_var: "seed-parent-var-drift" => ok observation("parent_2", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_path_var: "seed-path-var-drift" => ok observation("parent", "path_2", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_marker_var: "seed-marker-var-drift" => ok observation("parent", "path", "marker_2", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_data_var: "seed-data-var-drift" => ok observation("parent", "path", "marker", "data_2", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_outside_var: "seed-outside-var-drift" => ok observation("parent", "path", "marker", "data", "outside_2", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_old_var: "seed-old-var-drift" => ok observation("parent", "path", "marker", "data", "outside", "old_2", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_tempdir_call: "seed-tempdir-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()_2", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_candidate_call: "seed-candidate-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)_2", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_join_marker_call: "seed-join-marker-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)_2", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_read_call: "seed-read-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)_2", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_join_outside_call: "seed-join-outside-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")_2", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_write_call: "seed-write-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)_2", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_remove_call: "seed-remove-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)_2", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_symlink_call: "seed-symlink-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)_2", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_age_call: "seed-age-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)_2", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_chtimes_call: "seed-chtimes-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)_2", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_recover_call: "seed-recover-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })_2", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_stat_leg: "seed-stat-leg-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)_2", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_fatal_call: "seed-fatal-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)_2", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        seed_fatal_diag: "seed-fatal-diag-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")_2", 1, 29, 2, 0, true, true)
+        seed_tempdir_count: "seed-tempdir-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 2, 29, 2, 0, true, true)
+        seed_func_line_count: "seed-func-line-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 28, 2, 0, true, true)
+        seed_time_now_count: "seed-time-now-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 3, 0, true, true)
+        seed_fatalf_count: "seed-fatalf-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 1, true, true)
+        seed_remove_before_symlink: "seed-remove-before-symlink-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, false, true)
+        seed_recover_before_stat: "seed-recover-before-stat-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, false)
+    match variant_id
+        "seed-parent-var-drift" => ok observation("parent_2", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-path-var-drift" => ok observation("parent", "path_2", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-marker-var-drift" => ok observation("parent", "path", "marker_2", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-data-var-drift" => ok observation("parent", "path", "marker", "data_2", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-outside-var-drift" => ok observation("parent", "path", "marker", "data", "outside_2", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-old-var-drift" => ok observation("parent", "path", "marker", "data", "outside", "old_2", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-tempdir-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()_2", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-candidate-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)_2", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-join-marker-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)_2", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-read-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)_2", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-join-outside-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")_2", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-write-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)_2", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-remove-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)_2", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-symlink-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)_2", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-age-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)_2", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-chtimes-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)_2", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-recover-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })_2", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-stat-leg-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)_2", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-fatal-call-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)_2", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+        "seed-fatal-diag-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")_2", 1, 29, 2, 0, true, true)
+        "seed-tempdir-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 2, 29, 2, 0, true, true)
+        "seed-func-line-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 28, 2, 0, true, true)
+        "seed-time-now-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 3, 0, true, true)
+        "seed-fatalf-count-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 1, true, true)
+        "seed-remove-before-symlink-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, false, true)
+        "seed-recover-before-stat-drift" => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, false)
+        _ => ok observation("parent", "path", "marker", "data", "outside", "old", "t.TempDir()", "candidate(t, parent, deadPID, true)", "filepath.Join(path, markerName)", "os.ReadFile(marker)", "filepath.Join(parent, \"foreign-marker\")", "os.WriteFile(outside, data, 0600)", "os.Remove(marker)", "os.Symlink(outside, marker)", "time.Now().Add(-2 * recoveryAge)", "os.Chtimes(path, old, old)", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", "os.Stat(path)", "t.Fatal(err)", "t.Fatal(\"symlink reached liveness check\")", 1, 29, 2, 0, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h037: "m29-h037" => ok [check("parent-var", "parent var spelling"), check("path-var", "path var spelling"), check("marker-var", "marker var spelling"), check("data-var", "data var spelling"), check("outside-var", "outside var spelling"), check("old-var", "old var spelling"), check("tempdir-call", "tempdir call shape"), check("candidate-call", "candidate call shape"), check("join-marker-call", "marker join shape"), check("read-call", "read call shape"), check("join-outside-call", "outside join shape"), check("write-call", "write call shape"), check("remove-call", "remove call shape"), check("symlink-call", "symlink call shape"), check("age-call", "age call shape"), check("chtimes-call", "chtimes call shape"), check("recover-call", "recovery call shape"), check("stat-leg", "stat leg shape"), check("fatal-call", "fatal call shape"), check("fatal-diag", "symlink refusal call shape"), check("tempdir-count", "one tempdir in range"), check("func-line-count", "func spans twenty-nine lines"), check("time-now-count", "two now calls in range"), check("fatalf-count", "zero fatalf in range"), check("remove-before-symlink", "remove precedes symlink"), check("recover-before-stat", "recovery precedes stat")]
+        other: "nope" => ok []
+    match scope is "m29-h037"
+        false => ok []
+        true => ok [check("parent-var", "parent var spelling"), check("path-var", "path var spelling"), check("marker-var", "marker var spelling"), check("data-var", "data var spelling"), check("outside-var", "outside var spelling"), check("old-var", "old var spelling"), check("tempdir-call", "tempdir call shape"), check("candidate-call", "candidate call shape"), check("join-marker-call", "marker join shape"), check("read-call", "read call shape"), check("join-outside-call", "outside join shape"), check("write-call", "write call shape"), check("remove-call", "remove call shape"), check("symlink-call", "symlink call shape"), check("age-call", "age call shape"), check("chtimes-call", "chtimes call shape"), check("recover-call", "recovery call shape"), check("stat-leg", "stat leg shape"), check("fatal-call", "fatal call shape"), check("fatal-diag", "symlink refusal call shape"), check("tempdir-count", "one tempdir in range"), check("func-line-count", "func spans twenty-nine lines"), check("time-now-count", "two now calls in range"), check("fatalf-count", "zero fatalf in range"), check("remove-before-symlink", "remove precedes symlink"), check("recover-before-stat", "recovery precedes stat")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-symlink-run" => ok [expected_check("parent-var", "parent"), expected_check("path-var", "path"), expected_check("marker-var", "marker"), expected_check("data-var", "data"), expected_check("outside-var", "outside"), expected_check("old-var", "old"), expected_check("tempdir-call", "t.TempDir()"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("join-marker-call", "filepath.Join(path, markerName)"), expected_check("read-call", "os.ReadFile(marker)"), expected_check("join-outside-call", "filepath.Join(parent, \"foreign-marker\")"), expected_check("write-call", "os.WriteFile(outside, data, 0600)"), expected_check("remove-call", "os.Remove(marker)"), expected_check("symlink-call", "os.Symlink(outside, marker)"), expected_check("age-call", "time.Now().Add(-2 * recoveryAge)"), expected_check("chtimes-call", "os.Chtimes(path, old, old)"), expected_check("recover-call", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })"), expected_check("stat-leg", "os.Stat(path)"), expected_check("fatal-call", "t.Fatal(err)"), expected_check("fatal-diag", "t.Fatal(\"symlink reached liveness check\")"), expected_check("tempdir-count", "1"), expected_check("func-line-count", "29"), expected_check("time-now-count", "2"), expected_check("fatalf-count", "0"), expected_check("remove-before-symlink", "true"), expected_check("recover-before-stat", "true")]
+        unknown: "nope" => ok []
+    match case is "history/cache-symlink-run"
+        false => ok []
+        true => ok [expected_check("parent-var", "parent"), expected_check("path-var", "path"), expected_check("marker-var", "marker"), expected_check("data-var", "data"), expected_check("outside-var", "outside"), expected_check("old-var", "old"), expected_check("tempdir-call", "t.TempDir()"), expected_check("candidate-call", "candidate(t, parent, deadPID, true)"), expected_check("join-marker-call", "filepath.Join(path, markerName)"), expected_check("read-call", "os.ReadFile(marker)"), expected_check("join-outside-call", "filepath.Join(parent, \"foreign-marker\")"), expected_check("write-call", "os.WriteFile(outside, data, 0600)"), expected_check("remove-call", "os.Remove(marker)"), expected_check("symlink-call", "os.Symlink(outside, marker)"), expected_check("age-call", "time.Now().Add(-2 * recoveryAge)"), expected_check("chtimes-call", "os.Chtimes(path, old, old)"), expected_check("recover-call", "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })"), expected_check("stat-leg", "os.Stat(path)"), expected_check("fatal-call", "t.Fatal(err)"), expected_check("fatal-diag", "t.Fatal(\"symlink reached liveness check\")"), expected_check("tempdir-count", "1"), expected_check("func-line-count", "29"), expected_check("time-now-count", "2"), expected_check("fatalf-count", "0"), expected_check("remove-before-symlink", "true"), expected_check("recover-before-stat", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-symlink-run", "default", "", "offline") => ok
+        seed_parent_var: context("history/cache-symlink-run", "seed-parent-var-drift", "", "offline") => failed{"parent-var"}
+        seed_path_var: context("history/cache-symlink-run", "seed-path-var-drift", "", "offline") => failed{"path-var"}
+        seed_marker_var: context("history/cache-symlink-run", "seed-marker-var-drift", "", "offline") => failed{"marker-var"}
+        seed_data_var: context("history/cache-symlink-run", "seed-data-var-drift", "", "offline") => failed{"data-var"}
+        seed_outside_var: context("history/cache-symlink-run", "seed-outside-var-drift", "", "offline") => failed{"outside-var"}
+        seed_old_var: context("history/cache-symlink-run", "seed-old-var-drift", "", "offline") => failed{"old-var"}
+        seed_tempdir_call: context("history/cache-symlink-run", "seed-tempdir-call-drift", "", "offline") => failed{"tempdir-call"}
+        seed_candidate_call: context("history/cache-symlink-run", "seed-candidate-call-drift", "", "offline") => failed{"candidate-call"}
+        seed_join_marker_call: context("history/cache-symlink-run", "seed-join-marker-call-drift", "", "offline") => failed{"join-marker-call"}
+        seed_read_call: context("history/cache-symlink-run", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_join_outside_call: context("history/cache-symlink-run", "seed-join-outside-call-drift", "", "offline") => failed{"join-outside-call"}
+        seed_write_call: context("history/cache-symlink-run", "seed-write-call-drift", "", "offline") => failed{"write-call"}
+        seed_remove_call: context("history/cache-symlink-run", "seed-remove-call-drift", "", "offline") => failed{"remove-call"}
+        seed_symlink_call: context("history/cache-symlink-run", "seed-symlink-call-drift", "", "offline") => failed{"symlink-call"}
+        seed_age_call: context("history/cache-symlink-run", "seed-age-call-drift", "", "offline") => failed{"age-call"}
+        seed_chtimes_call: context("history/cache-symlink-run", "seed-chtimes-call-drift", "", "offline") => failed{"chtimes-call"}
+        seed_recover_call: context("history/cache-symlink-run", "seed-recover-call-drift", "", "offline") => failed{"recover-call"}
+        seed_stat_leg: context("history/cache-symlink-run", "seed-stat-leg-drift", "", "offline") => failed{"stat-leg"}
+        seed_fatal_call: context("history/cache-symlink-run", "seed-fatal-call-drift", "", "offline") => failed{"fatal-call"}
+        seed_fatal_diag: context("history/cache-symlink-run", "seed-fatal-diag-drift", "", "offline") => failed{"fatal-diag"}
+        seed_tempdir_count: context("history/cache-symlink-run", "seed-tempdir-count-drift", "", "offline") => failed{"tempdir-count"}
+        seed_func_line_count: context("history/cache-symlink-run", "seed-func-line-count-drift", "", "offline") => failed{"func-line-count"}
+        seed_time_now_count: context("history/cache-symlink-run", "seed-time-now-count-drift", "", "offline") => failed{"time-now-count"}
+        seed_fatalf_count: context("history/cache-symlink-run", "seed-fatalf-count-drift", "", "offline") => failed{"fatalf-count"}
+        seed_remove_before_symlink: context("history/cache-symlink-run", "seed-remove-before-symlink-drift", "", "offline") => failed{"remove-before-symlink"}
+        seed_recover_before_stat: context("history/cache-symlink-run", "seed-recover-before-stat-drift", "", "offline") => failed{"recover-before-stat"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.parent_var, "parent", c, "parent-var")
+            failed
+            ok evidence parent_var_evidence => match call require_text(got.path_var, "path", c, "path-var")
+                failed
+                ok evidence path_var_evidence => match call require_text(got.marker_var, "marker", c, "marker-var")
+                    failed
+                    ok evidence marker_var_evidence => match call require_text(got.data_var, "data", c, "data-var")
+                        failed
+                        ok evidence data_var_evidence => match call require_text(got.outside_var, "outside", c, "outside-var")
+                            failed
+                            ok evidence outside_var_evidence => match call require_text(got.old_var, "old", c, "old-var")
+                                failed
+                                ok evidence old_var_evidence => match call require_text(got.tempdir_call, "t.TempDir()", c, "tempdir-call")
+                                    failed
+                                    ok evidence tempdir_call_evidence => match call require_text(got.candidate_call, "candidate(t, parent, deadPID, true)", c, "candidate-call")
+                                        failed
+                                        ok evidence candidate_call_evidence => match call require_text(got.join_marker_call, "filepath.Join(path, markerName)", c, "join-marker-call")
+                                            failed
+                                            ok evidence join_marker_call_evidence => match call require_text(got.read_call, "os.ReadFile(marker)", c, "read-call")
+                                                failed
+                                                ok evidence read_call_evidence => match call require_text(got.join_outside_call, "filepath.Join(parent, \"foreign-marker\")", c, "join-outside-call")
+                                                    failed
+                                                    ok evidence join_outside_call_evidence => match call require_text(got.write_call, "os.WriteFile(outside, data, 0600)", c, "write-call")
+                                                        failed
+                                                        ok evidence write_call_evidence => match call require_text(got.remove_call, "os.Remove(marker)", c, "remove-call")
+                                                            failed
+                                                            ok evidence remove_call_evidence => match call require_text(got.symlink_call, "os.Symlink(outside, marker)", c, "symlink-call")
+                                                                failed
+                                                                ok evidence symlink_call_evidence => match call require_text(got.age_call, "time.Now().Add(-2 * recoveryAge)", c, "age-call")
+                                                                    failed
+                                                                    ok evidence age_call_evidence => match call require_text(got.chtimes_call, "os.Chtimes(path, old, old)", c, "chtimes-call")
+                                                                        failed
+                                                                        ok evidence chtimes_call_evidence => match call require_text(got.recover_call, "recoverAbandoned(parent, time.Now(), func([]string) error { t.Fatal(\"symlink reached liveness check\"); return nil })", c, "recover-call")
+                                                                            failed
+                                                                            ok evidence recover_call_evidence => match call require_text(got.stat_leg, "os.Stat(path)", c, "stat-leg")
+                                                                                failed
+                                                                                ok evidence stat_leg_evidence => match call require_text(got.fatal_call, "t.Fatal(err)", c, "fatal-call")
+                                                                                    failed
+                                                                                    ok evidence fatal_call_evidence => match call require_text(got.fatal_diag, "t.Fatal(\"symlink reached liveness check\")", c, "fatal-diag")
+                                                                                        failed
+                                                                                        ok evidence fatal_diag_evidence => match call require_int(got.tempdir_count, 1, c, "tempdir-count")
+                                                                                            failed
+                                                                                            ok evidence tempdir_count_evidence => match call require_int(got.func_line_count, 29, c, "func-line-count")
+                                                                                                failed
+                                                                                                ok evidence func_line_count_evidence => match call require_int(got.time_now_count, 2, c, "time-now-count")
+                                                                                                    failed
+                                                                                                    ok evidence time_now_count_evidence => match call require_int(got.fatalf_count, 0, c, "fatalf-count")
+                                                                                                        failed
+                                                                                                        ok evidence fatalf_count_evidence => match call require_bool(got.remove_before_symlink, true, c, "remove-before-symlink")
+                                                                                                            failed
+                                                                                                            ok evidence remove_before_symlink_evidence => match call require_bool(got.recover_before_stat, true, c, "recover-before-stat")
+                                                                                                                failed
+                                                                                                                ok evidence recover_before_stat_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h037: "m29-h037" => ok test_case("history/cache-symlink-run", ["history", "m29"], [], 60000, [check_ref("parent-var"), check_ref("path-var"), check_ref("marker-var"), check_ref("data-var"), check_ref("outside-var"), check_ref("old-var"), check_ref("tempdir-call"), check_ref("candidate-call"), check_ref("join-marker-call"), check_ref("read-call"), check_ref("join-outside-call"), check_ref("write-call"), check_ref("remove-call"), check_ref("symlink-call"), check_ref("age-call"), check_ref("chtimes-call"), check_ref("recover-call"), check_ref("stat-leg"), check_ref("fatal-call"), check_ref("fatal-diag"), check_ref("tempdir-count"), check_ref("func-line-count"), check_ref("time-now-count"), check_ref("fatalf-count"), check_ref("remove-before-symlink"), check_ref("recover-before-stat")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h037"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-symlink-run", ["history", "m29"], [], 60000, [check_ref("parent-var"), check_ref("path-var"), check_ref("marker-var"), check_ref("data-var"), check_ref("outside-var"), check_ref("old-var"), check_ref("tempdir-call"), check_ref("candidate-call"), check_ref("join-marker-call"), check_ref("read-call"), check_ref("join-outside-call"), check_ref("write-call"), check_ref("remove-call"), check_ref("symlink-call"), check_ref("age-call"), check_ref("chtimes-call"), check_ref("recover-call"), check_ref("stat-leg"), check_ref("fatal-call"), check_ref("fatal-diag"), check_ref("tempdir-count"), check_ref("func-line-count"), check_ref("time-now-count"), check_ref("fatalf-count"), check_ref("remove-before-symlink"), check_ref("recover-before-stat")], callable case_body)

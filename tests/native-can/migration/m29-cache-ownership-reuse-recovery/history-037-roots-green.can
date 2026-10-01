@@ -1,0 +1,336 @@
+package m29history037roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 HISTORY-037 "Symlink marker refused: roots green".
+/// Source: tests/support/tempcache/cache_test.go symbol
+/// TestRecoveryRejectsSymlinkMarker (L122-150); package
+/// plus imports (L1-11); impl
+/// tests/support/tempcache/cache.go consts (L21-30),
+/// structs (L32-42), Open (L47-96), recoverOne
+/// (L218-283), O_NOFOLLOW (L239/L261), OpenRoot (L229).
+/// Disposition: migrate (this row ports
+/// TestRecoveryRejectsSymlinkMarker to ordinary Can
+/// functions; the old Go harness stays until the integrator
+/// retires it after every linked row, variant, environment
+/// and control has accepted evidence).
+/// Protects (this file): the static live baseline as the
+/// green root: the package plus func names, the TempDir,
+/// candidate, Join, ReadFile, WriteFile, Remove, Symlink,
+/// Chtimes, recoverAbandoned, Stat, Fatal spellings, the
+/// O_NOFOLLOW plus OpenRoot guard spellings, the cache
+/// prefix, marker, lease, schema names, the mkdir plus
+/// file modes, the recovery bound, the Cache field count,
+/// and the nil-close ok.
+/// ADAPTATION (recorded, with source lines): modes pin str
+/// to keep the 0755/0600 spellings (cache.go L55/L80/L91
+/// plus test L131); limit pins int 16 (L30); field count
+/// pins int 3 from the Cache struct (L39-41); nil-close
+/// pins bool from the nil guard (L101-103); op spellings
+/// pin the exact Go identifiers (TempDir L123, candidate
+/// L124, Join L125/L130, ReadFile L126, WriteFile L131,
+/// Remove L134, Symlink L137, Chtimes L141,
+/// recoverAbandoned L144, Stat L147, Fatal L128/L132/
+/// L135/L138/L142/L144/L145/L148, O_NOFOLLOW impl
+/// L239/L261, OpenRoot impl L229).
+/// Facet map (static baseline): pkg-name pins tempcache
+/// (test L1); func-name pins the symlink probe (L122);
+/// tempdir-op pins TempDir (L123); candidate-op pins
+/// candidate (L124); join-op pins Join (L125/L130);
+/// read-op pins ReadFile (L126); write-op pins WriteFile
+/// (L131); remove-op pins Remove (L134); symlink-op pins
+/// Symlink (L137); chtimes-op pins Chtimes (L141);
+/// recover-op pins recoverAbandoned (L144); stat-op pins
+/// Stat (L147); fatal-op pins Fatal (L128); nofollow-op
+/// pins O_NOFOLLOW (impl L239/L261); openroot-op pins
+/// OpenRoot (impl L229); cache-prefix pins can-suite-cache-
+/// (impl L21); marker-name pins .can-test-owner.json
+/// (impl L22); lease-name pins .can-test-lease (impl
+/// L23); schema-name pins can.test-suite-cache/1 (impl
+/// L24); mkdir-mode pins 0755 (impl L55); file-mode pins
+/// 0600 (impl L80/L91 plus test L131); recovery-limit
+/// pins 16 (impl L30); cache-field-count pins 3 (impl
+/// L39-41); nil-close-ok pins true (impl L101-103).
+/// Answer verdicts live in history-037-cache-semantics.can;
+/// the run shape lives in history-037-run-shape.can.
+/// Variants: none in this file (default only); the single
+/// symlink candidate pins in cache-semantics.
+/// Environment: no env gate; local temp dir only.
+/// Logical gates SUITE/WORK/FILES/FAULT/NATIVE and C/R/N/S/A
+/// identities bind at P23; no live run now. Accept gate P23
+/// is unmet. Timeout 60000ms bounds the static baseline
+/// probe (no Go guard exists; offline only).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case history/cache-symlink-roots checks: pkg-name,
+/// func-name, tempdir-op, candidate-op, join-op, read-op,
+/// write-op, remove-op, symlink-op, chtimes-op, recover-op,
+/// stat-op, fatal-op, nofollow-op, openroot-op, cache-prefix,
+/// marker-name, lease-name, schema-name, mkdir-mode,
+/// file-mode, recovery-limit, cache-field-count, nil-close-ok.
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str pkg_name
+    str func_name
+    str tempdir_op
+    str candidate_op
+    str join_op
+    str read_op
+    str write_op
+    str remove_op
+    str symlink_op
+    str chtimes_op
+    str recover_op
+    str stat_op
+    str fatal_op
+    str nofollow_op
+    str openroot_op
+    str cache_prefix
+    str marker_name
+    str lease_name
+    str schema_name
+    str mkdir_mode
+    str file_mode
+    int recovery_limit
+    int cache_field_count
+    bool nil_close_ok
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/cache-symlink-roots", "default", "", "offline"), "pkg-name" => ok "case history/cache-symlink-roots variant default root pkg-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/cache-symlink-roots", "default", "", "offline"), "nil-close-ok" => ok evidence("nil-close-ok", "true", "true", true, "case history/cache-symlink-roots variant default root nil-close-ok run offline")
+        different: false, true, context("history/cache-symlink-roots", "default", "", "offline"), "nil-close-ok" => failed{"nil-close-ok"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 16, 16, context("history/cache-symlink-roots", "default", "", "offline"), "recovery-limit" => ok evidence("recovery-limit", "16", "16", true, "case history/cache-symlink-roots variant default root recovery-limit run offline")
+        different: 15, 16, context("history/cache-symlink-roots", "default", "", "offline"), "recovery-limit" => failed{"recovery-limit"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "tempcache", "tempcache", context("history/cache-symlink-roots", "default", "", "offline"), "pkg-name" => ok evidence("pkg-name", "tempcache", "tempcache", true, "case history/cache-symlink-roots variant default root pkg-name run offline")
+        different: "tempcache_2", "tempcache", context("history/cache-symlink-roots", "default", "", "offline"), "pkg-name" => failed{"pkg-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_pkg_name: "seed-pkg-name-drift" => ok observation("tempcache_2", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_func_name: "seed-func-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker_2", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_tempdir_op: "seed-tempdir-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir_2", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_candidate_op: "seed-candidate-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate_2", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_join_op: "seed-join-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join_2", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_read_op: "seed-read-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile_2", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_write_op: "seed-write-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile_2", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_remove_op: "seed-remove-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove_2", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_symlink_op: "seed-symlink-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink_2", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_chtimes_op: "seed-chtimes-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes_2", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_recover_op: "seed-recover-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned_2", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_stat_op: "seed-stat-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat_2", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_fatal_op: "seed-fatal-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal_2", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_nofollow_op: "seed-nofollow-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW_2", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_openroot_op: "seed-openroot-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_cache_prefix: "seed-cache-prefix-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_marker_name: "seed-marker-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_lease_name: "seed-lease-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        seed_schema_name: "seed-schema-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "0755", "0600", 16, 3, true)
+        seed_mkdir_mode: "seed-mkdir-mode-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755_2", "0600", 16, 3, true)
+        seed_file_mode: "seed-file-mode-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600_2", 16, 3, true)
+        seed_recovery_limit: "seed-recovery-limit-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 15, 3, true)
+        seed_cache_field_count: "seed-cache-field-count-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 2, true)
+        seed_nil_close_ok: "seed-nil-close-ok-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, false)
+    match variant_id
+        "seed-pkg-name-drift" => ok observation("tempcache_2", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-func-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker_2", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-tempdir-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir_2", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-candidate-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate_2", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-join-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join_2", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-read-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile_2", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-write-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile_2", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-remove-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove_2", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-symlink-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink_2", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-chtimes-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes_2", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-recover-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned_2", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-stat-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat_2", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-fatal-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal_2", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-nofollow-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW_2", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-openroot-op-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot_2", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-cache-prefix-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-_2", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-marker-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json_2", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-lease-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease_2", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+        "seed-schema-name-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1_2", "0755", "0600", 16, 3, true)
+        "seed-mkdir-mode-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755_2", "0600", 16, 3, true)
+        "seed-file-mode-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600_2", 16, 3, true)
+        "seed-recovery-limit-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 15, 3, true)
+        "seed-cache-field-count-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 2, true)
+        "seed-nil-close-ok-drift" => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, false)
+        _ => ok observation("tempcache", "TestRecoveryRejectsSymlinkMarker", "TempDir", "candidate", "Join", "ReadFile", "WriteFile", "Remove", "Symlink", "Chtimes", "recoverAbandoned", "Stat", "Fatal", "O_NOFOLLOW", "OpenRoot", "can-suite-cache-", ".can-test-owner.json", ".can-test-lease", "can.test-suite-cache/1", "0755", "0600", 16, 3, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h037: "m29-h037" => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins symlink probe"), check("tempdir-op", "tempdir op spelling"), check("candidate-op", "candidate op spelling"), check("join-op", "join op spelling"), check("read-op", "read op spelling"), check("write-op", "write op spelling"), check("remove-op", "remove op spelling"), check("symlink-op", "symlink op spelling"), check("chtimes-op", "chtimes op spelling"), check("recover-op", "recovery op spelling"), check("stat-op", "stat op spelling"), check("fatal-op", "fatal op spelling"), check("nofollow-op", "nofollow guard spelling"), check("openroot-op", "openroot guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("mkdir-mode", "mkdir mode spelling"), check("file-mode", "file mode spelling"), check("recovery-limit", "recovery bound is sixteen"), check("cache-field-count", "cache holds three fields"), check("nil-close-ok", "nil close returns nil")]
+        other: "nope" => ok []
+    match scope is "m29-h037"
+        false => ok []
+        true => ok [check("pkg-name", "package name is tempcache"), check("func-name", "func name pins symlink probe"), check("tempdir-op", "tempdir op spelling"), check("candidate-op", "candidate op spelling"), check("join-op", "join op spelling"), check("read-op", "read op spelling"), check("write-op", "write op spelling"), check("remove-op", "remove op spelling"), check("symlink-op", "symlink op spelling"), check("chtimes-op", "chtimes op spelling"), check("recover-op", "recovery op spelling"), check("stat-op", "stat op spelling"), check("fatal-op", "fatal op spelling"), check("nofollow-op", "nofollow guard spelling"), check("openroot-op", "openroot guard spelling"), check("cache-prefix", "cache prefix spelling"), check("marker-name", "marker file name"), check("lease-name", "lease file name"), check("schema-name", "schema name spelling"), check("mkdir-mode", "mkdir mode spelling"), check("file-mode", "file mode spelling"), check("recovery-limit", "recovery bound is sixteen"), check("cache-field-count", "cache holds three fields"), check("nil-close-ok", "nil close returns nil")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/cache-symlink-roots" => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestRecoveryRejectsSymlinkMarker"), expected_check("tempdir-op", "TempDir"), expected_check("candidate-op", "candidate"), expected_check("join-op", "Join"), expected_check("read-op", "ReadFile"), expected_check("write-op", "WriteFile"), expected_check("remove-op", "Remove"), expected_check("symlink-op", "Symlink"), expected_check("chtimes-op", "Chtimes"), expected_check("recover-op", "recoverAbandoned"), expected_check("stat-op", "Stat"), expected_check("fatal-op", "Fatal"), expected_check("nofollow-op", "O_NOFOLLOW"), expected_check("openroot-op", "OpenRoot"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("mkdir-mode", "0755"), expected_check("file-mode", "0600"), expected_check("recovery-limit", "16"), expected_check("cache-field-count", "3"), expected_check("nil-close-ok", "true")]
+        unknown: "nope" => ok []
+    match case is "history/cache-symlink-roots"
+        false => ok []
+        true => ok [expected_check("pkg-name", "tempcache"), expected_check("func-name", "TestRecoveryRejectsSymlinkMarker"), expected_check("tempdir-op", "TempDir"), expected_check("candidate-op", "candidate"), expected_check("join-op", "Join"), expected_check("read-op", "ReadFile"), expected_check("write-op", "WriteFile"), expected_check("remove-op", "Remove"), expected_check("symlink-op", "Symlink"), expected_check("chtimes-op", "Chtimes"), expected_check("recover-op", "recoverAbandoned"), expected_check("stat-op", "Stat"), expected_check("fatal-op", "Fatal"), expected_check("nofollow-op", "O_NOFOLLOW"), expected_check("openroot-op", "OpenRoot"), expected_check("cache-prefix", "can-suite-cache-"), expected_check("marker-name", ".can-test-owner.json"), expected_check("lease-name", ".can-test-lease"), expected_check("schema-name", "can.test-suite-cache/1"), expected_check("mkdir-mode", "0755"), expected_check("file-mode", "0600"), expected_check("recovery-limit", "16"), expected_check("cache-field-count", "3"), expected_check("nil-close-ok", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/cache-symlink-roots", "default", "", "offline") => ok
+        seed_pkg_name: context("history/cache-symlink-roots", "seed-pkg-name-drift", "", "offline") => failed{"pkg-name"}
+        seed_func_name: context("history/cache-symlink-roots", "seed-func-name-drift", "", "offline") => failed{"func-name"}
+        seed_tempdir_op: context("history/cache-symlink-roots", "seed-tempdir-op-drift", "", "offline") => failed{"tempdir-op"}
+        seed_candidate_op: context("history/cache-symlink-roots", "seed-candidate-op-drift", "", "offline") => failed{"candidate-op"}
+        seed_join_op: context("history/cache-symlink-roots", "seed-join-op-drift", "", "offline") => failed{"join-op"}
+        seed_read_op: context("history/cache-symlink-roots", "seed-read-op-drift", "", "offline") => failed{"read-op"}
+        seed_write_op: context("history/cache-symlink-roots", "seed-write-op-drift", "", "offline") => failed{"write-op"}
+        seed_remove_op: context("history/cache-symlink-roots", "seed-remove-op-drift", "", "offline") => failed{"remove-op"}
+        seed_symlink_op: context("history/cache-symlink-roots", "seed-symlink-op-drift", "", "offline") => failed{"symlink-op"}
+        seed_chtimes_op: context("history/cache-symlink-roots", "seed-chtimes-op-drift", "", "offline") => failed{"chtimes-op"}
+        seed_recover_op: context("history/cache-symlink-roots", "seed-recover-op-drift", "", "offline") => failed{"recover-op"}
+        seed_stat_op: context("history/cache-symlink-roots", "seed-stat-op-drift", "", "offline") => failed{"stat-op"}
+        seed_fatal_op: context("history/cache-symlink-roots", "seed-fatal-op-drift", "", "offline") => failed{"fatal-op"}
+        seed_nofollow_op: context("history/cache-symlink-roots", "seed-nofollow-op-drift", "", "offline") => failed{"nofollow-op"}
+        seed_openroot_op: context("history/cache-symlink-roots", "seed-openroot-op-drift", "", "offline") => failed{"openroot-op"}
+        seed_cache_prefix: context("history/cache-symlink-roots", "seed-cache-prefix-drift", "", "offline") => failed{"cache-prefix"}
+        seed_marker_name: context("history/cache-symlink-roots", "seed-marker-name-drift", "", "offline") => failed{"marker-name"}
+        seed_lease_name: context("history/cache-symlink-roots", "seed-lease-name-drift", "", "offline") => failed{"lease-name"}
+        seed_schema_name: context("history/cache-symlink-roots", "seed-schema-name-drift", "", "offline") => failed{"schema-name"}
+        seed_mkdir_mode: context("history/cache-symlink-roots", "seed-mkdir-mode-drift", "", "offline") => failed{"mkdir-mode"}
+        seed_file_mode: context("history/cache-symlink-roots", "seed-file-mode-drift", "", "offline") => failed{"file-mode"}
+        seed_recovery_limit: context("history/cache-symlink-roots", "seed-recovery-limit-drift", "", "offline") => failed{"recovery-limit"}
+        seed_cache_field_count: context("history/cache-symlink-roots", "seed-cache-field-count-drift", "", "offline") => failed{"cache-field-count"}
+        seed_nil_close_ok: context("history/cache-symlink-roots", "seed-nil-close-ok-drift", "", "offline") => failed{"nil-close-ok"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.pkg_name, "tempcache", c, "pkg-name")
+            failed
+            ok evidence pkg_name_evidence => match call require_text(got.func_name, "TestRecoveryRejectsSymlinkMarker", c, "func-name")
+                failed
+                ok evidence func_name_evidence => match call require_text(got.tempdir_op, "TempDir", c, "tempdir-op")
+                    failed
+                    ok evidence tempdir_op_evidence => match call require_text(got.candidate_op, "candidate", c, "candidate-op")
+                        failed
+                        ok evidence candidate_op_evidence => match call require_text(got.join_op, "Join", c, "join-op")
+                            failed
+                            ok evidence join_op_evidence => match call require_text(got.read_op, "ReadFile", c, "read-op")
+                                failed
+                                ok evidence read_op_evidence => match call require_text(got.write_op, "WriteFile", c, "write-op")
+                                    failed
+                                    ok evidence write_op_evidence => match call require_text(got.remove_op, "Remove", c, "remove-op")
+                                        failed
+                                        ok evidence remove_op_evidence => match call require_text(got.symlink_op, "Symlink", c, "symlink-op")
+                                            failed
+                                            ok evidence symlink_op_evidence => match call require_text(got.chtimes_op, "Chtimes", c, "chtimes-op")
+                                                failed
+                                                ok evidence chtimes_op_evidence => match call require_text(got.recover_op, "recoverAbandoned", c, "recover-op")
+                                                    failed
+                                                    ok evidence recover_op_evidence => match call require_text(got.stat_op, "Stat", c, "stat-op")
+                                                        failed
+                                                        ok evidence stat_op_evidence => match call require_text(got.fatal_op, "Fatal", c, "fatal-op")
+                                                            failed
+                                                            ok evidence fatal_op_evidence => match call require_text(got.nofollow_op, "O_NOFOLLOW", c, "nofollow-op")
+                                                                failed
+                                                                ok evidence nofollow_op_evidence => match call require_text(got.openroot_op, "OpenRoot", c, "openroot-op")
+                                                                    failed
+                                                                    ok evidence openroot_op_evidence => match call require_text(got.cache_prefix, "can-suite-cache-", c, "cache-prefix")
+                                                                        failed
+                                                                        ok evidence cache_prefix_evidence => match call require_text(got.marker_name, ".can-test-owner.json", c, "marker-name")
+                                                                            failed
+                                                                            ok evidence marker_name_evidence => match call require_text(got.lease_name, ".can-test-lease", c, "lease-name")
+                                                                                failed
+                                                                                ok evidence lease_name_evidence => match call require_text(got.schema_name, "can.test-suite-cache/1", c, "schema-name")
+                                                                                    failed
+                                                                                    ok evidence schema_name_evidence => match call require_text(got.mkdir_mode, "0755", c, "mkdir-mode")
+                                                                                        failed
+                                                                                        ok evidence mkdir_mode_evidence => match call require_text(got.file_mode, "0600", c, "file-mode")
+                                                                                            failed
+                                                                                            ok evidence file_mode_evidence => match call require_int(got.recovery_limit, 16, c, "recovery-limit")
+                                                                                                failed
+                                                                                                ok evidence recovery_limit_evidence => match call require_int(got.cache_field_count, 3, c, "cache-field-count")
+                                                                                                    failed
+                                                                                                    ok evidence cache_field_count_evidence => match call require_bool(got.nil_close_ok, true, c, "nil-close-ok")
+                                                                                                        failed
+                                                                                                        ok evidence nil_close_ok_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_h037: "m29-h037" => ok test_case("history/cache-symlink-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("candidate-op"), check_ref("join-op"), check_ref("read-op"), check_ref("write-op"), check_ref("remove-op"), check_ref("symlink-op"), check_ref("chtimes-op"), check_ref("recover-op"), check_ref("stat-op"), check_ref("fatal-op"), check_ref("nofollow-op"), check_ref("openroot-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("mkdir-mode"), check_ref("file-mode"), check_ref("recovery-limit"), check_ref("cache-field-count"), check_ref("nil-close-ok")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-h037"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/cache-symlink-roots", ["history", "m29"], [], 60000, [check_ref("pkg-name"), check_ref("func-name"), check_ref("tempdir-op"), check_ref("candidate-op"), check_ref("join-op"), check_ref("read-op"), check_ref("write-op"), check_ref("remove-op"), check_ref("symlink-op"), check_ref("chtimes-op"), check_ref("recover-op"), check_ref("stat-op"), check_ref("fatal-op"), check_ref("nofollow-op"), check_ref("openroot-op"), check_ref("cache-prefix"), check_ref("marker-name"), check_ref("lease-name"), check_ref("schema-name"), check_ref("mkdir-mode"), check_ref("file-mode"), check_ref("recovery-limit"), check_ref("cache-field-count"), check_ref("nil-close-ok")], callable case_body)
