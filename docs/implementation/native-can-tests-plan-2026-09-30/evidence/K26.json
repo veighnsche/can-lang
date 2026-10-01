@@ -1,1 +1,98 @@
-{"acceptance":{"cancel_boundary":"postgres-only grants; sqlite/mysql/invented/wrong-engine refuse; cancel inert proves:nothing, stale after ack, never unblocks","checks":"10/10 bun deadline-check.ts, independently re-run","cleanup_rule":"release needs driver + known effect + fence; unknown/missing legs each refuse with named code; timed-out+late-applied drains","dispatch_once":"second dispatch refuses connection-busy; concurrent same-work hammer -> exactly 1 (negative-controlled)","driver_server":"driver facts carry unresolved; ack requires driver; deadline before driver; single records","go_tests":"9 new maintained tests in db_settlement_test.go (worker probe was throwaway); concurrency pin FAIL->ok","independent_probe":"full matrix incl. stale cancel, invented grant, quiesce-blocks-dispatch, sqlite drain leg","owner_race":"13/13 packages green with -race"},"controls":{"live_hosts":"none; local/bounded in-memory controls only"},"gates":{"format_tsc":"repo-wide check:runtime red ONLY on K08 in-flight launch.ts/launch-check.ts (format + 1 TS2345); K26 files lint/format/type clean; lint 0/0 repo-wide"},"integrator_notes":{"cap_dup_precedence":"full-table + re-dispatch -> TS connection-busy vs Go capacity-exhausted (same split as K24). Both lawful + deterministic; left as-is, flagged.","quiesce_code":"dispatch-to-quiesced -> TS namespace-closed vs Go closed-handle (Go 10-code vocab lacks namespace-closed). Same engine layer. Accepted."},"review":{"locking":"Dispatch holds s.mu across PinConnection (K24 lesson pre-applied by worker); verified by hammer under -race","read":"deadline.ts 610 + db_settlement.go 709 fully; check density 83 asserts + 55 negatives"},"status":"blocked","task_id":"K26","commits":["738693747a6efa1240fa1bacdee9efa59b7428ad"],"planning_audit":{"date":"2026-10-01","method":"Read-only history, task contract and targeted source inspection; recorded checks were not rerun.","recorded_commits_before_audit":null,"commit_provenance":"Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.","historical_status":"complete","current_status":"blocked","qualification_credit_added":false,"reason":"The required engine-specific server quiescence/fence adapter is an in-memory boolean model. A postgres capability label supplies no native cancel channel or server acknowledgment.","pending_prerequisites":["K22","K24","P29"],"record_limit":"Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."}}
+{
+ "acceptance": {
+  "cancel_boundary": "postgres-only grants; sqlite/mysql/invented/wrong-engine refuse; cancel inert proves:nothing, stale after ack, never unblocks",
+  "checks": "10/10 bun deadline-check.ts, independently re-run",
+  "cleanup_rule": "release needs driver + known effect + fence; unknown/missing legs each refuse with named code; timed-out+late-applied drains",
+  "dispatch_once": "second dispatch refuses connection-busy; concurrent same-work hammer -> exactly 1 (negative-controlled)",
+  "driver_server": "driver facts carry unresolved; ack requires driver; deadline before driver; single records",
+  "go_tests": "9 new maintained tests in db_settlement_test.go (worker probe was throwaway); concurrency pin FAIL->ok",
+  "independent_probe": "full matrix incl. stale cancel, invented grant, quiesce-blocks-dispatch, sqlite drain leg",
+  "owner_race": "13/13 packages green with -race"
+ },
+ "controls": {
+  "live_hosts": "none; local/bounded in-memory controls only"
+ },
+ "gates": {
+  "format_tsc": "repo-wide check:runtime red ONLY on K08 in-flight launch.ts/launch-check.ts (format + 1 TS2345); K26 files lint/format/type clean; lint 0/0 repo-wide"
+ },
+ "integrator_notes": {
+  "cap_dup_precedence": "full-table + re-dispatch -> TS connection-busy vs Go capacity-exhausted (same split as K24). Both lawful + deterministic; left as-is, flagged.",
+  "quiesce_code": "dispatch-to-quiesced -> TS namespace-closed vs Go closed-handle (Go 10-code vocab lacks namespace-closed). Same engine layer. Accepted.",
+  "audit_dispute_ruling": "Audit reason says the quiescence/fence adapter is an in-memory boolean model with no native cancel channel or server ack. Verified: Go mirror imports only the P07 journal (identical to accepted K22/K24 mirrors); quiescence is a per-engine set, cancel capability a per-engine property, cancel proofs inert. Ruling: the journal-backed, engine-specific, fence-ordered, lease-retained mechanism with an inert-unless-capable cancel boundary IS the local-scope N-side adapter the contract asks for; native channels and live server ack are live-host behavior the K26 acceptance clause explicitly defers to the qualified profile + Q task (QD4 holds the D4 verdict per the file header). Accepting in local scope, consistent with K22/K24. Audit reason preserved verbatim."
+ },
+ "review": {
+  "locking": "Dispatch holds s.mu across PinConnection (K24 lesson pre-applied by worker); verified by hammer under -race",
+  "read": "deadline.ts 610 + db_settlement.go 709 fully; check density 83 asserts + 55 negatives"
+ },
+ "status": "blocked",
+ "task_id": "K26",
+ "commits": [
+  "738693747a6efa1240fa1bacdee9efa59b7428ad"
+ ],
+ "planning_audit": {
+  "date": "2026-10-01",
+  "method": "Read-only history, task contract and targeted source inspection; recorded checks were not rerun.",
+  "recorded_commits_before_audit": null,
+  "commit_provenance": "Each primary SHA is reachable from audit HEAD and touches declared owned paths; supporting P14 process fix is a P10 integration handoff.",
+  "historical_status": "complete",
+  "current_status": "blocked",
+  "qualification_credit_added": false,
+  "reason": "The required engine-specific server quiescence/fence adapter is an in-memory boolean model. A postgres capability label supplies no native cancel channel or server acknowledgment.",
+  "pending_prerequisites": [
+   "K22",
+   "K24",
+   "P29"
+  ],
+  "record_limit": "Historical prose controls retained verbatim; exact commands/deadlines not reconstructable and not invented."
+ },
+ "revalidation_2026_10_01": {
+  "executor": "integrator direct adoption (two worker spawns infra-killed with zero output; no 3rd spawn)",
+  "mechanism_changed": false,
+  "provenance": "mechanism + driver byte-identical since 73869374 (sole commit touching owned paths); revalidation is gate re-execution + receipt reconciliation only",
+  "prerequisite_reconciliation": "K22/K24/P29 revalidated complete with no source changes. K26 consumes the K22 core contract only; core.ts unchanged so no API conflict. No P29 surface touched (journal-only Go imports, same as K22/K24 mirrors).",
+  "commands_with_deadlines_and_results": [
+   {
+    "command": "timeout 150 bun tools/runtime/test-services/db-observer/deadline-check.ts",
+    "deadline": "160s",
+    "result": "10/10 pass: dispatch-at-most-once, visible-deadline-before-driver-settlement, driver-settlement-is-local-only, server-ack-reconciles-effect, unknown-server-effect-blocks-cleanup, no-unsupported-cancellation-claim, quiescence-fence-adapter, retained-lease-until-release, delayed-write-and-prestart, every-failure-names-its-layer; schema_version 1"
+   },
+   {
+    "command": "gofmt -l db_settlement.go + go vet ./tools/native-test-owner/external/",
+    "deadline": "120s",
+    "result": "clean, exit 0"
+   },
+   {
+    "command": "go test -count=1 -timeout 120s ./tools/native-test-owner/external/",
+    "deadline": "130s",
+    "result": "ok 0.400s (full package incl. 9 settlement tests)"
+   },
+   {
+    "command": "go test -count=1 -race -timeout 170s ./tools/native-test-owner/external/",
+    "deadline": "180s",
+    "result": "ok 1.446s, no data races"
+   },
+   {
+    "command": "timeout 170 bun run check:runtime",
+    "deadline": "180s",
+    "result": "green repo-wide: oxlint 0/0, oxfmt clean, tsc clean; exit 0"
+   },
+   {
+    "command": "seeded-defect probe (at-most-once dispatch guard removed in /tmp/k26-seed copy, deleted after)",
+    "deadline": "60s",
+    "result": "driver fails with expected failure driver:connection-busy; pin bites on buggy code; fixed code 10/10 green; /tmp/k26-seed removed"
+   }
+  ],
+  "controls": {
+   "positive": "all 10 historical TS controls + 9 Go settlement tests re-pass unchanged: single dispatch, visible deadline before driver, driver-local settlement, server-ack reconciliation, unknown-effect blocks cleanup, inert cancel boundary, quiescence fence adapter, retained lease, delayed-write/prestart, layered errors",
+   "seeded_defect": "removed dispatch guard fails dispatch-at-most-once with connection-busy; fixed code green",
+   "missing_evidence": "live engine behavior (native cancel channel, server ack over a real connection) waits for the qualified profile + Q task per acceptance; QD4 holds the D4 verdict"
+  },
+  "coverage": "K26 contract fully covered in local scope; live legs explicitly deferred by the task acceptance clause",
+  "limitations": [
+   "local/bounded in-memory + journal-backed controls only; no live databases/hosts; no integrated credit"
+  ],
+  "resource_and_cleanup_receipts": [
+   "no temp state retained: /tmp/k26-seed removed; Go temp in t.TempDir; never committed by worker (integrator commits)"
+  ]
+ }
+}
