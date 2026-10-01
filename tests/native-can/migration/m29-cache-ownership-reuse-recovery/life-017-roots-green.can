@@ -1,0 +1,355 @@
+package m29life017roots
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M29 LIFE-017 "Key sensitivity: roots green".
+/// Source: tests/integration/harness_test.go helper
+/// harnessKey (L177-220) plus consts (L48/L53).
+/// Disposition: consolidate (this row ports
+/// TestHarnessKeySensitive to ordinary Can functions; the old
+/// Go harness stays until the integrator retires it after
+/// every linked row, variant, environment and control has
+/// accepted evidence).
+/// Protects (this file): the static key baseline as the
+/// green root: the helper name plus archive param, the
+/// per-pair memo name plus NUL join, the Lock/Unlock pair,
+/// the tree call plus dir set, the go.mod/go.sum pins, the
+/// ReadFile plus Hash calls, the three synthetic slots
+/// (@archive/@go/@version) plus Version call plus shared
+/// version name/value, the Strings sort plus Builder canon
+/// with equals/newline joins, and the dir/slot counts.
+/// ADAPTATION (recorded, with source lines): memo-sep pins
+/// the \x00 inner bytes as a 4-char str (L181); sep-newline
+/// pins the \n inner bytes as a 2-char str (L213); go-call
+/// pins runtime.Version() with parens (L201); key-dirs-count
+/// pins int (4) from the dir list (L53); extra-key-count pins
+/// int (3) from the synthetic slots (L200-202); all call pins
+/// pin spellings only (no hash re-implementation anywhere).
+/// Facet map (static baseline): helper-name pins harnessKey
+/// (L177); key-param pins archive (L177); memo-name pins memo
+/// (L181); memo-sep pins \x00 (L181); lock-call pins
+/// harnessMu.Lock (L182); unlock-call pins harnessMu.Unlock
+/// (L184); tree-call pins treeHashes (L188); key-dirs-name
+/// pins harnessKeyDirs (L188); dir-compiler pins compiler
+/// (L53); dir-distribution pins distribution (L53);
+/// dir-runtime pins runtime (L53); dir-tools pins tools
+/// (L53); gomod-name pins go.mod (L189); gosum-name pins
+/// go.sum (L189); read-call pins os.ReadFile (L190);
+/// hash-call pins distribution.Hash (L194); archive-key pins
+/// @archive (L200); go-key pins @go (L201); version-key pins
+/// @version (L202); go-call pins runtime.Version() (L201);
+/// version-name pins harnessSharedVersion (L202);
+/// version-value pins harness-shared (L48); sort-call pins
+/// sort.Strings (L207); builder-name pins strings.Builder
+/// (L208); sep-equals pins = (L211); sep-newline pins \n
+/// (L213); key-dirs-count pins 4 (L53); extra-key-count pins
+/// 3 (L200-202).
+/// The verdict pins live in life-017-cache-semantics.can; the
+/// run shape plus diagnostics live in life-017-run-shape.can.
+/// Variants: none (row lists zero variants; default plus
+/// seeded drifts only).
+/// Environment: none (no gates; requires []).
+/// Logical gates WORK/BUILD/CHILD/CLOCK bind at P23; no live
+/// run now. Accept gate P23 is unmet. Timeout 120000ms is the
+/// offline default bound (no Go timeout in this row; binds at
+/// P23 like the M11 no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case life/key-roots checks: helper-name, key-param,
+/// memo-name, memo-sep, lock-call, unlock-call, tree-call,
+/// key-dirs-name, dir-compiler, dir-distribution, dir-runtime,
+/// dir-tools, gomod-name, gosum-name, read-call, hash-call,
+/// archive-key, go-key, version-key, go-call, version-name,
+/// version-value, sort-call, builder-name, sep-equals,
+/// sep-newline, key-dirs-count, extra-key-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str helper_name
+    str key_param
+    str memo_name
+    str memo_sep
+    str lock_call
+    str unlock_call
+    str tree_call
+    str key_dirs_name
+    str dir_compiler
+    str dir_distribution
+    str dir_runtime
+    str dir_tools
+    str gomod_name
+    str gosum_name
+    str read_call
+    str hash_call
+    str archive_key
+    str go_key
+    str version_key
+    str go_call
+    str version_name
+    str version_value
+    str sort_call
+    str builder_name
+    str sep_equals
+    str sep_newline
+    int key_dirs_count
+    int extra_key_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("life/key-roots", "default", "", "offline"), "helper-name" => ok "case life/key-roots variant default root helper-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("life/key-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "true", "true", true, "case life/key-roots variant default root helper-name run offline")
+        different: false, true, context("life/key-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 4, 4, context("life/key-roots", "default", "", "offline"), "key-dirs-count" => ok evidence("key-dirs-count", "4", "4", true, "case life/key-roots variant default root key-dirs-count run offline")
+        different: 3, 4, context("life/key-roots", "default", "", "offline"), "key-dirs-count" => failed{"key-dirs-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "harnessKey", "harnessKey", context("life/key-roots", "default", "", "offline"), "helper-name" => ok evidence("helper-name", "harnessKey", "harnessKey", true, "case life/key-roots variant default root helper-name run offline")
+        different: "harnessKey_2", "harnessKey", context("life/key-roots", "default", "", "offline"), "helper-name" => failed{"helper-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_helper_name: "seed-helper-name-drift" => ok observation("harnessKey_2", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_key_param: "seed-key-param-drift" => ok observation("harnessKey", "archive_2", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_memo_name: "seed-memo-name-drift" => ok observation("harnessKey", "archive", "memo_2", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_memo_sep: "seed-memo-sep-drift" => ok observation("harnessKey", "archive", "memo", "\\x00_2", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_lock_call: "seed-lock-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock_2", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_unlock_call: "seed-unlock-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock_2", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_tree_call: "seed-tree-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes_2", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_key_dirs_name: "seed-key-dirs-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs_2", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_dir_compiler: "seed-dir-compiler-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler_2", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_dir_distribution: "seed-dir-distribution-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution_2", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_dir_runtime: "seed-dir-runtime-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime_2", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_dir_tools: "seed-dir-tools-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools_2", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_gomod_name: "seed-gomod-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod_2", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_gosum_name: "seed-gosum-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum_2", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_read_call: "seed-read-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile_2", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_hash_call: "seed-hash-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash_2", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_archive_key: "seed-archive-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive_2", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_go_key: "seed-go-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go_2", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_version_key: "seed-version-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version_2", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_go_call: "seed-go-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()_2", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_version_name: "seed-version-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion_2", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_version_value: "seed-version-value-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared_2", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        seed_sort_call: "seed-sort-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings_2", "strings.Builder", "=", "\\n", 4, 3)
+        seed_builder_name: "seed-builder-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder_2", "=", "\\n", 4, 3)
+        seed_sep_equals: "seed-sep-equals-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=_2", "\\n", 4, 3)
+        seed_sep_newline: "seed-sep-newline-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n_2", 4, 3)
+        seed_key_dirs_count: "seed-key-dirs-count-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 3, 3)
+        seed_extra_key_count: "seed-extra-key-count-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 2)
+    match variant_id
+        "seed-helper-name-drift" => ok observation("harnessKey_2", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-key-param-drift" => ok observation("harnessKey", "archive_2", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-memo-name-drift" => ok observation("harnessKey", "archive", "memo_2", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-memo-sep-drift" => ok observation("harnessKey", "archive", "memo", "\\x00_2", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-lock-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock_2", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-unlock-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock_2", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-tree-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes_2", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-key-dirs-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs_2", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-dir-compiler-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler_2", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-dir-distribution-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution_2", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-dir-runtime-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime_2", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-dir-tools-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools_2", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-gomod-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod_2", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-gosum-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum_2", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-read-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile_2", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-hash-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash_2", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-archive-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive_2", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-go-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go_2", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-version-key-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version_2", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-go-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()_2", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-version-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion_2", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-version-value-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared_2", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-sort-call-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings_2", "strings.Builder", "=", "\\n", 4, 3)
+        "seed-builder-name-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder_2", "=", "\\n", 4, 3)
+        "seed-sep-equals-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=_2", "\\n", 4, 3)
+        "seed-sep-newline-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n_2", 4, 3)
+        "seed-key-dirs-count-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 3, 3)
+        "seed-extra-key-count-drift" => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 2)
+        _ => ok observation("harnessKey", "archive", "memo", "\\x00", "harnessMu.Lock", "harnessMu.Unlock", "treeHashes", "harnessKeyDirs", "compiler", "distribution", "runtime", "tools", "go.mod", "go.sum", "os.ReadFile", "distribution.Hash", "@archive", "@go", "@version", "runtime.Version()", "harnessSharedVersion", "harness-shared", "sort.Strings", "strings.Builder", "=", "\\n", 4, 3)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l017: "m29-l017" => ok [check("helper-name", "key helper is named harnessKey"), check("key-param", "sensitive input is named archive"), check("memo-name", "per-pair memo is named memo"), check("memo-sep", "memo pair pins the NUL join"), check("lock-call", "memo pins the Lock call"), check("unlock-call", "memo pins the Unlock call"), check("tree-call", "trees hash with treeHashes"), check("key-dirs-name", "tree set is named harnessKeyDirs"), check("dir-compiler", "tree set pins compiler"), check("dir-distribution", "tree set pins distribution"), check("dir-runtime", "tree set pins runtime"), check("dir-tools", "tree set pins tools"), check("gomod-name", "module pins keep go.mod"), check("gosum-name", "module pins keep go.sum"), check("read-call", "inputs load with ReadFile"), check("hash-call", "inputs hash with distribution Hash"), check("archive-key", "archive bytes pin the archive slot"), check("go-key", "toolchain pins the go slot"), check("version-key", "bundle pins the version slot"), check("go-call", "go slot pins the Version call"), check("version-name", "version slot pins harnessSharedVersion"), check("version-value", "shared version spells harness-shared"), check("sort-call", "names pin the Strings sort call"), check("builder-name", "canon pins the Builder spelling"), check("sep-equals", "canon joins name hash with equals"), check("sep-newline", "canon ends each line with newline"), check("key-dirs-count", "tree set holds four dirs"), check("extra-key-count", "three synthetic slots join the map")]
+        other: "nope" => ok []
+    match scope is "m29-l017"
+        false => ok []
+        true => ok [check("helper-name", "key helper is named harnessKey"), check("key-param", "sensitive input is named archive"), check("memo-name", "per-pair memo is named memo"), check("memo-sep", "memo pair pins the NUL join"), check("lock-call", "memo pins the Lock call"), check("unlock-call", "memo pins the Unlock call"), check("tree-call", "trees hash with treeHashes"), check("key-dirs-name", "tree set is named harnessKeyDirs"), check("dir-compiler", "tree set pins compiler"), check("dir-distribution", "tree set pins distribution"), check("dir-runtime", "tree set pins runtime"), check("dir-tools", "tree set pins tools"), check("gomod-name", "module pins keep go.mod"), check("gosum-name", "module pins keep go.sum"), check("read-call", "inputs load with ReadFile"), check("hash-call", "inputs hash with distribution Hash"), check("archive-key", "archive bytes pin the archive slot"), check("go-key", "toolchain pins the go slot"), check("version-key", "bundle pins the version slot"), check("go-call", "go slot pins the Version call"), check("version-name", "version slot pins harnessSharedVersion"), check("version-value", "shared version spells harness-shared"), check("sort-call", "names pin the Strings sort call"), check("builder-name", "canon pins the Builder spelling"), check("sep-equals", "canon joins name hash with equals"), check("sep-newline", "canon ends each line with newline"), check("key-dirs-count", "tree set holds four dirs"), check("extra-key-count", "three synthetic slots join the map")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "life/key-roots" => ok [expected_check("helper-name", "harnessKey"), expected_check("key-param", "archive"), expected_check("memo-name", "memo"), expected_check("memo-sep", "\\x00"), expected_check("lock-call", "harnessMu.Lock"), expected_check("unlock-call", "harnessMu.Unlock"), expected_check("tree-call", "treeHashes"), expected_check("key-dirs-name", "harnessKeyDirs"), expected_check("dir-compiler", "compiler"), expected_check("dir-distribution", "distribution"), expected_check("dir-runtime", "runtime"), expected_check("dir-tools", "tools"), expected_check("gomod-name", "go.mod"), expected_check("gosum-name", "go.sum"), expected_check("read-call", "os.ReadFile"), expected_check("hash-call", "distribution.Hash"), expected_check("archive-key", "@archive"), expected_check("go-key", "@go"), expected_check("version-key", "@version"), expected_check("go-call", "runtime.Version()"), expected_check("version-name", "harnessSharedVersion"), expected_check("version-value", "harness-shared"), expected_check("sort-call", "sort.Strings"), expected_check("builder-name", "strings.Builder"), expected_check("sep-equals", "="), expected_check("sep-newline", "\\n"), expected_check("key-dirs-count", "4"), expected_check("extra-key-count", "3")]
+        unknown: "nope" => ok []
+    match case is "life/key-roots"
+        false => ok []
+        true => ok [expected_check("helper-name", "harnessKey"), expected_check("key-param", "archive"), expected_check("memo-name", "memo"), expected_check("memo-sep", "\\x00"), expected_check("lock-call", "harnessMu.Lock"), expected_check("unlock-call", "harnessMu.Unlock"), expected_check("tree-call", "treeHashes"), expected_check("key-dirs-name", "harnessKeyDirs"), expected_check("dir-compiler", "compiler"), expected_check("dir-distribution", "distribution"), expected_check("dir-runtime", "runtime"), expected_check("dir-tools", "tools"), expected_check("gomod-name", "go.mod"), expected_check("gosum-name", "go.sum"), expected_check("read-call", "os.ReadFile"), expected_check("hash-call", "distribution.Hash"), expected_check("archive-key", "@archive"), expected_check("go-key", "@go"), expected_check("version-key", "@version"), expected_check("go-call", "runtime.Version()"), expected_check("version-name", "harnessSharedVersion"), expected_check("version-value", "harness-shared"), expected_check("sort-call", "sort.Strings"), expected_check("builder-name", "strings.Builder"), expected_check("sep-equals", "="), expected_check("sep-newline", "\\n"), expected_check("key-dirs-count", "4"), expected_check("extra-key-count", "3")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("life/key-roots", "default", "", "offline") => ok
+        seed_helper_name: context("life/key-roots", "seed-helper-name-drift", "", "offline") => failed{"helper-name"}
+        seed_key_param: context("life/key-roots", "seed-key-param-drift", "", "offline") => failed{"key-param"}
+        seed_memo_name: context("life/key-roots", "seed-memo-name-drift", "", "offline") => failed{"memo-name"}
+        seed_memo_sep: context("life/key-roots", "seed-memo-sep-drift", "", "offline") => failed{"memo-sep"}
+        seed_lock_call: context("life/key-roots", "seed-lock-call-drift", "", "offline") => failed{"lock-call"}
+        seed_unlock_call: context("life/key-roots", "seed-unlock-call-drift", "", "offline") => failed{"unlock-call"}
+        seed_tree_call: context("life/key-roots", "seed-tree-call-drift", "", "offline") => failed{"tree-call"}
+        seed_key_dirs_name: context("life/key-roots", "seed-key-dirs-name-drift", "", "offline") => failed{"key-dirs-name"}
+        seed_dir_compiler: context("life/key-roots", "seed-dir-compiler-drift", "", "offline") => failed{"dir-compiler"}
+        seed_dir_distribution: context("life/key-roots", "seed-dir-distribution-drift", "", "offline") => failed{"dir-distribution"}
+        seed_dir_runtime: context("life/key-roots", "seed-dir-runtime-drift", "", "offline") => failed{"dir-runtime"}
+        seed_dir_tools: context("life/key-roots", "seed-dir-tools-drift", "", "offline") => failed{"dir-tools"}
+        seed_gomod_name: context("life/key-roots", "seed-gomod-name-drift", "", "offline") => failed{"gomod-name"}
+        seed_gosum_name: context("life/key-roots", "seed-gosum-name-drift", "", "offline") => failed{"gosum-name"}
+        seed_read_call: context("life/key-roots", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_hash_call: context("life/key-roots", "seed-hash-call-drift", "", "offline") => failed{"hash-call"}
+        seed_archive_key: context("life/key-roots", "seed-archive-key-drift", "", "offline") => failed{"archive-key"}
+        seed_go_key: context("life/key-roots", "seed-go-key-drift", "", "offline") => failed{"go-key"}
+        seed_version_key: context("life/key-roots", "seed-version-key-drift", "", "offline") => failed{"version-key"}
+        seed_go_call: context("life/key-roots", "seed-go-call-drift", "", "offline") => failed{"go-call"}
+        seed_version_name: context("life/key-roots", "seed-version-name-drift", "", "offline") => failed{"version-name"}
+        seed_version_value: context("life/key-roots", "seed-version-value-drift", "", "offline") => failed{"version-value"}
+        seed_sort_call: context("life/key-roots", "seed-sort-call-drift", "", "offline") => failed{"sort-call"}
+        seed_builder_name: context("life/key-roots", "seed-builder-name-drift", "", "offline") => failed{"builder-name"}
+        seed_sep_equals: context("life/key-roots", "seed-sep-equals-drift", "", "offline") => failed{"sep-equals"}
+        seed_sep_newline: context("life/key-roots", "seed-sep-newline-drift", "", "offline") => failed{"sep-newline"}
+        seed_key_dirs_count: context("life/key-roots", "seed-key-dirs-count-drift", "", "offline") => failed{"key-dirs-count"}
+        seed_extra_key_count: context("life/key-roots", "seed-extra-key-count-drift", "", "offline") => failed{"extra-key-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.helper_name, "harnessKey", c, "helper-name")
+            failed
+            ok evidence helper_name_evidence => match call require_text(got.key_param, "archive", c, "key-param")
+                failed
+                ok evidence key_param_evidence => match call require_text(got.memo_name, "memo", c, "memo-name")
+                    failed
+                    ok evidence memo_name_evidence => match call require_text(got.memo_sep, "\\x00", c, "memo-sep")
+                        failed
+                        ok evidence memo_sep_evidence => match call require_text(got.lock_call, "harnessMu.Lock", c, "lock-call")
+                            failed
+                            ok evidence lock_call_evidence => match call require_text(got.unlock_call, "harnessMu.Unlock", c, "unlock-call")
+                                failed
+                                ok evidence unlock_call_evidence => match call require_text(got.tree_call, "treeHashes", c, "tree-call")
+                                    failed
+                                    ok evidence tree_call_evidence => match call require_text(got.key_dirs_name, "harnessKeyDirs", c, "key-dirs-name")
+                                        failed
+                                        ok evidence key_dirs_name_evidence => match call require_text(got.dir_compiler, "compiler", c, "dir-compiler")
+                                            failed
+                                            ok evidence dir_compiler_evidence => match call require_text(got.dir_distribution, "distribution", c, "dir-distribution")
+                                                failed
+                                                ok evidence dir_distribution_evidence => match call require_text(got.dir_runtime, "runtime", c, "dir-runtime")
+                                                    failed
+                                                    ok evidence dir_runtime_evidence => match call require_text(got.dir_tools, "tools", c, "dir-tools")
+                                                        failed
+                                                        ok evidence dir_tools_evidence => match call require_text(got.gomod_name, "go.mod", c, "gomod-name")
+                                                            failed
+                                                            ok evidence gomod_name_evidence => match call require_text(got.gosum_name, "go.sum", c, "gosum-name")
+                                                                failed
+                                                                ok evidence gosum_name_evidence => match call require_text(got.read_call, "os.ReadFile", c, "read-call")
+                                                                    failed
+                                                                    ok evidence read_call_evidence => match call require_text(got.hash_call, "distribution.Hash", c, "hash-call")
+                                                                        failed
+                                                                        ok evidence hash_call_evidence => match call require_text(got.archive_key, "@archive", c, "archive-key")
+                                                                            failed
+                                                                            ok evidence archive_key_evidence => match call require_text(got.go_key, "@go", c, "go-key")
+                                                                                failed
+                                                                                ok evidence go_key_evidence => match call require_text(got.version_key, "@version", c, "version-key")
+                                                                                    failed
+                                                                                    ok evidence version_key_evidence => match call require_text(got.go_call, "runtime.Version()", c, "go-call")
+                                                                                        failed
+                                                                                        ok evidence go_call_evidence => match call require_text(got.version_name, "harnessSharedVersion", c, "version-name")
+                                                                                            failed
+                                                                                            ok evidence version_name_evidence => match call require_text(got.version_value, "harness-shared", c, "version-value")
+                                                                                                failed
+                                                                                                ok evidence version_value_evidence => match call require_text(got.sort_call, "sort.Strings", c, "sort-call")
+                                                                                                    failed
+                                                                                                    ok evidence sort_call_evidence => match call require_text(got.builder_name, "strings.Builder", c, "builder-name")
+                                                                                                        failed
+                                                                                                        ok evidence builder_name_evidence => match call require_text(got.sep_equals, "=", c, "sep-equals")
+                                                                                                            failed
+                                                                                                            ok evidence sep_equals_evidence => match call require_text(got.sep_newline, "\\n", c, "sep-newline")
+                                                                                                                failed
+                                                                                                                ok evidence sep_newline_evidence => match call require_int(got.key_dirs_count, 4, c, "key-dirs-count")
+                                                                                                                    failed
+                                                                                                                    ok evidence key_dirs_count_evidence => match call require_int(got.extra_key_count, 3, c, "extra-key-count")
+                                                                                                                        failed
+                                                                                                                        ok evidence extra_key_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m29_l017: "m29-l017" => ok test_case("life/key-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("key-param"), check_ref("memo-name"), check_ref("memo-sep"), check_ref("lock-call"), check_ref("unlock-call"), check_ref("tree-call"), check_ref("key-dirs-name"), check_ref("dir-compiler"), check_ref("dir-distribution"), check_ref("dir-runtime"), check_ref("dir-tools"), check_ref("gomod-name"), check_ref("gosum-name"), check_ref("read-call"), check_ref("hash-call"), check_ref("archive-key"), check_ref("go-key"), check_ref("version-key"), check_ref("go-call"), check_ref("version-name"), check_ref("version-value"), check_ref("sort-call"), check_ref("builder-name"), check_ref("sep-equals"), check_ref("sep-newline"), check_ref("key-dirs-count"), check_ref("extra-key-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m29-l017"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("life/key-roots", ["life", "m29"], [], 120000, [check_ref("helper-name"), check_ref("key-param"), check_ref("memo-name"), check_ref("memo-sep"), check_ref("lock-call"), check_ref("unlock-call"), check_ref("tree-call"), check_ref("key-dirs-name"), check_ref("dir-compiler"), check_ref("dir-distribution"), check_ref("dir-runtime"), check_ref("dir-tools"), check_ref("gomod-name"), check_ref("gosum-name"), check_ref("read-call"), check_ref("hash-call"), check_ref("archive-key"), check_ref("go-key"), check_ref("version-key"), check_ref("go-call"), check_ref("version-name"), check_ref("version-value"), check_ref("sort-call"), check_ref("builder-name"), check_ref("sep-equals"), check_ref("sep-newline"), check_ref("key-dirs-count"), check_ref("extra-key-count")], callable case_body)
