@@ -1,0 +1,279 @@
+package m05core032numbers
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M05 CORE-032 "bundled numbers: formatting, conversion, parsing, predicates".
+/// Source: tests/integration/numbers_test.go symbol
+/// TestCurrentBundledNumbers (the staged bun leg L29-33) and
+/// runtime/test/number.test.ts (every verbatim pin below comes from its 6
+/// test roots) with std/scalars/current/src/main.can grounding the Can
+/// assertion side.
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): native number formatting, exact conversion,
+/// integer/float/bool parsing grammars, Math/Number predicates, plus the
+/// bigint, NaN/infinity, exact-value and invalid-parse variants.
+/// The 40-root assert pin lives in core-032-roots-green.can; the run
+/// output/status shape and silent production entry live in
+/// core-032-run-shape.can.
+/// Variants: bigint digits beyond 2^53, NaN/infinity spellings and
+/// behavior, exact represented values (2^53, 2^80, MAX_VALUE), and invalid
+/// parses rejected with the input payload.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: DELEGATE-013 (runtime/test/number.test.ts,
+/// read-only record; 6 declarations; not executed here).
+/// Execution credit: NOT claimed (accept_after P23 unmet).
+/// Case bundled/numbers-semantics checks: bigint, ieee-boundary,
+/// grammar-boundary, formatting, conversion, parsing, predicate,
+/// nan-variant, infinity-variant, exact-value-variant,
+/// invalid-parse-variant, bool-spelling, bool-range, float-grammar,
+/// int-grammar, no-locale.
+/// Facet map (number.test.ts roots + main.can): bigint pins exact bigint
+/// digits (L67: 0n, -1n, 9007199254740993n, 10n**400n => String;
+/// main.can L9: large; L154: referenced sample; L170: main guard);
+/// ieee-boundary pins 9 float spellings (L69-79: NaN, Infinity, -Infinity,
+/// -0, 0, MIN_VALUE, MAX_VALUE, 0.1, 1e21; main.can L16-19);
+/// grammar-boundary pins the leading-zero rejection shared by both
+/// grammars (L137/L180: "01" invalid; main.can L134);
+/// formatting pins negative zero (L81: fromFloat(-0) => "0"; main.can L16);
+/// conversion pins the inexact reason (L88-91: 9007199254740993n and
+/// 10n**400n => "not exactly representable as float"; main.can L35);
+/// parsing pins the 6 valid integer spellings (L127: 0, -0, 1, -1,
+/// 9007199254740993, 9x400; main.can L120-122); predicate pins 15
+/// boundary inputs across floor/ceil/trunc/round/isFinite/isNaN (L99-123
+/// incl round(-0.5) => -0; main.can L74-113); nan-variant pins NaN (L70:
+/// "NaN" spelling; L94: floatToInt inexact; L121: isNaN; main.can L17,
+/// L112); infinity-variant pins Infinity (L71-72: spellings; L120: not
+/// finite; main.can L18-19, L75, L105); exact-value-variant pins 2^53
+/// exact both directions (L86: 0n/-1n/2^53/2^80/-(2^100); L92: 0/-0/1/-1/
+/// 2^80/MAX_VALUE; main.can L34, L44); invalid-parse-variant pins " 1"
+/// rejected (L132/L175 invalid lists with {input} payload; main.can L121);
+/// bool-spelling pins exact "true" (L207: toBool; L211: "True" invalid;
+/// main.can L144-145); bool-range pins 3 int-to-bool rejections (L209-210:
+/// -1n, 2n, 2^100n => invalid_bool{value}; main.can L63-65);
+/// float-grammar pins accepted "01.0" (L155-171 valid incl 00e1/1e3/1E+3/
+/// -1e-999/1.25e-2/5e-324; L172-197 invalid incl 1e309 overflow; main.can
+/// L131-135); int-grammar pins 19 rejected integer spellings (L129-151;
+/// main.can L120-122); no-locale pins plain String spellings without
+/// locale grouping (L68/L80 incl 1e21 => "1e+21"; main.can L9-10).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str bigint_digits
+    int ieee_cases
+    str grammar_reject
+    str negative_zero
+    str inexact_reason
+    int valid_int_parses
+    int predicate_inputs
+    str nan_spelling
+    str infinity_spelling
+    str exact_value
+    str invalid_input
+    str bool_true
+    int bool_rejects
+    str float_accept
+    int invalid_int_count
+    bool locale_free
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/numbers-semantics", "default", "", "offline"), "bigint" => ok "case bundled/numbers-semantics variant default root bigint run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/numbers-semantics", "default", "", "offline"), "no-locale" => ok evidence("no-locale", "true", "true", true, "case bundled/numbers-semantics variant default root no-locale run offline")
+        different: false, true, context("bundled/numbers-semantics", "default", "", "offline"), "no-locale" => failed{"no-locale"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 9, 9, context("bundled/numbers-semantics", "default", "", "offline"), "ieee-boundary" => ok evidence("ieee-boundary", "9", "9", true, "case bundled/numbers-semantics variant default root ieee-boundary run offline")
+        different: 8, 9, context("bundled/numbers-semantics", "default", "", "offline"), "ieee-boundary" => failed{"ieee-boundary"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "9007199254740993", "9007199254740993", context("bundled/numbers-semantics", "default", "", "offline"), "bigint" => ok evidence("bigint", "9007199254740993", "9007199254740993", true, "case bundled/numbers-semantics variant default root bigint run offline")
+        different: "900719925474099", "9007199254740993", context("bundled/numbers-semantics", "default", "", "offline"), "bigint" => failed{"bigint"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_bigint_short: "seed-bigint-short" => ok observation("900719925474099", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_ieee_short: "seed-ieee-short" => ok observation("9007199254740993", 8, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_grammar_drift: "seed-grammar-drift" => ok observation("9007199254740993", 9, "1", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_negzero_drift: "seed-negzero-drift" => ok observation("9007199254740993", 9, "01", "-0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_conversion_drift: "seed-conversion-drift" => ok observation("9007199254740993", 9, "01", "0", "inexact", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_parsing_short: "seed-parsing-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 5, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_predicate_short: "seed-predicate-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 14, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_nan_drift: "seed-nan-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "nan", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_infinity_drift: "seed-infinity-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "inf", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        seed_exact_drift: "seed-exact-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740993", " 1", "true", 3, "01.0", 19, true)
+        seed_invalid_drift: "seed-invalid-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", "1", "true", 3, "01.0", 19, true)
+        seed_bool_drift: "seed-bool-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "True", 3, "01.0", 19, true)
+        seed_range_short: "seed-range-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 2, "01.0", 19, true)
+        seed_float_drift: "seed-float-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01", 19, true)
+        seed_int_short: "seed-int-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 18, true)
+        seed_locale_grouped: "seed-locale-grouped" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, false)
+    match variant_id
+        "seed-bigint-short" => ok observation("900719925474099", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-ieee-short" => ok observation("9007199254740993", 8, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-grammar-drift" => ok observation("9007199254740993", 9, "1", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-negzero-drift" => ok observation("9007199254740993", 9, "01", "-0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-conversion-drift" => ok observation("9007199254740993", 9, "01", "0", "inexact", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-parsing-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 5, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-predicate-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 14, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-nan-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "nan", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-infinity-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "inf", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+        "seed-exact-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740993", " 1", "true", 3, "01.0", 19, true)
+        "seed-invalid-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", "1", "true", 3, "01.0", 19, true)
+        "seed-bool-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "True", 3, "01.0", 19, true)
+        "seed-range-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 2, "01.0", 19, true)
+        "seed-float-drift" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01", 19, true)
+        "seed-int-short" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 18, true)
+        "seed-locale-grouped" => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, false)
+        _ => ok observation("9007199254740993", 9, "01", "0", "not exactly representable as float", 6, 15, "NaN", "Infinity", "9007199254740992", " 1", "true", 3, "01.0", 19, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m05_032: "m05-032" => ok [check("bigint", "native formatting preserves bigint digits exactly"), check("ieee-boundary", "IEEE spellings cover 9 float boundary inputs"), check("grammar-boundary", "integer grammar rejects leading-zero 01"), check("formatting", "negative zero formats as 0"), check("conversion", "inexact conversion reports not exactly representable"), check("parsing", "integer parsing accepts 6 exact decimal spellings"), check("predicate", "predicates agree on 15 boundary inputs"), check("nan-variant", "NaN spells NaN and fails integer conversion"), check("infinity-variant", "infinity spells Infinity and is not finite"), check("exact-value-variant", "2^53 is exactly representable both directions"), check("invalid-parse-variant", "leading-space 1 is rejected as invalid"), check("bool-spelling", "bool parsing accepts exact true spelling"), check("bool-range", "int-to-bool rejects 3 out-of-range values"), check("float-grammar", "float grammar admits leading-zero 01.0"), check("int-grammar", "integer grammar rejects 19 invalid spellings"), check("no-locale", "formatting uses plain String spellings without locale")]
+        other: "nope" => ok []
+    match scope is "m05-032"
+        false => ok []
+        true => ok [check("bigint", "native formatting preserves bigint digits exactly"), check("ieee-boundary", "IEEE spellings cover 9 float boundary inputs"), check("grammar-boundary", "integer grammar rejects leading-zero 01"), check("formatting", "negative zero formats as 0"), check("conversion", "inexact conversion reports not exactly representable"), check("parsing", "integer parsing accepts 6 exact decimal spellings"), check("predicate", "predicates agree on 15 boundary inputs"), check("nan-variant", "NaN spells NaN and fails integer conversion"), check("infinity-variant", "infinity spells Infinity and is not finite"), check("exact-value-variant", "2^53 is exactly representable both directions"), check("invalid-parse-variant", "leading-space 1 is rejected as invalid"), check("bool-spelling", "bool parsing accepts exact true spelling"), check("bool-range", "int-to-bool rejects 3 out-of-range values"), check("float-grammar", "float grammar admits leading-zero 01.0"), check("int-grammar", "integer grammar rejects 19 invalid spellings"), check("no-locale", "formatting uses plain String spellings without locale")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/numbers-semantics" => ok [expected_check("bigint", "9007199254740993"), expected_check("ieee-boundary", "9"), expected_check("grammar-boundary", "01"), expected_check("formatting", "0"), expected_check("conversion", "not exactly representable as float"), expected_check("parsing", "6"), expected_check("predicate", "15"), expected_check("nan-variant", "NaN"), expected_check("infinity-variant", "Infinity"), expected_check("exact-value-variant", "9007199254740992"), expected_check("invalid-parse-variant", " 1"), expected_check("bool-spelling", "true"), expected_check("bool-range", "3"), expected_check("float-grammar", "01.0"), expected_check("int-grammar", "19"), expected_check("no-locale", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/numbers-semantics"
+        false => ok []
+        true => ok [expected_check("bigint", "9007199254740993"), expected_check("ieee-boundary", "9"), expected_check("grammar-boundary", "01"), expected_check("formatting", "0"), expected_check("conversion", "not exactly representable as float"), expected_check("parsing", "6"), expected_check("predicate", "15"), expected_check("nan-variant", "NaN"), expected_check("infinity-variant", "Infinity"), expected_check("exact-value-variant", "9007199254740992"), expected_check("invalid-parse-variant", " 1"), expected_check("bool-spelling", "true"), expected_check("bool-range", "3"), expected_check("float-grammar", "01.0"), expected_check("int-grammar", "19"), expected_check("no-locale", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/numbers-semantics", "default", "", "offline") => ok
+        seed_bigint_short: context("bundled/numbers-semantics", "seed-bigint-short", "", "offline") => failed{"bigint"}
+        seed_ieee_short: context("bundled/numbers-semantics", "seed-ieee-short", "", "offline") => failed{"ieee-boundary"}
+        seed_grammar_drift: context("bundled/numbers-semantics", "seed-grammar-drift", "", "offline") => failed{"grammar-boundary"}
+        seed_negzero_drift: context("bundled/numbers-semantics", "seed-negzero-drift", "", "offline") => failed{"formatting"}
+        seed_conversion_drift: context("bundled/numbers-semantics", "seed-conversion-drift", "", "offline") => failed{"conversion"}
+        seed_parsing_short: context("bundled/numbers-semantics", "seed-parsing-short", "", "offline") => failed{"parsing"}
+        seed_predicate_short: context("bundled/numbers-semantics", "seed-predicate-short", "", "offline") => failed{"predicate"}
+        seed_nan_drift: context("bundled/numbers-semantics", "seed-nan-drift", "", "offline") => failed{"nan-variant"}
+        seed_infinity_drift: context("bundled/numbers-semantics", "seed-infinity-drift", "", "offline") => failed{"infinity-variant"}
+        seed_exact_drift: context("bundled/numbers-semantics", "seed-exact-drift", "", "offline") => failed{"exact-value-variant"}
+        seed_invalid_drift: context("bundled/numbers-semantics", "seed-invalid-drift", "", "offline") => failed{"invalid-parse-variant"}
+        seed_bool_drift: context("bundled/numbers-semantics", "seed-bool-drift", "", "offline") => failed{"bool-spelling"}
+        seed_range_short: context("bundled/numbers-semantics", "seed-range-short", "", "offline") => failed{"bool-range"}
+        seed_float_drift: context("bundled/numbers-semantics", "seed-float-drift", "", "offline") => failed{"float-grammar"}
+        seed_int_short: context("bundled/numbers-semantics", "seed-int-short", "", "offline") => failed{"int-grammar"}
+        seed_locale_grouped: context("bundled/numbers-semantics", "seed-locale-grouped", "", "offline") => failed{"no-locale"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.bigint_digits, "9007199254740993", c, "bigint")
+            failed
+            ok evidence bigint_evidence => match call require_int(got.ieee_cases, 9, c, "ieee-boundary")
+                failed
+                ok evidence ieee_evidence => match call require_text(got.grammar_reject, "01", c, "grammar-boundary")
+                    failed
+                    ok evidence grammar_evidence => match call require_text(got.negative_zero, "0", c, "formatting")
+                        failed
+                        ok evidence formatting_evidence => match call require_text(got.inexact_reason, "not exactly representable as float", c, "conversion")
+                            failed
+                            ok evidence conversion_evidence => match call require_int(got.valid_int_parses, 6, c, "parsing")
+                                failed
+                                ok evidence parsing_evidence => match call require_int(got.predicate_inputs, 15, c, "predicate")
+                                    failed
+                                    ok evidence predicate_evidence => match call require_text(got.nan_spelling, "NaN", c, "nan-variant")
+                                        failed
+                                        ok evidence nan_evidence => match call require_text(got.infinity_spelling, "Infinity", c, "infinity-variant")
+                                            failed
+                                            ok evidence infinity_evidence => match call require_text(got.exact_value, "9007199254740992", c, "exact-value-variant")
+                                                failed
+                                                ok evidence exact_evidence => match call require_text(got.invalid_input, " 1", c, "invalid-parse-variant")
+                                                    failed
+                                                    ok evidence invalid_evidence => match call require_text(got.bool_true, "true", c, "bool-spelling")
+                                                        failed
+                                                        ok evidence spelling_evidence => match call require_int(got.bool_rejects, 3, c, "bool-range")
+                                                            failed
+                                                            ok evidence range_evidence => match call require_text(got.float_accept, "01.0", c, "float-grammar")
+                                                                failed
+                                                                ok evidence float_evidence => match call require_int(got.invalid_int_count, 19, c, "int-grammar")
+                                                                    failed
+                                                                    ok evidence int_grammar_evidence => match call require_bool(got.locale_free, true, c, "no-locale")
+                                                                        failed
+                                                                        ok evidence locale_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m05_032: "m05-032" => ok test_case("bundled/numbers-semantics", ["numbers", "m05"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("bigint"), check_ref("ieee-boundary"), check_ref("grammar-boundary"), check_ref("formatting"), check_ref("conversion"), check_ref("parsing"), check_ref("predicate"), check_ref("nan-variant"), check_ref("infinity-variant"), check_ref("exact-value-variant"), check_ref("invalid-parse-variant"), check_ref("bool-spelling"), check_ref("bool-range"), check_ref("float-grammar"), check_ref("int-grammar"), check_ref("no-locale")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m05-032"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/numbers-semantics", ["numbers", "m05"], ["can-bun-archive", "macos-sandbox-exec"], 120000, [check_ref("bigint"), check_ref("ieee-boundary"), check_ref("grammar-boundary"), check_ref("formatting"), check_ref("conversion"), check_ref("parsing"), check_ref("predicate"), check_ref("nan-variant"), check_ref("infinity-variant"), check_ref("exact-value-variant"), check_ref("invalid-parse-variant"), check_ref("bool-spelling"), check_ref("bool-range"), check_ref("float-grammar"), check_ref("int-grammar"), check_ref("no-locale")], callable case_body)
