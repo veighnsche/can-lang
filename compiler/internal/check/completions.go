@@ -698,6 +698,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 		}
+		if nativeStaticOperation(binding.Identity) {
+			if err := c.checkNativeCall(binding.Identity, args, span); err != nil {
+				return err
+			}
+		}
 		effective := binding
 		var fetchSite *ir.JSONFetchSite
 		if operation := fetchSiteOperation(binding.Identity); operation != "" {
