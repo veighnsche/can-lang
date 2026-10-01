@@ -1,0 +1,259 @@
+package m30history051base
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-051 "Gate links: twelve files".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27GateEvidenceLinked (L303-330) plus
+/// the evidence list (L306-319).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27GateEvidenceLinked offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the evidence legs in Go
+/// order: the exact file bytes for all twelve rows
+/// plus the row tally.
+/// ADAPTATION (recorded, with source lines): each ev
+/// pin holds its Go literal inner bytes; ev-count
+/// pins int tallied from the Go list.
+/// ev-comp-check pins compiler/internal/check/core_integration_test.go (L307);
+/// ev-comp-emit pins compiler/internal/emit/core_integration_test.go (L308);
+/// ev-comp-syntax pins compiler/internal/syntax/core_integration_test.go (L309);
+/// ev-gate3 pins tests/integration/gate3_matrix_test.go (L310);
+/// ev-gate4 pins tests/integration/gate4_fault_test.go (L311);
+/// ev-gate5 pins tests/integration/gate5_frontend_test.go (L312);
+/// ev-grid pins tests/integration/browser/grid.mjs (L313);
+/// ev-build-grid pins tests/integration/browser/build-grid.mjs (L314);
+/// ev-sha256 pins tests/integration/browser/sha256-shim.mjs (L315);
+/// ev-baseline pins tests/baseline/baseline.json (L316);
+/// ev-registry pins tests/baseline/registry.json (L317);
+/// ev-findings pins docs/syntax-taste/jev-consultations/findings.md (L318);
+/// ev-count pins int (12) from L306-319.
+/// Facet map (rows in Go order): ev-comp-check,
+/// ev-comp-emit, ev-comp-syntax, ev-gate3, ev-gate4,
+/// ev-gate5, ev-grid, ev-build-grid, ev-sha256,
+/// ev-baseline, ev-registry, ev-findings, ev-count.
+/// The roots-green pin lives in
+/// history-051-roots-green.can; the run shape plus
+/// diagnostics live in history-051-run-shape.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates bind at P23 only if any leg is
+/// retained live; no live run now. Accept gate
+/// reviewed disposition is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after
+/// reviewed disposition unmet).
+/// Case history/t27-gate-base checks: ev-comp-check, ev-comp-emit,
+/// ev-comp-syntax, ev-gate3, ev-gate4, ev-gate5, ev-grid,
+/// ev-build-grid, ev-sha256, ev-baseline, ev-registry, ev-findings,
+/// ev-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str ev_comp_check
+    str ev_comp_emit
+    str ev_comp_syntax
+    str ev_gate3
+    str ev_gate4
+    str ev_gate5
+    str ev_grid
+    str ev_build_grid
+    str ev_sha256
+    str ev_baseline
+    str ev_registry
+    str ev_findings
+    int ev_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-gate-base", "default", "", "offline"), "ev-comp-check" => ok "case history/t27-gate-base variant default root ev-comp-check run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-gate-base", "default", "", "offline"), "ev-comp-check" => ok evidence("ev-comp-check", "true", "true", true, "case history/t27-gate-base variant default root ev-comp-check run offline")
+        different: false, true, context("history/t27-gate-base", "default", "", "offline"), "ev-comp-check" => failed{"ev-comp-check"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 12, 12, context("history/t27-gate-base", "default", "", "offline"), "ev-count" => ok evidence("ev-count", "12", "12", true, "case history/t27-gate-base variant default root ev-count run offline")
+        different: 11, 12, context("history/t27-gate-base", "default", "", "offline"), "ev-count" => failed{"ev-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "compiler/internal/check/core_integration_test.go", "compiler/internal/check/core_integration_test.go", context("history/t27-gate-base", "default", "", "offline"), "ev-comp-check" => ok evidence("ev-comp-check", "compiler/internal/check/core_integration_test.go", "compiler/internal/check/core_integration_test.go", true, "case history/t27-gate-base variant default root ev-comp-check run offline")
+        different: "compiler/internal/check/core_integration_test.go_2", "compiler/internal/check/core_integration_test.go", context("history/t27-gate-base", "default", "", "offline"), "ev-comp-check" => failed{"ev-comp-check"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_comp_check: "seed-ev-comp-check-drift" => ok observation("compiler/internal/check/core_integration_test.go_2", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_comp_emit: "seed-ev-comp-emit-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go_2", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_comp_syntax: "seed-ev-comp-syntax-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go_2", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_gate3: "seed-ev-gate3-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go_2", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_gate4: "seed-ev-gate4-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go_2", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_gate5: "seed-ev-gate5-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go_2", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_grid: "seed-ev-grid-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs_2", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_build_grid: "seed-ev-build-grid-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs_2", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_sha256: "seed-ev-sha256-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs_2", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_baseline: "seed-ev-baseline-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json_2", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_registry: "seed-ev-registry-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json_2", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        seed_ev_findings: "seed-ev-findings-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md_2", 12)
+        seed_ev_count: "seed-ev-count-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 11)
+    match variant_id
+        "seed-ev-comp-check-drift" => ok observation("compiler/internal/check/core_integration_test.go_2", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-comp-emit-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go_2", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-comp-syntax-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go_2", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-gate3-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go_2", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-gate4-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go_2", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-gate5-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go_2", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-grid-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs_2", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-build-grid-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs_2", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-sha256-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs_2", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-baseline-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json_2", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-registry-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json_2", "docs/syntax-taste/jev-consultations/findings.md", 12)
+        "seed-ev-findings-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md_2", 12)
+        "seed-ev-count-drift" => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 11)
+        _ => ok observation("compiler/internal/check/core_integration_test.go", "compiler/internal/emit/core_integration_test.go", "compiler/internal/syntax/core_integration_test.go", "tests/integration/gate3_matrix_test.go", "tests/integration/gate4_fault_test.go", "tests/integration/gate5_frontend_test.go", "tests/integration/browser/grid.mjs", "tests/integration/browser/build-grid.mjs", "tests/integration/browser/sha256-shim.mjs", "tests/baseline/baseline.json", "tests/baseline/registry.json", "docs/syntax-taste/jev-consultations/findings.md", 12)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h051: "m30-h051" => ok [check("ev-comp-check", "list names the check core file"), check("ev-comp-emit", "list names the emit core file"), check("ev-comp-syntax", "list names the syntax core file"), check("ev-gate3", "list names the gate3 file"), check("ev-gate4", "list names the gate4 file"), check("ev-gate5", "list names the gate5 file"), check("ev-grid", "list names the grid file"), check("ev-build-grid", "list names the grid builder file"), check("ev-sha256", "list names the sha shim file"), check("ev-baseline", "list names the baseline file"), check("ev-registry", "list names the registry file"), check("ev-findings", "list names the findings file"), check("ev-count", "twelve rows exist")]
+        other: "nope" => ok []
+    match scope is "m30-h051"
+        false => ok []
+        true => ok [check("ev-comp-check", "list names the check core file"), check("ev-comp-emit", "list names the emit core file"), check("ev-comp-syntax", "list names the syntax core file"), check("ev-gate3", "list names the gate3 file"), check("ev-gate4", "list names the gate4 file"), check("ev-gate5", "list names the gate5 file"), check("ev-grid", "list names the grid file"), check("ev-build-grid", "list names the grid builder file"), check("ev-sha256", "list names the sha shim file"), check("ev-baseline", "list names the baseline file"), check("ev-registry", "list names the registry file"), check("ev-findings", "list names the findings file"), check("ev-count", "twelve rows exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-gate-base" => ok [expected_check("ev-comp-check", "compiler/internal/check/core_integration_test.go"), expected_check("ev-comp-emit", "compiler/internal/emit/core_integration_test.go"), expected_check("ev-comp-syntax", "compiler/internal/syntax/core_integration_test.go"), expected_check("ev-gate3", "tests/integration/gate3_matrix_test.go"), expected_check("ev-gate4", "tests/integration/gate4_fault_test.go"), expected_check("ev-gate5", "tests/integration/gate5_frontend_test.go"), expected_check("ev-grid", "tests/integration/browser/grid.mjs"), expected_check("ev-build-grid", "tests/integration/browser/build-grid.mjs"), expected_check("ev-sha256", "tests/integration/browser/sha256-shim.mjs"), expected_check("ev-baseline", "tests/baseline/baseline.json"), expected_check("ev-registry", "tests/baseline/registry.json"), expected_check("ev-findings", "docs/syntax-taste/jev-consultations/findings.md"), expected_check("ev-count", "12")]
+        unknown: "nope" => ok []
+    match case is "history/t27-gate-base"
+        false => ok []
+        true => ok [expected_check("ev-comp-check", "compiler/internal/check/core_integration_test.go"), expected_check("ev-comp-emit", "compiler/internal/emit/core_integration_test.go"), expected_check("ev-comp-syntax", "compiler/internal/syntax/core_integration_test.go"), expected_check("ev-gate3", "tests/integration/gate3_matrix_test.go"), expected_check("ev-gate4", "tests/integration/gate4_fault_test.go"), expected_check("ev-gate5", "tests/integration/gate5_frontend_test.go"), expected_check("ev-grid", "tests/integration/browser/grid.mjs"), expected_check("ev-build-grid", "tests/integration/browser/build-grid.mjs"), expected_check("ev-sha256", "tests/integration/browser/sha256-shim.mjs"), expected_check("ev-baseline", "tests/baseline/baseline.json"), expected_check("ev-registry", "tests/baseline/registry.json"), expected_check("ev-findings", "docs/syntax-taste/jev-consultations/findings.md"), expected_check("ev-count", "12")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-gate-base", "default", "", "offline") => ok
+        seed_ev_comp_check: context("history/t27-gate-base", "seed-ev-comp-check-drift", "", "offline") => failed{"ev-comp-check"}
+        seed_ev_comp_emit: context("history/t27-gate-base", "seed-ev-comp-emit-drift", "", "offline") => failed{"ev-comp-emit"}
+        seed_ev_comp_syntax: context("history/t27-gate-base", "seed-ev-comp-syntax-drift", "", "offline") => failed{"ev-comp-syntax"}
+        seed_ev_gate3: context("history/t27-gate-base", "seed-ev-gate3-drift", "", "offline") => failed{"ev-gate3"}
+        seed_ev_gate4: context("history/t27-gate-base", "seed-ev-gate4-drift", "", "offline") => failed{"ev-gate4"}
+        seed_ev_gate5: context("history/t27-gate-base", "seed-ev-gate5-drift", "", "offline") => failed{"ev-gate5"}
+        seed_ev_grid: context("history/t27-gate-base", "seed-ev-grid-drift", "", "offline") => failed{"ev-grid"}
+        seed_ev_build_grid: context("history/t27-gate-base", "seed-ev-build-grid-drift", "", "offline") => failed{"ev-build-grid"}
+        seed_ev_sha256: context("history/t27-gate-base", "seed-ev-sha256-drift", "", "offline") => failed{"ev-sha256"}
+        seed_ev_baseline: context("history/t27-gate-base", "seed-ev-baseline-drift", "", "offline") => failed{"ev-baseline"}
+        seed_ev_registry: context("history/t27-gate-base", "seed-ev-registry-drift", "", "offline") => failed{"ev-registry"}
+        seed_ev_findings: context("history/t27-gate-base", "seed-ev-findings-drift", "", "offline") => failed{"ev-findings"}
+        seed_ev_count: context("history/t27-gate-base", "seed-ev-count-drift", "", "offline") => failed{"ev-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.ev_comp_check, "compiler/internal/check/core_integration_test.go", c, "ev-comp-check")
+            failed
+            ok evidence ev_comp_check_evidence => match call require_text(got.ev_comp_emit, "compiler/internal/emit/core_integration_test.go", c, "ev-comp-emit")
+                failed
+                ok evidence ev_comp_emit_evidence => match call require_text(got.ev_comp_syntax, "compiler/internal/syntax/core_integration_test.go", c, "ev-comp-syntax")
+                    failed
+                    ok evidence ev_comp_syntax_evidence => match call require_text(got.ev_gate3, "tests/integration/gate3_matrix_test.go", c, "ev-gate3")
+                        failed
+                        ok evidence ev_gate3_evidence => match call require_text(got.ev_gate4, "tests/integration/gate4_fault_test.go", c, "ev-gate4")
+                            failed
+                            ok evidence ev_gate4_evidence => match call require_text(got.ev_gate5, "tests/integration/gate5_frontend_test.go", c, "ev-gate5")
+                                failed
+                                ok evidence ev_gate5_evidence => match call require_text(got.ev_grid, "tests/integration/browser/grid.mjs", c, "ev-grid")
+                                    failed
+                                    ok evidence ev_grid_evidence => match call require_text(got.ev_build_grid, "tests/integration/browser/build-grid.mjs", c, "ev-build-grid")
+                                        failed
+                                        ok evidence ev_build_grid_evidence => match call require_text(got.ev_sha256, "tests/integration/browser/sha256-shim.mjs", c, "ev-sha256")
+                                            failed
+                                            ok evidence ev_sha256_evidence => match call require_text(got.ev_baseline, "tests/baseline/baseline.json", c, "ev-baseline")
+                                                failed
+                                                ok evidence ev_baseline_evidence => match call require_text(got.ev_registry, "tests/baseline/registry.json", c, "ev-registry")
+                                                    failed
+                                                    ok evidence ev_registry_evidence => match call require_text(got.ev_findings, "docs/syntax-taste/jev-consultations/findings.md", c, "ev-findings")
+                                                        failed
+                                                        ok evidence ev_findings_evidence => match call require_int(got.ev_count, 12, c, "ev-count")
+                                                            failed
+                                                            ok evidence ev_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h051: "m30-h051" => ok test_case("history/t27-gate-base", ["history", "m30"], [], 120000, [check_ref("ev-comp-check"), check_ref("ev-comp-emit"), check_ref("ev-comp-syntax"), check_ref("ev-gate3"), check_ref("ev-gate4"), check_ref("ev-gate5"), check_ref("ev-grid"), check_ref("ev-build-grid"), check_ref("ev-sha256"), check_ref("ev-baseline"), check_ref("ev-registry"), check_ref("ev-findings"), check_ref("ev-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h051"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-gate-base", ["history", "m30"], [], 120000, [check_ref("ev-comp-check"), check_ref("ev-comp-emit"), check_ref("ev-comp-syntax"), check_ref("ev-gate3"), check_ref("ev-gate4"), check_ref("ev-gate5"), check_ref("ev-grid"), check_ref("ev-build-grid"), check_ref("ev-sha256"), check_ref("ev-baseline"), check_ref("ev-registry"), check_ref("ev-findings"), check_ref("ev-count")], callable case_body)

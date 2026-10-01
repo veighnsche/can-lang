@@ -1,0 +1,291 @@
+package m30history051run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M30 HISTORY-051 "Gate links: run shape".
+/// Source: tests/baseline/t27_release_audit_test.go
+/// symbol TestT27GateEvidenceLinked (L303-330): root
+/// plus read (L304-305); list (L306-319); loop
+/// (L320); stat plus join (L321); size guard
+/// (L322); refusal (L323); link leg (L326);
+/// refusal (L327).
+/// Disposition: historical_candidate (this row pins
+/// the TestT27GateEvidenceLinked offline pact as
+/// reviewable Can facts; the old Go check stays until
+/// the integrator retires it after every linked row,
+/// variant, environment and control has accepted
+/// evidence).
+/// Protects (this file): the live run shape: the
+/// test name, the audit const name plus file, the
+/// two loader calls, the list plus loop idents, the
+/// stat plus join plus slash plus size calls, the
+/// link call, the refusal call, the two refusal
+/// wordings in Go order, and the refusal total.
+/// ADAPTATION (recorded, with source lines):
+/// test-name pins TestT27GateEvidenceLinked (L303);
+/// audit-const pins t27Audit (L20); audit-path pins
+/// the audit file (L20); root-call pins repoRoot
+/// (L304); read-call pins readRepoFile (L305);
+/// evidence-ident pins evidence (L306); loop-ident
+/// pins file (L320); stat-call pins os.Stat (L321);
+/// join-call pins filepath.Join (L321); slash-call
+/// pins filepath.FromSlash (L321); size-call pins
+/// info.Size (L322); contains-call pins
+/// strings.Contains (L326); error-call pins t.Errorf
+/// (L323); error-missing pins the missing inner
+/// bytes (L323); error-unlinked pins the unlinked
+/// inner bytes (L327); error-site-count pins int
+/// (2) from L323/L327.
+/// Facet map (launch plus diagnostics): test-name
+/// pins GateEvidenceLinked (L303); audit-const pins
+/// const (L20); audit-path pins file (L20);
+/// root-call pins root (L304); read-call pins read
+/// (L305); evidence-ident pins list (L306);
+/// loop-ident pins var (L320); stat-call pins stat
+/// (L321); join-call pins join (L321); slash-call
+/// pins slash map (L321); size-call pins measure
+/// (L322); contains-call pins link search (L326);
+/// error-call pins Errorf (L323); error-missing
+/// pins missing plus empty (L323); error-unlinked
+/// pins does not link (L327); error-site-count
+/// pins 2.
+/// The base list pin lives in
+/// history-051-base-semantics.can; the roots-green
+/// pin lives in history-051-roots-green.can.
+/// Variants: none (row lists zero variants; default
+/// plus seeded drifts only).
+/// Environment: one gate (Bun/Go/Git for T01 smoke or
+/// generator when applicable); binds at P23, requires
+/// [] now (offline only).
+/// Logical gates bind at P23 only if any leg is
+/// retained live; no live run now. Accept gate
+/// reviewed disposition is unmet.
+/// Timeout 120000ms is the offline default bound (no
+/// Go timeout in this row; binds at P23 like the M11
+/// no-gate rows).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after
+/// reviewed disposition unmet).
+/// Case history/t27-gate-run checks: test-name, audit-const,
+/// audit-path, root-call, read-call, evidence-ident, loop-ident,
+/// stat-call, join-call, slash-call, size-call, contains-call,
+/// error-call, error-missing, error-unlinked, error-site-count.
+/// Shared old files untouched; retirement is a later
+/// integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str test_name
+    str audit_const
+    str audit_path
+    str root_call
+    str read_call
+    str evidence_ident
+    str loop_ident
+    str stat_call
+    str join_call
+    str slash_call
+    str size_call
+    str contains_call
+    str error_call
+    str error_missing
+    str error_unlinked
+    int error_site_count
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("history/t27-gate-run", "default", "", "offline"), "test-name" => ok "case history/t27-gate-run variant default root test-name run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("history/t27-gate-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "true", "true", true, "case history/t27-gate-run variant default root test-name run offline")
+        different: false, true, context("history/t27-gate-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 2, 2, context("history/t27-gate-run", "default", "", "offline"), "error-site-count" => ok evidence("error-site-count", "2", "2", true, "case history/t27-gate-run variant default root error-site-count run offline")
+        different: 1, 2, context("history/t27-gate-run", "default", "", "offline"), "error-site-count" => failed{"error-site-count"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "TestT27GateEvidenceLinked", "TestT27GateEvidenceLinked", context("history/t27-gate-run", "default", "", "offline"), "test-name" => ok evidence("test-name", "TestT27GateEvidenceLinked", "TestT27GateEvidenceLinked", true, "case history/t27-gate-run variant default root test-name run offline")
+        different: "TestT27GateEvidenceLinked_2", "TestT27GateEvidenceLinked", context("history/t27-gate-run", "default", "", "offline"), "test-name" => failed{"test-name"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_test_name: "seed-test-name-drift" => ok observation("TestT27GateEvidenceLinked_2", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_audit_const: "seed-audit-const-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit_2", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_audit_path: "seed-audit-path-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md_2", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_root_call: "seed-root-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot_2", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_read_call: "seed-read-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile_2", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_evidence_ident: "seed-evidence-ident-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence_2", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_loop_ident: "seed-loop-ident-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file_2", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_stat_call: "seed-stat-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat_2", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_join_call: "seed-join-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join_2", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_slash_call: "seed-slash-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash_2", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_size_call: "seed-size-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size_2", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_contains_call: "seed-contains-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains_2", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_error_call: "seed-error-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf_2", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        seed_error_missing: "seed-error-missing-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v_2", "audit does not link gate evidence %s", 2)
+        seed_error_unlinked: "seed-error-unlinked-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s_2", 2)
+        seed_error_site_count: "seed-error-site-count-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 1)
+    match variant_id
+        "seed-test-name-drift" => ok observation("TestT27GateEvidenceLinked_2", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-audit-const-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit_2", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-audit-path-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md_2", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-root-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot_2", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-read-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile_2", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-evidence-ident-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence_2", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-loop-ident-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file_2", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-stat-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat_2", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-join-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join_2", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-slash-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash_2", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-size-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size_2", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-contains-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains_2", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-error-call-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf_2", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+        "seed-error-missing-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v_2", "audit does not link gate evidence %s", 2)
+        "seed-error-unlinked-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s_2", 2)
+        "seed-error-site-count-drift" => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 1)
+        _ => ok observation("TestT27GateEvidenceLinked", "t27Audit", "docs/syntax-taste/t27-release-audit-2026-09-24.md", "repoRoot", "readRepoFile", "evidence", "file", "os.Stat", "filepath.Join", "filepath.FromSlash", "info.Size", "strings.Contains", "t.Errorf", "gate evidence %s missing or empty: %v", "audit does not link gate evidence %s", 2)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h051: "m30-h051" => ok [check("test-name", "row pins the GateEvidenceLinked name"), check("audit-const", "audit const keeps its name"), check("audit-path", "audit const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "audit loads with readRepoFile"), check("evidence-ident", "list keeps its name"), check("loop-ident", "loop var keeps its name"), check("stat-call", "legs stat with os.Stat"), check("join-call", "legs join with filepath.Join"), check("slash-call", "legs map slashes with FromSlash"), check("size-call", "guard measures with Size"), check("contains-call", "legs search links with Contains"), check("error-call", "refusals use Errorf"), check("error-missing", "missing wording is pinned"), check("error-unlinked", "unlinked wording is pinned"), check("error-site-count", "two refusal sites exist")]
+        other: "nope" => ok []
+    match scope is "m30-h051"
+        false => ok []
+        true => ok [check("test-name", "row pins the GateEvidenceLinked name"), check("audit-const", "audit const keeps its name"), check("audit-path", "audit const pins its file"), check("root-call", "root resolves with repoRoot"), check("read-call", "audit loads with readRepoFile"), check("evidence-ident", "list keeps its name"), check("loop-ident", "loop var keeps its name"), check("stat-call", "legs stat with os.Stat"), check("join-call", "legs join with filepath.Join"), check("slash-call", "legs map slashes with FromSlash"), check("size-call", "guard measures with Size"), check("contains-call", "legs search links with Contains"), check("error-call", "refusals use Errorf"), check("error-missing", "missing wording is pinned"), check("error-unlinked", "unlinked wording is pinned"), check("error-site-count", "two refusal sites exist")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "history/t27-gate-run" => ok [expected_check("test-name", "TestT27GateEvidenceLinked"), expected_check("audit-const", "t27Audit"), expected_check("audit-path", "docs/syntax-taste/t27-release-audit-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "readRepoFile"), expected_check("evidence-ident", "evidence"), expected_check("loop-ident", "file"), expected_check("stat-call", "os.Stat"), expected_check("join-call", "filepath.Join"), expected_check("slash-call", "filepath.FromSlash"), expected_check("size-call", "info.Size"), expected_check("contains-call", "strings.Contains"), expected_check("error-call", "t.Errorf"), expected_check("error-missing", "gate evidence %s missing or empty: %v"), expected_check("error-unlinked", "audit does not link gate evidence %s"), expected_check("error-site-count", "2")]
+        unknown: "nope" => ok []
+    match case is "history/t27-gate-run"
+        false => ok []
+        true => ok [expected_check("test-name", "TestT27GateEvidenceLinked"), expected_check("audit-const", "t27Audit"), expected_check("audit-path", "docs/syntax-taste/t27-release-audit-2026-09-24.md"), expected_check("root-call", "repoRoot"), expected_check("read-call", "readRepoFile"), expected_check("evidence-ident", "evidence"), expected_check("loop-ident", "file"), expected_check("stat-call", "os.Stat"), expected_check("join-call", "filepath.Join"), expected_check("slash-call", "filepath.FromSlash"), expected_check("size-call", "info.Size"), expected_check("contains-call", "strings.Contains"), expected_check("error-call", "t.Errorf"), expected_check("error-missing", "gate evidence %s missing or empty: %v"), expected_check("error-unlinked", "audit does not link gate evidence %s"), expected_check("error-site-count", "2")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("history/t27-gate-run", "default", "", "offline") => ok
+        seed_test_name: context("history/t27-gate-run", "seed-test-name-drift", "", "offline") => failed{"test-name"}
+        seed_audit_const: context("history/t27-gate-run", "seed-audit-const-drift", "", "offline") => failed{"audit-const"}
+        seed_audit_path: context("history/t27-gate-run", "seed-audit-path-drift", "", "offline") => failed{"audit-path"}
+        seed_root_call: context("history/t27-gate-run", "seed-root-call-drift", "", "offline") => failed{"root-call"}
+        seed_read_call: context("history/t27-gate-run", "seed-read-call-drift", "", "offline") => failed{"read-call"}
+        seed_evidence_ident: context("history/t27-gate-run", "seed-evidence-ident-drift", "", "offline") => failed{"evidence-ident"}
+        seed_loop_ident: context("history/t27-gate-run", "seed-loop-ident-drift", "", "offline") => failed{"loop-ident"}
+        seed_stat_call: context("history/t27-gate-run", "seed-stat-call-drift", "", "offline") => failed{"stat-call"}
+        seed_join_call: context("history/t27-gate-run", "seed-join-call-drift", "", "offline") => failed{"join-call"}
+        seed_slash_call: context("history/t27-gate-run", "seed-slash-call-drift", "", "offline") => failed{"slash-call"}
+        seed_size_call: context("history/t27-gate-run", "seed-size-call-drift", "", "offline") => failed{"size-call"}
+        seed_contains_call: context("history/t27-gate-run", "seed-contains-call-drift", "", "offline") => failed{"contains-call"}
+        seed_error_call: context("history/t27-gate-run", "seed-error-call-drift", "", "offline") => failed{"error-call"}
+        seed_error_missing: context("history/t27-gate-run", "seed-error-missing-drift", "", "offline") => failed{"error-missing"}
+        seed_error_unlinked: context("history/t27-gate-run", "seed-error-unlinked-drift", "", "offline") => failed{"error-unlinked"}
+        seed_error_site_count: context("history/t27-gate-run", "seed-error-site-count-drift", "", "offline") => failed{"error-site-count"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.test_name, "TestT27GateEvidenceLinked", c, "test-name")
+            failed
+            ok evidence test_name_evidence => match call require_text(got.audit_const, "t27Audit", c, "audit-const")
+                failed
+                ok evidence audit_const_evidence => match call require_text(got.audit_path, "docs/syntax-taste/t27-release-audit-2026-09-24.md", c, "audit-path")
+                    failed
+                    ok evidence audit_path_evidence => match call require_text(got.root_call, "repoRoot", c, "root-call")
+                        failed
+                        ok evidence root_call_evidence => match call require_text(got.read_call, "readRepoFile", c, "read-call")
+                            failed
+                            ok evidence read_call_evidence => match call require_text(got.evidence_ident, "evidence", c, "evidence-ident")
+                                failed
+                                ok evidence evidence_ident_evidence => match call require_text(got.loop_ident, "file", c, "loop-ident")
+                                    failed
+                                    ok evidence loop_ident_evidence => match call require_text(got.stat_call, "os.Stat", c, "stat-call")
+                                        failed
+                                        ok evidence stat_call_evidence => match call require_text(got.join_call, "filepath.Join", c, "join-call")
+                                            failed
+                                            ok evidence join_call_evidence => match call require_text(got.slash_call, "filepath.FromSlash", c, "slash-call")
+                                                failed
+                                                ok evidence slash_call_evidence => match call require_text(got.size_call, "info.Size", c, "size-call")
+                                                    failed
+                                                    ok evidence size_call_evidence => match call require_text(got.contains_call, "strings.Contains", c, "contains-call")
+                                                        failed
+                                                        ok evidence contains_call_evidence => match call require_text(got.error_call, "t.Errorf", c, "error-call")
+                                                            failed
+                                                            ok evidence error_call_evidence => match call require_text(got.error_missing, "gate evidence %s missing or empty: %v", c, "error-missing")
+                                                                failed
+                                                                ok evidence error_missing_evidence => match call require_text(got.error_unlinked, "audit does not link gate evidence %s", c, "error-unlinked")
+                                                                    failed
+                                                                    ok evidence error_unlinked_evidence => match call require_int(got.error_site_count, 2, c, "error-site-count")
+                                                                        failed
+                                                                        ok evidence error_site_count_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m30_h051: "m30-h051" => ok test_case("history/t27-gate-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-const"), check_ref("audit-path"), check_ref("root-call"), check_ref("read-call"), check_ref("evidence-ident"), check_ref("loop-ident"), check_ref("stat-call"), check_ref("join-call"), check_ref("slash-call"), check_ref("size-call"), check_ref("contains-call"), check_ref("error-call"), check_ref("error-missing"), check_ref("error-unlinked"), check_ref("error-site-count")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m30-h051"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("history/t27-gate-run", ["history", "m30"], [], 120000, [check_ref("test-name"), check_ref("audit-const"), check_ref("audit-path"), check_ref("root-call"), check_ref("read-call"), check_ref("evidence-ident"), check_ref("loop-ident"), check_ref("stat-call"), check_ref("join-call"), check_ref("slash-call"), check_ref("size-call"), check_ref("contains-call"), check_ref("error-call"), check_ref("error-missing"), check_ref("error-unlinked"), check_ref("error-site-count")], callable case_body)
