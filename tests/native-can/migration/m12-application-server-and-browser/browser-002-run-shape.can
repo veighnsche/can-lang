@@ -1,0 +1,257 @@
+package m12browser002run
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M12 BROWSER-002 "staged forms: HTTP run shape".
+/// Source: tests/integration/applications_test.go symbol
+/// TestApplicationsStagedForms (L335-404); unknown route (L393),
+/// wrong-method probe (L394-402), staged log (L403); serve helper
+/// serveApplication (L176-228) plus requirePortFree (L166-174); HTTP
+/// helpers httpGet (L230-239) and httpPostForm (L241-250).
+/// Disposition: migrate (this row ports TestApplicationsStagedForms
+/// to ordinary Can functions; the old Go harness stays until the
+/// integrator retires it after every linked row, variant,
+/// environment and control has accepted evidence).
+/// Protects (this file): the HTTP run shape around validation:
+/// unknown route answers 404, wrong-method POST answers 405 with no
+/// body, all HTTP legs share the 10s timeout, the leg runs 7 checks
+/// with the staged-forms log line, and serve readiness/shutdown use
+/// the pinned deadlines (30s ready, 200ms poll, 20s shutdown, 500ms
+/// port probe).
+/// ADAPTATION (recorded, with source lines): checks-total derives 7
+/// from the call sites (2 GET at L381/L393, 3 POST at L385-387, 1
+/// direct hostile at L391, 1 wrong-method at L395) over the 4
+/// checks++ sites (L356/L370/L391/L395); client-timeout-sec cites
+/// all three 10s legs (L231/L242/L394); timeouts pin int
+/// seconds/ms from the Go durations; log-needle pins the Logf
+/// format (L403).
+/// Facet map (applications_test.go legs): unknown-path/unknown-status
+/// pin the 404 leg (L393); wrong-method/wrong-path/wrong-status and
+/// wrong-body-nil pin the 405 probe (L396/L398); client-timeout-sec
+/// pins 10 (L231/L242/L394); checks-total pins 7 (call sites);
+/// log-needle pins the staged line (L403); ready-status pins 200
+/// (L197); ready-deadline-sec pins 30 (L195); ready-poll-ms pins 200
+/// (L204); shutdown-timeout-sec pins 20 (L223); dial-timeout-ms pins
+/// 500 (L169).
+/// The serve baseline lives in browser-002-roots-green.can; form
+/// validation semantics live in browser-002-forms-semantics.can.
+/// Variants: unknown route, wrong method (GET signup and
+/// valid/empty/hostile form live in forms-semantics).
+/// Environment: CAN_BUN_ARCHIVE gate; requires can-bun-archive.
+/// Logical gates CAN/CHILD/HTTP/WIRE/BUILD/WORK and C/R/N/S/A
+/// identities bind at P23; no live run now. Descriptor timeout
+/// 360000ms mirrors the Go 6-minute ctx (L342).
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23/QHTTP unmet).
+/// Case browser/forms-run checks: unknown-path, unknown-status,
+/// wrong-method, wrong-path, wrong-status, wrong-body-nil,
+/// client-timeout-sec, checks-total, log-needle, ready-status,
+/// ready-deadline-sec, ready-poll-ms, shutdown-timeout-sec,
+/// dial-timeout-ms.
+/// Shared old files untouched; retirement is a later integrator decision.
+
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    str unknown_path
+    int unknown_status
+    str wrong_method
+    str wrong_path
+    int wrong_status
+    bool wrong_body_nil
+    int client_timeout_sec
+    int checks_total
+    str log_needle
+    int ready_status
+    int ready_deadline_sec
+    int ready_poll_ms
+    int shutdown_timeout_sec
+    int dial_timeout_ms
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("browser/forms-run", "default", "", "offline"), "unknown-path" => ok "case browser/forms-run variant default root unknown-path run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("browser/forms-run", "default", "", "offline"), "wrong-body-nil" => ok evidence("wrong-body-nil", "true", "true", true, "case browser/forms-run variant default root wrong-body-nil run offline")
+        different: false, true, context("browser/forms-run", "default", "", "offline"), "wrong-body-nil" => failed{"wrong-body-nil"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 404, 404, context("browser/forms-run", "default", "", "offline"), "unknown-status" => ok evidence("unknown-status", "404", "404", true, "case browser/forms-run variant default root unknown-status run offline")
+        different: 403, 404, context("browser/forms-run", "default", "", "offline"), "unknown-status" => failed{"unknown-status"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "/missing", "/missing", context("browser/forms-run", "default", "", "offline"), "unknown-path" => ok evidence("unknown-path", "/missing", "/missing", true, "case browser/forms-run variant default root unknown-path run offline")
+        different: "/missing-2", "/missing", context("browser/forms-run", "default", "", "offline"), "unknown-path" => failed{"unknown-path"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_unknown_path: "seed-unknown-path-drift" => ok observation("/missing-2", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_unknown_status: "seed-unknown-status-drift" => ok observation("/missing", 403, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_wrong_method: "seed-wrong-method-drift" => ok observation("/missing", 404, "GET", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_wrong_path: "seed-wrong-path-drift" => ok observation("/missing", 404, "POST", "/signin", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_wrong_status: "seed-wrong-status-drift" => ok observation("/missing", 404, "POST", "/signup", 406, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_wrong_body_nil: "seed-wrong-body-nil-drift" => ok observation("/missing", 404, "POST", "/signup", 405, false, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_client_timeout_sec: "seed-client-timeout-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 9, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_checks_total: "seed-checks-total-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 6, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        seed_log_needle: "seed-log-needle-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d check", 200, 30, 200, 20, 500)
+        seed_ready_status: "seed-ready-status-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 201, 30, 200, 20, 500)
+        seed_ready_deadline_sec: "seed-ready-deadline-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 29, 200, 20, 500)
+        seed_ready_poll_ms: "seed-ready-poll-ms-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 100, 20, 500)
+        seed_shutdown_timeout_sec: "seed-shutdown-timeout-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 19, 500)
+        seed_dial_timeout_ms: "seed-dial-timeout-ms-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 400)
+    match variant_id
+        "seed-unknown-path-drift" => ok observation("/missing-2", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-unknown-status-drift" => ok observation("/missing", 403, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-wrong-method-drift" => ok observation("/missing", 404, "GET", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-wrong-path-drift" => ok observation("/missing", 404, "POST", "/signin", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-wrong-status-drift" => ok observation("/missing", 404, "POST", "/signup", 406, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-wrong-body-nil-drift" => ok observation("/missing", 404, "POST", "/signup", 405, false, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-client-timeout-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 9, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-checks-total-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 6, "staged forms: %d checks", 200, 30, 200, 20, 500)
+        "seed-log-needle-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d check", 200, 30, 200, 20, 500)
+        "seed-ready-status-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 201, 30, 200, 20, 500)
+        "seed-ready-deadline-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 29, 200, 20, 500)
+        "seed-ready-poll-ms-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 100, 20, 500)
+        "seed-shutdown-timeout-sec-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 19, 500)
+        "seed-dial-timeout-ms-drift" => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 400)
+        _ => ok observation("/missing", 404, "POST", "/signup", 405, true, 10, 7, "staged forms: %d checks", 200, 30, 200, 20, 500)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b002: "m12-b002" => ok [check("unknown-path", "unknown route is /missing"), check("unknown-status", "unknown route answers 404"), check("wrong-method", "wrong-method probe uses POST"), check("wrong-path", "wrong-method probe targets /signup"), check("wrong-status", "wrong method answers 405"), check("wrong-body-nil", "wrong-method probe sends no body"), check("client-timeout-sec", "http legs time out in 10 seconds"), check("checks-total", "forms leg runs 7 checks"), check("log-needle", "forms log carries the staged-forms line"), check("ready-status", "serve readiness needs 200"), check("ready-deadline-sec", "serve readiness waits 30 seconds"), check("ready-poll-ms", "readiness polls every 200ms"), check("shutdown-timeout-sec", "shutdown waits 20 seconds"), check("dial-timeout-ms", "port probe dials 500ms")]
+        other: "nope" => ok []
+    match scope is "m12-b002"
+        false => ok []
+        true => ok [check("unknown-path", "unknown route is /missing"), check("unknown-status", "unknown route answers 404"), check("wrong-method", "wrong-method probe uses POST"), check("wrong-path", "wrong-method probe targets /signup"), check("wrong-status", "wrong method answers 405"), check("wrong-body-nil", "wrong-method probe sends no body"), check("client-timeout-sec", "http legs time out in 10 seconds"), check("checks-total", "forms leg runs 7 checks"), check("log-needle", "forms log carries the staged-forms line"), check("ready-status", "serve readiness needs 200"), check("ready-deadline-sec", "serve readiness waits 30 seconds"), check("ready-poll-ms", "readiness polls every 200ms"), check("shutdown-timeout-sec", "shutdown waits 20 seconds"), check("dial-timeout-ms", "port probe dials 500ms")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "browser/forms-run" => ok [expected_check("unknown-path", "/missing"), expected_check("unknown-status", "404"), expected_check("wrong-method", "POST"), expected_check("wrong-path", "/signup"), expected_check("wrong-status", "405"), expected_check("wrong-body-nil", "true"), expected_check("client-timeout-sec", "10"), expected_check("checks-total", "7"), expected_check("log-needle", "staged forms: %d checks"), expected_check("ready-status", "200"), expected_check("ready-deadline-sec", "30"), expected_check("ready-poll-ms", "200"), expected_check("shutdown-timeout-sec", "20"), expected_check("dial-timeout-ms", "500")]
+        unknown: "nope" => ok []
+    match case is "browser/forms-run"
+        false => ok []
+        true => ok [expected_check("unknown-path", "/missing"), expected_check("unknown-status", "404"), expected_check("wrong-method", "POST"), expected_check("wrong-path", "/signup"), expected_check("wrong-status", "405"), expected_check("wrong-body-nil", "true"), expected_check("client-timeout-sec", "10"), expected_check("checks-total", "7"), expected_check("log-needle", "staged forms: %d checks"), expected_check("ready-status", "200"), expected_check("ready-deadline-sec", "30"), expected_check("ready-poll-ms", "200"), expected_check("shutdown-timeout-sec", "20"), expected_check("dial-timeout-ms", "500")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("browser/forms-run", "default", "", "offline") => ok
+        seed_unknown_path: context("browser/forms-run", "seed-unknown-path-drift", "", "offline") => failed{"unknown-path"}
+        seed_unknown_status: context("browser/forms-run", "seed-unknown-status-drift", "", "offline") => failed{"unknown-status"}
+        seed_wrong_method: context("browser/forms-run", "seed-wrong-method-drift", "", "offline") => failed{"wrong-method"}
+        seed_wrong_path: context("browser/forms-run", "seed-wrong-path-drift", "", "offline") => failed{"wrong-path"}
+        seed_wrong_status: context("browser/forms-run", "seed-wrong-status-drift", "", "offline") => failed{"wrong-status"}
+        seed_wrong_body_nil: context("browser/forms-run", "seed-wrong-body-nil-drift", "", "offline") => failed{"wrong-body-nil"}
+        seed_client_timeout_sec: context("browser/forms-run", "seed-client-timeout-sec-drift", "", "offline") => failed{"client-timeout-sec"}
+        seed_checks_total: context("browser/forms-run", "seed-checks-total-drift", "", "offline") => failed{"checks-total"}
+        seed_log_needle: context("browser/forms-run", "seed-log-needle-drift", "", "offline") => failed{"log-needle"}
+        seed_ready_status: context("browser/forms-run", "seed-ready-status-drift", "", "offline") => failed{"ready-status"}
+        seed_ready_deadline_sec: context("browser/forms-run", "seed-ready-deadline-sec-drift", "", "offline") => failed{"ready-deadline-sec"}
+        seed_ready_poll_ms: context("browser/forms-run", "seed-ready-poll-ms-drift", "", "offline") => failed{"ready-poll-ms"}
+        seed_shutdown_timeout_sec: context("browser/forms-run", "seed-shutdown-timeout-sec-drift", "", "offline") => failed{"shutdown-timeout-sec"}
+        seed_dial_timeout_ms: context("browser/forms-run", "seed-dial-timeout-ms-drift", "", "offline") => failed{"dial-timeout-ms"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_text(got.unknown_path, "/missing", c, "unknown-path")
+            failed
+            ok evidence unknown_path_evidence => match call require_int(got.unknown_status, 404, c, "unknown-status")
+                failed
+                ok evidence unknown_status_evidence => match call require_text(got.wrong_method, "POST", c, "wrong-method")
+                    failed
+                    ok evidence wrong_method_evidence => match call require_text(got.wrong_path, "/signup", c, "wrong-path")
+                        failed
+                        ok evidence wrong_path_evidence => match call require_int(got.wrong_status, 405, c, "wrong-status")
+                            failed
+                            ok evidence wrong_status_evidence => match call require_bool(got.wrong_body_nil, true, c, "wrong-body-nil")
+                                failed
+                                ok evidence wrong_body_nil_evidence => match call require_int(got.client_timeout_sec, 10, c, "client-timeout-sec")
+                                    failed
+                                    ok evidence client_timeout_sec_evidence => match call require_int(got.checks_total, 7, c, "checks-total")
+                                        failed
+                                        ok evidence checks_total_evidence => match call require_text(got.log_needle, "staged forms: %d checks", c, "log-needle")
+                                            failed
+                                            ok evidence log_needle_evidence => match call require_int(got.ready_status, 200, c, "ready-status")
+                                                failed
+                                                ok evidence ready_status_evidence => match call require_int(got.ready_deadline_sec, 30, c, "ready-deadline-sec")
+                                                    failed
+                                                    ok evidence ready_deadline_sec_evidence => match call require_int(got.ready_poll_ms, 200, c, "ready-poll-ms")
+                                                        failed
+                                                        ok evidence ready_poll_ms_evidence => match call require_int(got.shutdown_timeout_sec, 20, c, "shutdown-timeout-sec")
+                                                            failed
+                                                            ok evidence shutdown_timeout_sec_evidence => match call require_int(got.dial_timeout_ms, 500, c, "dial-timeout-ms")
+                                                                failed
+                                                                ok evidence dial_timeout_ms_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m12_b002: "m12-b002" => ok test_case("browser/forms-run", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("unknown-path"), check_ref("unknown-status"), check_ref("wrong-method"), check_ref("wrong-path"), check_ref("wrong-status"), check_ref("wrong-body-nil"), check_ref("client-timeout-sec"), check_ref("checks-total"), check_ref("log-needle"), check_ref("ready-status"), check_ref("ready-deadline-sec"), check_ref("ready-poll-ms"), check_ref("shutdown-timeout-sec"), check_ref("dial-timeout-ms")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m12-b002"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("browser/forms-run", ["browser", "m12"], ["can-bun-archive"], 360000, [check_ref("unknown-path"), check_ref("unknown-status"), check_ref("wrong-method"), check_ref("wrong-path"), check_ref("wrong-status"), check_ref("wrong-body-nil"), check_ref("client-timeout-sec"), check_ref("checks-total"), check_ref("log-needle"), check_ref("ready-status"), check_ref("ready-deadline-sec"), check_ref("ready-poll-ms"), check_ref("shutdown-timeout-sec"), check_ref("dial-timeout-ms")], callable case_body)
