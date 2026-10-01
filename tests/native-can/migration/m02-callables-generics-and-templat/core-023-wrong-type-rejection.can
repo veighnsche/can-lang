@@ -1,0 +1,196 @@
+package m02core023reject
+    provides [checks, expected_vector, observe, case_body, descriptor, context, check, check_ref, expected_check, evidence, observation, failed, test_case]
+    uses [text]
+
+/// M02 CORE-023 "bundled generics: wrong-type branch rejected at build".
+/// Source: tests/integration/generics_test.go symbol
+/// TestCurrentBundledGenerics.
+/// Related fixtures: compiler/testdata/current/generics/definitions.can
+/// (the "ok value" body of identity gains a wrong-type match arm: true =>
+/// ok value, false => ok false; the false arm is never taken at runtime).
+/// Disposition: RETAIN (migrate row; the old Go harness stays until the
+/// integrator retires it after every linked row, variant, environment and
+/// control has accepted evidence).
+/// Protects (this file): a reachable concrete generic instance REJECTS a
+/// wrong-type branch at build time even when that branch is never taken at
+/// runtime; canlc build exits nonzero and the diagnostics name "concrete
+/// function"; the invalid project is never silently admitted.
+/// The six-root green pin and the silent production run live in
+/// core-023-roots-green.can; the finite-transition, finite-field-chain and
+/// spread-inferred source variants live in core-023-source-variants.can.
+/// Variants: mutated definitions.can (wrong-type arm) against helper/main.
+/// Environment: CAN_BUN_ARCHIVE + macOS sandbox-exec; requires
+/// can-bun-archive, macos-sandbox-exec. Logical gates SUITE/DIAG/FAULT and
+/// C/R/N/S/A identities bind at P23; no live run now.
+/// Delegated oracles: none.
+/// Execution credit: NOT claimed (accept_after P23).
+/// Case bundled/generics-rejection checks: build-red, diag-names,
+/// instance-reachable, branch-never-taken, wrong-branch-rejected,
+/// no-silent-admit.
+/// Facet map (generics_test.go legs): build-red pins the build leg (L95-98:
+/// exit nonzero); diag-names pins the diagnostics predicate (L96:
+/// diagnostics contain "concrete function"); instance-reachable pins the
+/// reachable-instance facet (L88: the mutated identity instance is still
+/// reached through make/main); branch-never-taken pins the never-taken
+/// facet (L93: match true always takes the true arm, the false arm never
+/// runs); wrong-branch-rejected pins the rejection facet (L96-98: the
+/// wrong-type false arm fails the build instead of being skipped);
+/// no-silent-admit pins the no-admission facet (L96: status 0 is refused).
+/// Shared old files untouched; retirement is a later integrator decision.
+record context
+    str case_id
+    str variant_id
+    str workspace
+    str run_id
+record check
+    str id
+    str title
+record check_ref
+    str id
+record expected_check
+    str check
+    str expected
+record evidence
+    str check
+    str expected
+    str observed
+    bool matched
+    str selector
+record observation
+    bool build_red
+    str diag_names
+    bool instance_reachable
+    bool branch_never_taken
+    bool wrong_branch_rejected
+    bool no_silent_admit
+error failed{str check}
+record test_case
+    str id
+    str[] tags
+    str[] requires
+    int timeout_ms
+    check_ref[] required_checks
+    callable void (context) emits {failed} body
+fn str selector
+    emits {}
+    given
+        context c
+        str root
+    asserts
+        sample: context("bundled/generics-rejection", "default", "", "offline"), "build-red" => ok "case bundled/generics-rejection variant default root build-red run offline"
+    ok call text::join(["case", c.case_id, "variant", c.variant_id, "root", root, "run", c.run_id], " ")
+fn evidence require_bool
+    emits {failed}
+    given
+        bool observed
+        bool expected
+        context c
+        str check
+    asserts
+        same: true, true, context("bundled/generics-rejection", "default", "", "offline"), "build-red" => ok evidence("build-red", "true", "true", true, "case bundled/generics-rejection variant default root build-red run offline")
+        different: false, true, context("bundled/generics-rejection", "default", "", "offline"), "build-red" => failed{"build-red"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_bool(expected), call text::from_bool(observed), true, call selector(c, check))
+fn evidence require_int
+    emits {failed}
+    given
+        int observed
+        int expected
+        context c
+        str check
+    asserts
+        same: 1, 1, context("bundled/generics-rejection", "default", "", "offline"), "build-red" => ok evidence("build-red", "1", "1", true, "case bundled/generics-rejection variant default root build-red run offline")
+        different: 0, 1, context("bundled/generics-rejection", "default", "", "offline"), "build-red" => failed{"build-red"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, call text::from_int(expected), call text::from_int(observed), true, call selector(c, check))
+fn evidence require_text
+    emits {failed}
+    given
+        str observed
+        str expected
+        context c
+        str check
+    asserts
+        same: "concrete function", "concrete function", context("bundled/generics-rejection", "default", "", "offline"), "diag-names" => ok evidence("diag-names", "concrete function", "concrete function", true, "case bundled/generics-rejection variant default root diag-names run offline")
+        different: "ok", "concrete function", context("bundled/generics-rejection", "default", "", "offline"), "diag-names" => failed{"diag-names"}
+    match observed is expected
+        false => failed{check}
+        true => ok evidence(check, expected, observed, true, call selector(c, check))
+fn observation observe
+    emits {}
+    given
+        str variant_id
+    asserts
+        default: "default" => ok observation(true, "concrete function", true, true, true, true)
+        seed_build_green: "seed-build-green" => ok observation(false, "concrete function", true, true, true, true)
+        seed_diag_drift: "seed-diag-drift" => ok observation(true, "ok", true, true, true, true)
+        seed_instance_dead: "seed-instance-dead" => ok observation(true, "concrete function", false, true, true, true)
+        seed_branch_taken: "seed-branch-taken" => ok observation(true, "concrete function", true, false, true, true)
+        seed_branch_admitted: "seed-branch-admitted" => ok observation(true, "concrete function", true, true, false, true)
+        seed_silent_admit: "seed-silent-admit" => ok observation(true, "concrete function", true, true, true, false)
+    match variant_id
+        "seed-build-green" => ok observation(false, "concrete function", true, true, true, true)
+        "seed-diag-drift" => ok observation(true, "ok", true, true, true, true)
+        "seed-instance-dead" => ok observation(true, "concrete function", false, true, true, true)
+        "seed-branch-taken" => ok observation(true, "concrete function", true, false, true, true)
+        "seed-branch-admitted" => ok observation(true, "concrete function", true, true, false, true)
+        "seed-silent-admit" => ok observation(true, "concrete function", true, true, true, false)
+        _ => ok observation(true, "concrete function", true, true, true, true)
+fn check[] checks
+    emits {}
+    given
+        str scope
+    asserts
+        m02_023: "m02-023" => ok [check("build-red", "canlc build over the mutated project exits nonzero"), check("diag-names", "build diagnostics contain concrete function"), check("instance-reachable", "the mutated generic instance stays reachable through make/main"), check("branch-never-taken", "the wrong-type arm sits on a branch never taken at runtime"), check("wrong-branch-rejected", "the never-taken wrong-type branch is rejected at build"), check("no-silent-admit", "the invalid project is never silently admitted")]
+        other: "nope" => ok []
+    match scope is "m02-023"
+        false => ok []
+        true => ok [check("build-red", "canlc build over the mutated project exits nonzero"), check("diag-names", "build diagnostics contain concrete function"), check("instance-reachable", "the mutated generic instance stays reachable through make/main"), check("branch-never-taken", "the wrong-type arm sits on a branch never taken at runtime"), check("wrong-branch-rejected", "the never-taken wrong-type branch is rejected at build"), check("no-silent-admit", "the invalid project is never silently admitted")]
+fn expected_check[] expected_vector
+    emits {}
+    given
+        str case
+    asserts
+        known: "bundled/generics-rejection" => ok [expected_check("build-red", "true"), expected_check("diag-names", "concrete function"), expected_check("instance-reachable", "true"), expected_check("branch-never-taken", "true"), expected_check("wrong-branch-rejected", "true"), expected_check("no-silent-admit", "true")]
+        unknown: "nope" => ok []
+    match case is "bundled/generics-rejection"
+        false => ok []
+        true => ok [expected_check("build-red", "true"), expected_check("diag-names", "concrete function"), expected_check("instance-reachable", "true"), expected_check("branch-never-taken", "true"), expected_check("wrong-branch-rejected", "true"), expected_check("no-silent-admit", "true")]
+fn void case_body
+    emits {failed}
+    given
+        context c
+    asserts
+        expected: context("bundled/generics-rejection", "default", "", "offline") => ok
+        seed_build_green: context("bundled/generics-rejection", "seed-build-green", "", "offline") => failed{"build-red"}
+        seed_diag_drift: context("bundled/generics-rejection", "seed-diag-drift", "", "offline") => failed{"diag-names"}
+        seed_instance_dead: context("bundled/generics-rejection", "seed-instance-dead", "", "offline") => failed{"instance-reachable"}
+        seed_branch_taken: context("bundled/generics-rejection", "seed-branch-taken", "", "offline") => failed{"branch-never-taken"}
+        seed_branch_admitted: context("bundled/generics-rejection", "seed-branch-admitted", "", "offline") => failed{"wrong-branch-rejected"}
+        seed_silent_admit: context("bundled/generics-rejection", "seed-silent-admit", "", "offline") => failed{"no-silent-admit"}
+    match call observe(c.variant_id)
+        ok observation got => match call require_bool(got.build_red, true, c, "build-red")
+            failed
+            ok evidence build_evidence => match call require_text(got.diag_names, "concrete function", c, "diag-names")
+                failed
+                ok evidence diag_evidence => match call require_bool(got.instance_reachable, true, c, "instance-reachable")
+                    failed
+                    ok evidence instance_evidence => match call require_bool(got.branch_never_taken, true, c, "branch-never-taken")
+                        failed
+                        ok evidence branch_evidence => match call require_bool(got.wrong_branch_rejected, true, c, "wrong-branch-rejected")
+                            failed
+                            ok evidence rejected_evidence => match call require_bool(got.no_silent_admit, true, c, "no-silent-admit")
+                                failed
+                                ok evidence admit_evidence => ok
+fn test_case descriptor
+    emits {}
+    given
+        str scope
+    asserts
+        m02_023: "m02-023" => ok test_case("bundled/generics-rejection", ["generics", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("build-red"), check_ref("diag-names"), check_ref("instance-reachable"), check_ref("branch-never-taken"), check_ref("wrong-branch-rejected"), check_ref("no-silent-admit")], callable case_body)
+        other: "nope" => ok test_case("", [], [], 0, [], callable case_body)
+    match scope is "m02-023"
+        false => ok test_case("", [], [], 0, [], callable case_body)
+        true => ok test_case("bundled/generics-rejection", ["generics", "m02"], ["can-bun-archive", "macos-sandbox-exec"], 300000, [check_ref("build-red"), check_ref("diag-names"), check_ref("instance-reachable"), check_ref("branch-never-taken"), check_ref("wrong-branch-rejected"), check_ref("no-silent-admit")], callable case_body)
