@@ -1,0 +1,38 @@
+package test_object_store
+    provides []
+    uses [bytes, option, store, test]
+fn int store_roundtrip
+    emits {test::invalid_grant, test::stale_handle, store::store_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call bytes::empty() as bytes::buffer payload
+        call store::open_prefix(owner, "owner-a", "tenant-a/owned") as store::prefix_receipt opened
+        call store::receipt(owner, "owner-a", "tenant-a/owned") as store::prefix_receipt reread
+        call store::open_session(owner, "owner-a", "tenant-a/owned", "s0") as store::session_facts pinned
+        call store::session_token_for_test(owner, "owner-a", "tenant-a/owned", "s0") as str token
+        call store::put(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub", "tenant-a/owned/a", payload) as store::write_facts staged
+        call store::pending(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub") as store::pending_facts queued
+        call store::settle_write(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub", "w1") as store::object_facts settled
+        call store::get(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub", "tenant-a/owned/a") as store::stored_object fetched
+        call store::compare_bytes(owner, payload, payload) as bool same
+        call store::list(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub", 8, option::none()) as store::page_facts paged
+        call store::delete(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub", "tenant-a/owned/a")
+        call store::close_session(owner, "owner-a", "tenant-a/owned", "s0", "sess-token-stub")
+        call store::seal_cleanup(owner, "owner-a", "tenant-a/owned") as store::cleanup_receipt sealed
+        call store::close_prefix(owner, "owner-a", "tenant-a/owned")
+        call store::shared_digest(owner) as str foreign
+        test::invalid_grant
+        test::stale_handle
+        store::store_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
