@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"a02_durability":{"type":"choice","choice":"patient_timeouts","confidence":0.58,"probabilities":{"patient_timeouts":0.79,"accept_quiet_window":0.21}}},"usage":{"input_tokens":968,"output_tokens":44}}

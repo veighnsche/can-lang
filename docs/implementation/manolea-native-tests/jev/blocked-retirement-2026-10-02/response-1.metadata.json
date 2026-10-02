@@ -1,0 +1,7 @@
+{
+ "request": "request-1.json",
+ "response": "response-1.json",
+ "status": 200,
+ "elapsed_seconds": 0.376,
+ "recorded_at_utc": "2026-10-02T17:08:58.391936+00:00"
+}

@@ -1,0 +1,82 @@
+{
+ "compared_fields": [
+  {
+   "field": "instructions",
+   "lengths": [
+    119,
+    113,
+    124
+   ]
+  },
+  {
+   "field": "criteria.retire_with_register",
+   "lengths": [
+    354,
+    335,
+    320
+   ]
+  },
+  {
+   "field": "criteria.runners_stay",
+   "lengths": [
+    310,
+    316,
+    309
+   ]
+  },
+  {
+   "field": "criteria.substitute_narrow_property",
+   "lengths": [
+    402,
+    365,
+    335
+   ]
+  },
+  {
+   "field": "state.aspect_vs_check",
+   "lengths": [
+    511,
+    570,
+    492
+   ]
+  },
+  {
+   "field": "state.blocked_inventory",
+   "lengths": [
+    666,
+    742,
+    735
+   ]
+  },
+  {
+   "field": "state.gate_text",
+   "lengths": [
+    477,
+    444,
+    478
+   ]
+  },
+  {
+   "field": "state.mandate",
+   "lengths": [
+    416,
+    394,
+    370
+   ]
+  },
+  {
+   "field": "state.precedent_pressure",
+   "lengths": [
+    332,
+    376,
+    326
+   ]
+  }
+ ],
+ "full_request_sha256": {
+  "request-1.json": "6b1244601fef8417d7b9c7f7b70d6cb783a8cdcf8291dea5f95c6ffc12204917",
+  "request-2.json": "0a0d0f2101497c9d7e1adeae8839538db72a38472f11c110db970edfb9811f61",
+  "request-3.json": "458883c264ed0c3f3c1df44a07c50710cf393566c76cdd84140efa080f384955"
+ },
+ "identifier_tokens_verified": 22
+}

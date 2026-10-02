@@ -1,0 +1,74 @@
+{
+ "compared_fields": [
+  {
+   "field": "instructions",
+   "lengths": [
+    140,
+    128,
+    148
+   ]
+  },
+  {
+   "field": "criteria.accept_quiet_window",
+   "lengths": [
+    334,
+    363,
+    350
+   ]
+  },
+  {
+   "field": "criteria.patient_timeouts",
+   "lengths": [
+    363,
+    354,
+    358
+   ]
+  },
+  {
+   "field": "state.durability_stakes",
+   "lengths": [
+    410,
+    376,
+    343
+   ]
+  },
+  {
+   "field": "state.load_evidence",
+   "lengths": [
+    363,
+    368,
+    365
+   ]
+  },
+  {
+   "field": "state.mandate",
+   "lengths": [
+    384,
+    379,
+    379
+   ]
+  },
+  {
+   "field": "state.production_timing",
+   "lengths": [
+    416,
+    415,
+    374
+   ]
+  },
+  {
+   "field": "state.worker_record",
+   "lengths": [
+    344,
+    352,
+    307
+   ]
+  }
+ ],
+ "full_request_sha256": {
+  "request-1.json": "a50e4c0cda57949583b04e7be9468ccf6f0d82bafb37252dd8bbb2f837281233",
+  "request-2.json": "c88a53f7f485a2c04e012637f82f74d6574212a23fd12c0477c0874b1da58a92",
+  "request-3.json": "d7f278b412a78fc9e5881e1b5ac49549774926336f1145c9438bf2087f652461"
+ },
+ "identifier_tokens_verified": 18
+}

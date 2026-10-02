@@ -1,0 +1,38 @@
+{
+ "decisions": [
+  {
+   "request": "request-1.json",
+   "model": "jev-1.13.0",
+   "choice": "patient_timeouts",
+   "confidence": 0.89,
+   "probabilities": {
+    "accept_quiet_window": 0.05,
+    "patient_timeouts": 0.95
+   }
+  },
+  {
+   "request": "request-2.json",
+   "model": "jev-1.13.0",
+   "choice": "patient_timeouts",
+   "confidence": 0.58,
+   "probabilities": {
+    "patient_timeouts": 0.79,
+    "accept_quiet_window": 0.21
+   }
+  },
+  {
+   "request": "request-3.json",
+   "model": "jev-1.13.0",
+   "choice": "patient_timeouts",
+   "confidence": 0.02,
+   "probabilities": {
+    "patient_timeouts": 0.51,
+    "accept_quiet_window": 0.49
+   }
+  }
+ ],
+ "totals": {
+  "input_tokens": 2929,
+  "output_tokens": 132
+ }
+}

@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"blocked_retirement":{"type":"choice","choice":"retire_with_register","confidence":0.22,"probabilities":{"runners_stay":0.3,"substitute_narrow_property":0.22,"retire_with_register":0.48}}},"usage":{"input_tokens":1168,"output_tokens":57}}

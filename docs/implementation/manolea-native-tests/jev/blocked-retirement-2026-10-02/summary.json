@@ -1,0 +1,41 @@
+{
+ "decisions": [
+  {
+   "request": "request-1.json",
+   "model": "jev-1.13.0",
+   "choice": "retire_with_register",
+   "confidence": 0.9,
+   "probabilities": {
+    "substitute_narrow_property": 0.05,
+    "runners_stay": 0.02,
+    "retire_with_register": 0.93
+   }
+  },
+  {
+   "request": "request-2.json",
+   "model": "jev-1.13.0",
+   "choice": "retire_with_register",
+   "confidence": 0.37,
+   "probabilities": {
+    "substitute_narrow_property": 0.07,
+    "runners_stay": 0.35,
+    "retire_with_register": 0.58
+   }
+  },
+  {
+   "request": "request-3.json",
+   "model": "jev-1.13.0",
+   "choice": "retire_with_register",
+   "confidence": 0.22,
+   "probabilities": {
+    "runners_stay": 0.3,
+    "substitute_narrow_property": 0.22,
+    "retire_with_register": 0.48
+   }
+  }
+ ],
+ "totals": {
+  "input_tokens": 3595,
+  "output_tokens": 171
+ }
+}
