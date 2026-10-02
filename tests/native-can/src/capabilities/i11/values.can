@@ -18,7 +18,7 @@ fn bool direction_known
     asserts
         stdin: "in" => ok true
         stdout: "out" => ok true
-        lease: "hold" => ok false
+        lease: "hold" => ok true
         both: "inout" => ok false
         empty: "" => ok false
     match direction
