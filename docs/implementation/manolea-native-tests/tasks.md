@@ -106,7 +106,7 @@ Own `tests/auth_login`, `auth_signup`, `auth_recovery` and their assigned caller
 
 Own `tests/services`. Start with the usable HTTP/SQL/session fixture; AUTH completion is not a prerequisite. This queue can run concurrently with AUTH, IMAGES or AGENT when a worker slot is available.
 
-- [ ] **A04 — replace both service probes.** `services/probe.py → probe.can`, `publication_probe.py → publication_probe.can`. Share one real service build/session fixture. TRIAGE (coordinator, read both baselines 126+165 lines): fully portable via in-process server + fetch_bytes + descriptors; CSRF regex extraction via text ops; ONE worker owns `tests/services/` for both files (shared fixture + dir rule). NEXT-READY after a slot frees. Preserve two-owner CRUD, CSRF/escaping/uniqueness/IDs/drafts, publish/unpublish completeness and parent visibility, republish persistence and refusal leaving rows unchanged. Commit and retire each probe independently when ready.
+- [x] **A04 — replace both service probes.** `services/probe.py → probe.can`, `publication_probe.py → publication_probe.can`. Share one real service build/session fixture. FULFILLED: worker ported both with shared in-process fixture (`5623901,3105894`, live-green `86379cb,2f2f1dc`); `bd0b3c0,a94981b` retired both `.py` files. Coordinator-verified: check accepted, builds 113/113 + 134/134, live rc=0 both (21/21 + 31/31 legs), bad-canlc rc=1, workdirs clean; only a historical evidence mention remains (correctly kept). Preserve two-owner CRUD, CSRF/escaping/uniqueness/IDs/drafts, publish/unpublish completeness and parent visibility, republish persistence and refusal leaving rows unchanged. Commit and retire each probe independently when ready.
 
 ## IMAGES queue — B01–B03
 
