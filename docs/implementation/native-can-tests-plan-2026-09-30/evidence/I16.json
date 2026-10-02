@@ -1,0 +1,178 @@
+{
+ "acceptance_prerequisite_receipts": {
+  "P06": "complete (tasks.json)",
+  "P14": "blocked: N transport unbound; no execution credit claimed",
+  "P26": "complete (R-core accepted)"
+ },
+ "campaign": {
+  "append_only_index": null,
+  "attempt_id": null,
+  "id": null,
+  "job_registered_before_execution": null,
+  "manifest": null
+ },
+ "changed_paths": [
+  "compiler/internal/catalogue/catalogue.json",
+  "compiler/internal/catalogue/catalogue_test.go",
+  "compiler/internal/catalogue/generated.go",
+  "compiler/internal/catalogue/db_deadline_operations_test.go",
+  "runtime/catalogue.ts",
+  "std/catalogue/README.md",
+  "compiler/internal/check/db.go",
+  "compiler/internal/check/db_deadline_test.go",
+  "compiler/internal/check/db_transaction_test.go",
+  "compiler/internal/check/program.go",
+  "runtime/test-support/slices/i16/db-deadline-service.ts",
+  "runtime/test-support/slices/i16/db_deadline.ts",
+  "runtime/test/test-db-deadline-adapter.test.ts",
+  "runtime/test/catalogue-checks.ts",
+  "compiler/internal/emit/db_deadline_operations.go",
+  "compiler/internal/emit/db_deadline_operations_test.go",
+  "compiler/internal/emit/runtime_bindings.go",
+  "compiler/internal/emit/program_state.go",
+  "compiler/testdata/current/deadline/main.can",
+  "tests/native-can/src/capabilities/i16/values.can",
+  "tests/native-can/src/capabilities/i16/control.can",
+  "tests/native-can/examples/capabilities/i16/roundtrip.can",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I16.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I16-can.json"
+ ],
+ "commands_with_deadlines_and_results": [
+  {
+   "command": "I16 scope + precedent review (K26 surface vs I13 decision; Jev-need assessment)",
+   "deadline": "120s",
+   "result": "NO new Jev: the I13 decision (evidence/I13-jev, full_adapter_held_service) settled the observer-family merge shape; I16 applies it to the sibling K26 module. Union-free surface: all 17 methods map 1:1 (release/releaseAck renamed for the I14 clash); driver outcomes (no unknown) and server effects get checker allowlists per I01; engine words reuse the K24 set."
+  },
+  {
+   "command": "python3 /tmp/i16-catalogue-delta.py (md5 47aed34683490aa42f1b948196a81814) + cataloguegen --root .",
+   "deadline": "180s",
+   "result": "+11 types, +17 operations (45/251/128/440); patience-diff 952+/0- (pure insertion). One naming fix: db::dispatch wrapper type renamed db::dispatched_work (op/type identity clash). Contract test green; full catalogue package green; inventory pin 240/423 -> 251/440."
+  },
+  {
+   "command": "CAN_BUN=$HOME/.bun/bin/bun go test -count=1 -run 'TestDb' ./compiler/internal/check/",
+   "deadline": "280s",
+   "result": "14/14 pass (I13 5 + I14 3 + I15 3 + I16 3): deadline word literals admit incl. empty-asserts arity-2 fixtures; 9 refusals incl. unknown-as-driver-outcome and dynamic words; dynamic deadline inputs admit (bigint tick stub). Full check package green. One wiring fix: NT-I16 joins the program.go admission list."
+  },
+  {
+   "command": "diff K26 deadline.ts vs slices/i16/db-deadline-service.ts",
+   "deadline": "60s",
+   "result": "PORT-IDENTICAL body; only the NT-I16 header and the ../i13/db-core-service.ts import repoint differ."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun /tmp/i16-differential.ts (40-call differential: tools/deadline.ts vs port; md5 bae514450744ffe0b4facc6774c9155d)",
+   "deadline": "120s",
+   "result": "DIFFERENTIAL-OK 40/40: dispatch lifecycle, deadline ordering, driver/server words and ordering, capable-grant cancel incl. wrong-engine forgery, quiesce live set, fence ordering, lease retained-then-freed, release path incl. unknown-effect block and double-release refusal."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun test ./runtime/test/test-db-deadline-adapter.test.ts",
+   "deadline": "180s",
+   "result": "10 pass, 0 fail, 157 expects: dispatch facts+token, single deadline tick, driver-local settlement, explicit-unknown server ack, capable-grant cancel proving nothing, quiesce+fence, retained lease, gated release, owner revocation, malformed inputs. bun test catalogue.test.ts 1/1 after the 423->440 pin refresh."
+  },
+  {
+   "command": "bun run lint:fix:runtime && bun run format:runtime && bun run lint:runtime",
+   "deadline": "280s",
+   "result": "0 warnings, 0 errors (one unused-import fix in new code). typecheck:runtime reports 0 errors in i16 files; the 13 remaining errors sit in untouched i02/i11/test files (pre-existing, left alone)."
+  },
+  {
+   "command": "CAN_BUN=$HOME/.bun/bin/bun go test -count=1 -run 'TestDbDeadlineEmissionUsesSharedContribution' ./compiler/internal/emit/ + full emit package",
+   "deadline": "280s",
+   "result": "PASS: factory, slice import, all 17 methods, shared test owner fragments present. Full emit package: only TestW4MeasuredLegs fails; interleaved A/B (3x mine vs 3x pre-I16 base) shows base failing 3/3 while mine passes once: load-flaky timing ratio owned outside migration, and the W4 driver program does not import the touched closure."
+  },
+  {
+   "command": "go run ./compiler check --json /tmp/i16cancheck (staged i16 + example probe)",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics:0. One staging fix: probe registry must be active [] (i16 declares no errors); verbatim live registry first refused CAN-PROJECT."
+  },
+  {
+   "command": "negative control: int->str mutation x1 asserts site in /tmp/i16canneg copy only",
+   "deadline": "280s",
+   "result": "exit 1, accepted:false, exactly 1 error (CAN-CHECK type fit) naming src/i16/control.can; live file verified untouched."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun /tmp/i16-regex-probe.ts (12 work-label cases)",
+   "deadline": "60s",
+   "result": "REGEX-TRUTH-OK 12/12 for ^[A-Za-z0-9][A-Za-z0-9_.:-]*$ against live dispatch accept/refuse incl. the 129-char split case (charset accepts, service refuses: the documented work_ok/work_length_ok contract)."
+  },
+  {
+   "command": "go run ./compiler check --json tests/native-can",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, 2 diagnostics (0 errors): the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings."
+  }
+ ],
+ "commit_note": "Ops, checker, runtime slice, emitter, Can landing, ops-pin fix committed separately in dependency order; this merge evidence + Can evidence last; task flips planned->active with evidence.",
+ "commits": [
+  "7842231c8fce26cd43a4370f4f214890ef73d0b4",
+  "b229042c9cb365bba8f3e1cb9f5311e86935e464",
+  "6262cdadc41e55e4592c6a7d98ff93ecd50dd84f",
+  "7fdbac86b3e8467caeb742c7cf299507c8eb9a87",
+  "e222ba740685b5b3803c8f1cb3d94571951dcb94",
+  "34f1e33bcd7a97c488dc2b428458d50fcf0570ae"
+ ],
+ "correction_registry_head": null,
+ "coverage": {
+  "case_check_ids": [],
+  "helper_closure_hashes": {},
+  "retained_facets": [
+   "db catalogue namespace extended: +11 fact records (dispatched wrapper, dispatch/deadline/driver/server/cancel/fence/lease/release records, cancel grant), +17 owner-first operations, all emitting stale_handle + db_fault",
+   "NT-I16 checker admission + 2 new static vocabulary allowlists (driver outcome without unknown; server effect with explicit unknown) plus engine-word reuse on dispatch/grant/quiesce; works, statements, tokens, grants, ticks stay dynamic",
+   "K26 engine ported byte-identical to runtime (40-call differential proof); $canDbDeadline adapter owns one service with verbatim db_fault mapping",
+   "$canDbDeadline emission contribution with shared-state wiring; fixture chain exercises all 17 ops",
+   "pure-Can vocabularies (5 decls) + 26 wrappers (14 per-word splits) + 2-flow example; stubs are check-time-only"
+  ]
+ },
+ "delta_scope": {
+  "adapter": "owner-first $canDbDeadline over one DeadlineObserver; no service-level owner (admission is adapter-side only); held observer runs under the K26 accepted control vocabulary (owner-n / ns-alpha); facts to nominal snake_case records; DbObserverError->{layer, code} verbatim",
+  "catalogue_growth": "+11 types, +17 operations, all emitting stale_handle + db_fault; db package + db_fault reused; release/releaseAck renamed deadline_release/deadline_release_ack (I14 owns db::release/db::release_ack); dispatch wrapper named db::dispatched_work (db::dispatch would clash with the op identity)",
+  "catalogue_sha256": "92f8ac9ef660c5f459f3bd81603f4241a3bba537335fb102b0b88bc9d3a98b6a",
+  "checker": "+NT-I16 allowlist task tag + driver_outcome/server_effect word rules in checkDbCall; engine words reuse the K24 set",
+  "emitter": "+1 db-deadline binding contribution ($canDbDeadline.* x17) with declare/initialize/import/value wiring",
+  "runtime": "+i16 slice (db-deadline-service port + db_deadline adapter) + 10 contract tests + ops pin 423->440"
+ },
+ "executor": "integrator (scope review, catalogue types/ops, checker, runtime slice, emitter, Can wrappers/example/evidence; no workers active during this slice)",
+ "expected_vector_review": "Can asserts pin real computed answers (work-label regex truth 12/12 via bun incl. the length-split edge; stub records match catalogue field order); adapter tests pin verbatim K26 layer+code pairs; when-stubs are check-time-only.",
+ "identities": {
+  "artifact": "N/A: no R/N artifact promoted (accept_after P14 unmet); adapters + generated mirrors committed as source only",
+  "candidate": "N/A: no candidate executed",
+  "host_profile": "darwin arm64, system bun",
+  "new_n": "none: adapter computes locally against the held service by design (no transport)",
+  "new_r": "none: no reference build in this slice",
+  "owner": "test::owner grant admission in-adapter; revoked grants fail stale_handle before any compute (contract-tested)"
+ },
+ "independent_assertion_controls": [
+  "refusals assert exact checker messages, not mere rejection",
+  "port fidelity proved by byte-diff AND a 40-call differential run against K26, not by re-reading",
+  "negative control fires exactly 1 error naming only the mutated copy",
+  "regex pins verified against live service accept/refuse (incl. the 129-char boundary split), not trusted from prose",
+  "single-record guards proved by ordering: second records refuse connection-busy, validation errors precede them",
+  "capable-grant boundary proved three ways: sqlite acquire refuses, invented grants refuse, wrong-engine grants refuse"
+ ],
+ "limitations": [
+  "Static-only verification: catalogue/check/emit unit tests + 0-error cancheck (live tree + standalone probe) + port diff + differential proof + regex truth + 10 adapter contract tests over local compute. No live execution exists (P14 blocked), so no execution credit is claimed.",
+  "Settlement/ack/fence/lease are facts only (K26 boundary): QD4 holds the D4 verdict; cancel records prove nothing about the server and never unblock cleanup; release needs driver settlement plus a known server effect plus a fence."
+ ],
+ "local_control_slice_status": "accepted",
+ "missing_evidence": [],
+ "parent_task_id": "I16",
+ "path_reservation": "integrator-owned shared compiler/catalogue/runtime/emitter/testdata paths; no worker touched them during this slice",
+ "promotion_status": "provisional source only; reference/owner promotion waits for accept_after P14",
+ "resource_and_cleanup_receipts": [
+  "No live runs, no R-seed use, no bundles built, no network (no Jev: settled architecture).",
+  "All /tmp probes removed after gates (/tmp/i16cancheck, /tmp/i16canneg, /tmp/i16base worktree, captures); one-off scripts (/tmp/i16-*.py, /tmp/i16-*.ts) removed after evidence recorded their hashes.",
+  "No docker, no DB contacted, no documented operator command executed."
+ ],
+ "retirement_commit": null,
+ "retirement_eligible": false,
+ "reviewer_disposition": null,
+ "row_or_file_slice": "I16",
+ "slice_id": null,
+ "source_slice_status": "accepted",
+ "start_prerequisite_receipts": {
+  "I13": "active with accepted source slice (db package + db_fault shared)",
+  "K26": "complete; deadline/settlement separation accepted (local/bounded controls only; D4 verdict waits for QD4)",
+  "P28": "complete (tasks.json)",
+  "P29": "complete (tasks.json)"
+ },
+ "status": "active",
+ "task_id": "I16",
+ "writing_owner": "integration-reference"
+}
