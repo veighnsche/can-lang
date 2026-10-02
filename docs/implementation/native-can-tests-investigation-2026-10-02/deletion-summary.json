@@ -83,5 +83,30 @@
       "run/acceptance/can-r-seed-626bf037-bun-1.4.2-darwin-arm64-v1"
     ],
     "approval_and_ownership_check_required": true
-  }
+  },
+  "paired_edit_paths": [
+    "compiler/internal/emit/program_state.go",
+    "compiler/internal/emit/runtime_bindings.go",
+    "compiler/internal/check/http.go",
+    "compiler/internal/check/completions.go",
+    "compiler/internal/catalogue/catalogue.json",
+    "compiler/internal/catalogue/catalogue.go",
+    "compiler/internal/catalogue/integration_test.go",
+    "runtime/modules.json",
+    "compiler/main.go",
+    "compiler/cli_test.go"
+  ],
+  "regenerate_only": [
+    "compiler/internal/catalogue/generated.go",
+    "runtime/catalogue.ts",
+    "std/catalogue/README.md",
+    "std/catalogue/errors.json"
+  ],
+  "row_worker_lifetime_proxy": {
+    "logs": 164,
+    "median_minutes": 8.421768520275752,
+    "sum_agent_hours": 23.726855549282497,
+    "per_row_proof_tax_minutes": "unknown"
+  },
+  "paths_sha256_encoding": "UTF-8 repository-relative paths sorted lexicographically, joined with newline, no trailing newline"
 }
