@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 92f8ac9ef660c5f459f3bd81603f4241a3bba537335fb102b0b88bc9d3a98b6a.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 4f5f568745af0ebd333b2cc47b8750c469a71b38e55fe1aa55d995ad19aaee65.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -58,6 +58,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - c → can.std.c@1
 - late → can.std.late@1
 - db → can.std.db@1
+- store → can.std.store@1
 
 ## Types
 
@@ -314,6 +315,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | db::fence_record | record |  | str work, str engine, str settles, str ack_digest | true |
 | db::lease_record | record |  | str work, str engine, str namespace, str handle_digest, bool retained | true |
 | db::deadline_release_record | record |  | str work, str engine, bool released, str ack_digest | true |
+| store::prefix_receipt | record |  | str prefix, str owner, str handle, str handle_digest, int objects | true |
+| store::session_facts | record |  | str session, str prefix, str owner, str handle_digest, bool pinned | true |
+| store::object_facts | record |  | str key, int size, str digest | true |
+| store::write_facts | record |  | str write_id, str key, str bytes_digest, bool settled | true |
+| store::page_facts | record |  | str prefix, store::object_facts[] keys, int count, bool complete, option::value&lt;str&gt; next_continuation, int generation, str digest | true |
+| store::pending_facts | record |  | str prefix, store::write_facts[] writes, int count | true |
+| store::stored_object | record |  | str key, bytes::buffer bytes, int size, str digest | true |
+| store::cleanup_receipt | record |  | str prefix, str owner, str handle_digest, int objects, int pending, int generation, str digest | true |
 
 ## Domain errors
 
@@ -447,6 +456,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | descriptor::descriptor_fault | can.std.descriptor@1::descriptor_fault |  | str kind, str reason |
 | late::late_fault | can.std.late@1::late_fault |  | str kind, str reason |
 | db::db_fault | can.std.db@1::db_fault |  | str layer, str code |
+| store::store_fault | can.std.store@1::store_fault |  | str layer, str code |
 
 ## Operations
 
@@ -898,6 +908,21 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | db::lease_facts | test::owner owner, str work → db::lease_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the retained-lease survey for one work item (K26 leaseFacts). | supplied | NT-I16 / NT-I16 |
 | db::deadline_release | test::owner owner, str work, str token → db::deadline_release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get, crypto.createHash | Release a work item after driver settlement plus known server effect (K26 release). | supplied | NT-I16 / NT-I16 |
 | db::deadline_release_ack | test::owner owner, str work → db::deadline_release_record | {test::stale_handle, db::db_fault} |  | Map.prototype.get | Re-read the deadline release acknowledgment (K26 releaseAck). | supplied | NT-I16 / NT-I16 |
+| store::open_prefix | test::owner owner, str grant_owner, str prefix → store::prefix_receipt | {test::stale_handle, store::store_fault} |  | Set.prototype.has, Map.prototype.set, crypto.randomBytes | Open one owned prefix under an exact (owner, prefix) grant (K27 openPrefix). | supplied | NT-I17 / NT-I17 |
+| store::receipt | test::owner owner, str grant_owner, str prefix → store::prefix_receipt | {test::stale_handle, store::store_fault} |  | Map.prototype.get | Re-read the prefix receipt (K27 receipt). | supplied | NT-I17 / NT-I17 |
+| store::close_prefix | test::owner owner, str grant_owner, str prefix → void | {test::stale_handle, store::store_fault} |  | Map.prototype.get | Close one owned prefix; pinned sessions refuse (K27 closePrefix). | supplied | NT-I17 / NT-I17 |
+| store::open_session | test::owner owner, str grant_owner, str prefix, str session → store::session_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.set, crypto.randomBytes | Pin one session to an owned prefix; facts carry no token (K27 openSession). | supplied | NT-I17 / NT-I17 |
+| store::session_token_for_test | test::owner owner, str grant_owner, str prefix, str session → str | {test::stale_handle, store::store_fault} |  | Map.prototype.get | Read the pinned session token; the sole readout, verbatim like db::connection_token_for_test (K27 sessionTokenForTest). | supplied | NT-I17 / NT-I17 |
+| store::close_session | test::owner owner, str grant_owner, str prefix, str session, str token → void | {test::stale_handle, store::store_fault} |  | Map.prototype.get | Close one pinned session under its token (K27 closeSession). | supplied | NT-I17 / NT-I17 |
+| store::put | test::owner owner, str grant_owner, str prefix, str session, str token, str key, bytes::buffer payload → store::write_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.set, Uint8Array.from, crypto.createHash | Accept one write; accepted is not settled, bytes are staged as a copy (K27 put). | supplied | NT-I17 / NT-I17 |
+| store::settle_write | test::owner owner, str grant_owner, str prefix, str session, str token, str write_id → store::object_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.set, Uint8Array.from, crypto.createHash | Settle one accepted write into a visible object (K27 settleWrite). | supplied | NT-I17 / NT-I17 |
+| store::pending | test::owner owner, str grant_owner, str prefix, str session, str token → store::pending_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Array.prototype.sort | List unsettled writes, sorted by write id (K27 pending). | supplied | NT-I17 / NT-I17 |
+| store::get | test::owner owner, str grant_owner, str prefix, str session, str token, str key → store::stored_object | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Uint8Array.from, crypto.createHash | Fetch one settled object, byte-exact, as a copy (K27 get). | supplied | NT-I17 / NT-I17 |
+| store::delete | test::owner owner, str grant_owner, str prefix, str session, str token, str key → void | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.delete | Delete one settled object (K27 delete). | supplied | NT-I17 / NT-I17 |
+| store::compare_bytes | test::owner owner, bytes::buffer stored, bytes::buffer claimed → bool | {test::stale_handle} |  | Uint8Array.prototype.length | Pure byte-exact predicate over .length plus indexed element comparison; typed callers never throw (K27 compareBytes). | supplied | NT-I17 / NT-I17 |
+| store::list | test::owner owner, str grant_owner, str prefix, str session, str token, int limit, option::value&lt;str&gt; continuation → store::page_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.set, Array.prototype.sort, crypto.createHash, crypto.randomBytes | List one page of settled keys; none starts the listing, continuations are opaque single-use edges (K27 list). | supplied | NT-I17 / NT-I17 |
+| store::seal_cleanup | test::owner owner, str grant_owner, str prefix → store::cleanup_receipt | {test::stale_handle, store::store_fault} |  | Map.prototype.get, crypto.createHash | Seal the prefix as cleaned up: no live sessions, writes, objects, plus a terminal empty scan at this generation (K27 sealCleanup). | supplied | NT-I17 / NT-I17 |
+| store::shared_digest | test::owner owner → str | {test::stale_handle} |  | Array.prototype.sort, crypto.createHash | Digest the foreign shared bucket the observer never reads or mutates (K27 sharedDigest). | supplied | NT-I17 / NT-I17 |
 
 ## Native declaration profiles
 

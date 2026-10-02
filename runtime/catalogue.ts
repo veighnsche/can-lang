@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "92f8ac9ef660c5f459f3bd81603f4241a3bba537335fb102b0b88bc9d3a98b6a";
+export const catalogueSHA256 = "4f5f568745af0ebd333b2cc47b8750c469a71b38e55fe1aa55d995ad19aaee65";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -192,6 +192,10 @@ export const catalogue = freeze({
   {
    "name": "db",
    "identity": "can.std.db@1"
+  },
+  {
+   "name": "store",
+   "identity": "can.std.store@1"
   }
  ],
  "prelude": [
@@ -4665,8 +4669,7 @@ export const catalogue = freeze({
    "identity": "can.std.db@1::null_cell",
    "kind": "record",
    "parameters": [],
-   "fields": [
-   ],
+   "fields": [],
    "leaves": [],
    "projections": [],
    "constructible": true
@@ -5726,6 +5729,246 @@ export const catalogue = freeze({
     },
     {
      "name": "ack_digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::prefix_receipt",
+   "identity": "can.std.store@1::prefix_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "handle",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "objects",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::session_facts",
+   "identity": "can.std.store@1::session_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "pinned",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::object_facts",
+   "identity": "can.std.store@1::object_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::write_facts",
+   "identity": "can.std.store@1::write_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "write_id",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "bytes_digest",
+     "type": "str"
+    },
+    {
+     "name": "settled",
+     "type": "bool"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::page_facts",
+   "identity": "can.std.store@1::page_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "keys",
+     "type": "store::object_facts[]"
+    },
+    {
+     "name": "count",
+     "type": "int"
+    },
+    {
+     "name": "complete",
+     "type": "bool"
+    },
+    {
+     "name": "next_continuation",
+     "type": "option::value<str>"
+    },
+    {
+     "name": "generation",
+     "type": "int"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::pending_facts",
+   "identity": "can.std.store@1::pending_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "writes",
+     "type": "store::write_facts[]"
+    },
+    {
+     "name": "count",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::stored_object",
+   "identity": "can.std.store@1::stored_object",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "bytes",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "size",
+     "type": "int"
+    },
+    {
+     "name": "digest",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "store::cleanup_receipt",
+   "identity": "can.std.store@1::cleanup_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "handle_digest",
+     "type": "str"
+    },
+    {
+     "name": "objects",
+     "type": "int"
+    },
+    {
+     "name": "pending",
+     "type": "int"
+    },
+    {
+     "name": "generation",
+     "type": "int"
+    },
+    {
+     "name": "digest",
      "type": "str"
     }
    ],
@@ -7215,6 +7458,21 @@ export const catalogue = freeze({
   {
    "name": "db::db_fault",
    "identity": "can.std.db@1::db_fault",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "layer",
+     "type": "str"
+    },
+    {
+     "name": "code",
+     "type": "str"
+    }
+   ]
+  },
+  {
+   "name": "store::store_fault",
+   "identity": "can.std.store@1::store_fault",
    "parameters": [],
    "fields": [
     {
@@ -23626,6 +23884,708 @@ export const catalogue = freeze({
    "refs": [
     "NT-I16"
    ]
+  },
+  {
+   "name": "store::open_prefix",
+   "identity": "can.std.store@1::open_prefix",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::prefix_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Set.prototype.has",
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Open one owned prefix under an exact (owner, prefix) grant (K27 openPrefix).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::receipt",
+   "identity": "can.std.store@1::receipt",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::prefix_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Re-read the prefix receipt (K27 receipt).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::close_prefix",
+   "identity": "can.std.store@1::close_prefix",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Close one owned prefix; pinned sessions refuse (K27 closePrefix).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::open_session",
+   "identity": "can.std.store@1::open_session",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::session_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Map.prototype.set",
+     "crypto.randomBytes"
+    ],
+    "adapter": "Pin one session to an owned prefix; facts carry no token (K27 openSession).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::session_token_for_test",
+   "identity": "can.std.store@1::session_token_for_test",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Read the pinned session token; the sole readout, verbatim like db::connection_token_for_test (K27 sessionTokenForTest).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::close_session",
+   "identity": "can.std.store@1::close_session",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Close one pinned session under its token (K27 closeSession).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::put",
+   "identity": "can.std.store@1::put",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    },
+    {
+     "name": "payload",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::write_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Map.prototype.set",
+     "Uint8Array.from",
+     "crypto.createHash"
+    ],
+    "adapter": "Accept one write; accepted is not settled, bytes are staged as a copy (K27 put).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::settle_write",
+   "identity": "can.std.store@1::settle_write",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "write_id",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::object_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Map.prototype.set",
+     "Uint8Array.from",
+     "crypto.createHash"
+    ],
+    "adapter": "Settle one accepted write into a visible object (K27 settleWrite).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::pending",
+   "identity": "can.std.store@1::pending",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::pending_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.sort"
+    ],
+    "adapter": "List unsettled writes, sorted by write id (K27 pending).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::get",
+   "identity": "can.std.store@1::get",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::stored_object",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Uint8Array.from",
+     "crypto.createHash"
+    ],
+    "adapter": "Fetch one settled object, byte-exact, as a copy (K27 get).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::delete",
+   "identity": "can.std.store@1::delete",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "key",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "void",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Map.prototype.delete"
+    ],
+    "adapter": "Delete one settled object (K27 delete).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::compare_bytes",
+   "identity": "can.std.store@1::compare_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "stored",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "claimed",
+     "type": "bytes::buffer"
+    }
+   ],
+   "staticInputs": [],
+   "result": "bool",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Uint8Array.prototype.length"
+    ],
+    "adapter": "Pure byte-exact predicate over .length plus indexed element comparison; typed callers never throw (K27 compareBytes).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::list",
+   "identity": "can.std.store@1::list",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    },
+    {
+     "name": "session",
+     "type": "str"
+    },
+    {
+     "name": "token",
+     "type": "str"
+    },
+    {
+     "name": "limit",
+     "type": "int"
+    },
+    {
+     "name": "continuation",
+     "type": "option::value<str>"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::page_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Map.prototype.set",
+     "Array.prototype.sort",
+     "crypto.createHash",
+     "crypto.randomBytes"
+    ],
+    "adapter": "List one page of settled keys; none starts the listing, continuations are opaque single-use edges (K27 list).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::seal_cleanup",
+   "identity": "can.std.store@1::seal_cleanup",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "grant_owner",
+     "type": "str"
+    },
+    {
+     "name": "prefix",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "store::cleanup_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "store::store_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "crypto.createHash"
+    ],
+    "adapter": "Seal the prefix as cleaned up: no live sessions, writes, objects, plus a terminal empty scan at this generation (K27 sealCleanup).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
+  },
+  {
+   "name": "store::shared_digest",
+   "identity": "can.std.store@1::shared_digest",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    }
+   ],
+   "staticInputs": [],
+   "result": "str",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.sort",
+     "crypto.createHash"
+    ],
+    "adapter": "Digest the foreign shared bucket the observer never reads or mutates (K27 sharedDigest).",
+    "task": "NT-I17"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I17"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -31581,6 +32541,359 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "store::prefix_receipt",
+    "identity": "can.std.store@1::prefix_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "objects",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::session_facts",
+    "identity": "can.std.store@1::session_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "session",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pinned",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::object_facts",
+    "identity": "can.std.store@1::object_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "size",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::write_facts",
+    "identity": "can.std.store@1::write_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "write_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bytes_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "settled",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::page_facts",
+    "identity": "can.std.store@1::page_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "keys",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "store::object_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "complete",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "next_continuation",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "generation",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::pending_facts",
+    "identity": "can.std.store@1::pending_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "writes",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "store::write_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "count",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::stored_object",
+    "identity": "can.std.store@1::stored_object",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "bytes",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "size",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::cleanup_receipt",
+    "identity": "can.std.store@1::cleanup_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "prefix",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "handle_digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "objects",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "generation",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "digest",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -33768,6 +35081,29 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "db::db_fault",
     "identity": "can.std.db@1::db_fault",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "layer",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "store::store_fault",
+    "identity": "can.std.store@1::store_fault",
     "kind": "error",
     "parameters": [],
     "fields": [
