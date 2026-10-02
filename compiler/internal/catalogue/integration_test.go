@@ -229,7 +229,7 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		if task == "" {
 			continue
 		}
-		if isTTask(task) || isLaneTask(task) || isNTTask(task) {
+		if isTTask(task) || isLaneTask(task) {
 			if err := checkTestEvidence(sourceRoot, task, ops); err != nil {
 				t.Error(err)
 			}
@@ -264,24 +264,8 @@ func isLaneTask(task string) bool {
 	return task[1] >= '0' && task[1] <= '9' && task[2] >= '0' && task[2] <= '9'
 }
 
-// isNTTask reports whether task is a native-testing migration task
-// (NT-P/K/I/Q/M/Znn) from docs/implementation/native-can-tests-plan-2026-09-30/.
-// Like T-list and lane tasks, NT tasks record acceptance in maintained
-// tests rather than I/B1 evidence logs.
-func isNTTask(task string) bool {
-	if len(task) != 6 || task[0] != 'N' || task[1] != 'T' || task[2] != '-' {
-		return false
-	}
-	switch task[3] {
-	case 'P', 'K', 'I', 'Q', 'M', 'Z':
-	default:
-		return false
-	}
-	return task[4] >= '0' && task[4] <= '9' && task[5] >= '0' && task[5] <= '9'
-}
-
-// checkTestEvidence requires committed test coverage for T-tasked,
-// lane-tasked, and NT-tasked operations. These tasks record acceptance
+// checkTestEvidence requires committed test coverage for T-tasked and
+// lane-tasked operations. These tasks record acceptance
 // in maintained tests rather than I/B1 evidence logs, so every
 // task-owned catalogue package must be referenced by at least one
 // compiler Go test and one runtime test. An included operation without

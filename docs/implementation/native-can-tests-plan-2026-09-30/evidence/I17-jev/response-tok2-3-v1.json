@@ -1,1 +1,0 @@
-{"model":"jev-1.13.0","answers":{"i17_session_token_shape_v2":{"type":"choice","choice":"expose_token_op","confidence":0.96,"probabilities":{"expose_token_op":0.98,"compose_token_in_adapter":0.02}}},"usage":{"input_tokens":738,"output_tokens":47}}

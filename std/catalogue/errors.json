@@ -110,25 +110,7 @@
     "browser::stale_version",
     "browser::invalid_query",
     "action::invalid_path",
-    "image::invalid_image",
-    "test::wrong_owner",
-    "test::stale_handle",
-    "test::closed_handle",
-    "test::transport_failure",
-    "test::channel_full",
-    "test::detached_transport",
-    "test::channel_empty",
-    "test::invalid_grant",
-    "test::invalid_kind",
-    "test::unknown_tool",
-    "test::invalid_path",
-    "test::invalid_name",
-    "http_peer::peer_fault",
-    "http_peer::http_fault",
-    "descriptor::descriptor_fault",
-    "late::late_fault",
-    "db::db_fault",
-    "store::store_fault"
+    "image::invalid_image"
   ],
   "retired": []
 }

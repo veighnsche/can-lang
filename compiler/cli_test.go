@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 )
 
@@ -86,18 +85,8 @@ func TestRunAcceptsAssertionOptionsBeforeProject(t *testing.T) {
 	}
 }
 
-func TestRunTestCheckUsageCodes(t *testing.T) {
+func TestRunCheckUsageCodes(t *testing.T) {
 	for _, argv := range [][]string{
-		{"test"},
-		{"test", "proj"},
-		{"test", "--candidate", "app", "proj"},
-		{"test", "--reference", "spec", "proj"},
-		{"test", "--candidate", "app", "--reference", "spec"},
-		{"test", "--candidate", "app", "--reference", "spec", "one", "two"},
-		{"test", "--candidate", "app", "--reference", "spec", "--schema", "2", "--list", "proj"},
-		{"test", "--candidate", "app", "--reference", "spec", "--bogus", "proj"},
-		{"test", "--candidate", "app", "--reference", "spec", "--list", "--owner-dir", "x", "proj"},
-		{"test", "--candidate"},
 		{"check"},
 		{"check", "proj"},
 		{"check", "--json"},
@@ -155,92 +144,6 @@ func snapshotTree(t *testing.T, root string) map[string]string {
 		t.Fatal(err)
 	}
 	return out
-}
-
-func TestRunTestListIsNonexecuting(t *testing.T) {
-	root := writeListFixture(t)
-	before := snapshotTree(t, root)
-	var stdout, stderr bytes.Buffer
-	code := runTest(&stdout, &stderr, []string{"--candidate", "app", "--reference", "spec", "--list", root})
-	if code != 0 {
-		t.Fatalf("list = %d, stderr %q", code, stderr.String())
-	}
-	var doc testListDoc
-	if err := json.Unmarshal(bytes.TrimSpace(stdout.Bytes()), &doc); err != nil {
-		t.Fatalf("list output is not JSON: %v: %q", err, stdout.String())
-	}
-	if doc.Schema != "1" || doc.Kind != "can.test.list" || doc.Candidate != "app" || doc.Reference != "spec" || doc.Project != root {
-		t.Fatalf("list envelope = %+v", doc)
-	}
-	if len(doc.Roots) != 2 {
-		t.Fatalf("roots = %+v, want the 2 app roots only", doc.Roots)
-	}
-	for _, listed := range doc.Roots {
-		if !strings.HasSuffix(listed.Package, "/app") {
-			t.Fatalf("listed non-candidate root %+v", listed)
-		}
-	}
-	after := snapshotTree(t, root)
-	if len(after) != len(before) {
-		t.Fatalf("list touched the tree: %d files before, %d after", len(before), len(after))
-	}
-	for name, body := range before {
-		if after[name] != body {
-			t.Fatalf("list rewrote %s", name)
-		}
-	}
-}
-
-func TestRunTestSelectionRefusals(t *testing.T) {
-	root := writeListFixture(t)
-	for _, argv := range [][]string{
-		{"--candidate", "missing", "--reference", "spec", "--list", root},
-		{"--candidate", "app", "--reference", "missing", "--list", root},
-	} {
-		var stdout, stderr bytes.Buffer
-		if code := runTest(&stdout, &stderr, argv); code != 1 {
-			t.Fatalf("runTest(%q) = %d, want 1", argv, code)
-		}
-		if stdout.Len() != 0 {
-			t.Fatalf("runTest(%q) wrote stdout %q on refusal", argv, stdout.String())
-		}
-	}
-}
-
-func TestRunTestExecutionRefusals(t *testing.T) {
-	root := writeListFixture(t)
-	toolchain := filepath.Join(root, "canlc-ref")
-	if err := os.WriteFile(toolchain, []byte("x"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	owner := t.TempDir()
-	// Absent R refuses.
-	var stdout, stderr bytes.Buffer
-	argv := []string{"--candidate", "app", "--reference", "spec", "--reference-toolchain", filepath.Join(root, "nope"), "--owner-dir", owner, root}
-	if code := runTest(&stdout, &stderr, argv); code != 1 {
-		t.Fatalf("absent toolchain = %d, want 1", code)
-	}
-	if !strings.Contains(stderr.String(), "reference toolchain absent") {
-		t.Fatalf("stderr = %q, want toolchain-absent refusal", stderr.String())
-	}
-	// Absent N refuses.
-	stderr.Reset()
-	argv = []string{"--candidate", "app", "--reference", "spec", "--reference-toolchain", toolchain, "--owner-dir", filepath.Join(root, "nope"), root}
-	if code := runTest(&stdout, &stderr, argv); code != 1 {
-		t.Fatalf("absent owner = %d, want 1", code)
-	}
-	if !strings.Contains(stderr.String(), "owner absent") {
-		t.Fatalf("stderr = %q, want owner-absent refusal", stderr.String())
-	}
-	// Present R/N still refuses: live execution is P23-gated, never partial.
-	stderr.Reset()
-	argv = []string{"--candidate", "app", "--reference", "spec", "--reference-toolchain", toolchain, "--owner-dir", owner, root}
-	if code := runTest(&stdout, &stderr, argv); code != 1 {
-		t.Fatalf("gated execution = %d, want 1", code)
-	}
-	if !strings.Contains(stderr.String(), "gated by P23") {
-		t.Fatalf("stderr = %q, want P23-gate refusal", stderr.String())
-	}
 }
 
 func TestRunCheckJSONPure(t *testing.T) {

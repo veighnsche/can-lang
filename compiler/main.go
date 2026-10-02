@@ -13,9 +13,7 @@ import (
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/browser"
-	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/driver"
-	"github.com/veighnsche/can-lang/compiler/internal/project"
 )
 
 func failf(format string, args ...any) error {
@@ -192,9 +190,6 @@ func run(argv []string) int {
 	if len(argv) > 0 && argv[0] == "parse" {
 		return runCurrentParse(os.Stdout, os.Stderr, argv[1:])
 	}
-	if len(argv) > 0 && argv[0] == "test" {
-		return runTest(os.Stdout, os.Stderr, argv[1:])
-	}
 	if len(argv) > 0 && argv[0] == "check" {
 		return runCheck(os.Stdout, os.Stderr, argv[1:])
 	}
@@ -242,146 +237,6 @@ func run(argv []string) int {
 	}
 	fmt.Fprintln(os.Stderr, "usage: canlc parse FILE | format [--write] FILE | inspect-project PROJECT | inspect-types PROJECT | clean PROJECT")
 	return 2
-}
-
-// testListSchema is the only --list envelope version P21 emits. Unknown
-// schemas refuse before any project load.
-const testListSchema = "1"
-
-// testListRoot is one nonexecutingly listed assertion root.
-type testListRoot struct {
-	Package     string `json:"package"`
-	Declaration string `json:"declaration"`
-	Name        string `json:"name"`
-}
-
-// testListDoc is the versioned --list envelope.
-type testListDoc struct {
-	Schema    string         `json:"schema"`
-	Kind      string         `json:"kind"`
-	Project   string         `json:"project"`
-	Candidate string         `json:"candidate"`
-	Reference string         `json:"reference"`
-	Roots     []testListRoot `json:"roots"`
-}
-
-const testUsage = "usage: canlc test --candidate PKG --reference PKG [--schema 1] [--list] PROJECT | canlc test --candidate PKG --reference PKG [--schema 1] --reference-toolchain PATH --owner-dir PATH PROJECT"
-
-// runTest implements the narrow P21 test dispatch: explicit candidate and
-// reference selection, a nonexecuting --list over the checked candidate
-// roots, and presence-gated execution parameters. Plans, retries and
-// verdicts stay in Can with N as owner only; live execution refuses until
-// the P23 runner exists. It never stages, publishes, or spawns.
-func runTest(stdout, stderr io.Writer, argv []string) int {
-	var candidate, reference, schema, toolchain, ownerDir string
-	schema = testListSchema
-	list := false
-	var positional []string
-	for i := 0; i < len(argv); i++ {
-		arg := argv[i]
-		if arg == "--list" {
-			list = true
-			continue
-		}
-		if arg == "--candidate" || arg == "--reference" || arg == "--schema" || arg == "--reference-toolchain" || arg == "--owner-dir" {
-			if i+1 >= len(argv) || argv[i+1] == "" || strings.HasPrefix(argv[i+1], "--") {
-				fmt.Fprintln(stderr, testUsage)
-				return 2
-			}
-			i++
-			switch arg {
-			case "--candidate":
-				candidate = argv[i]
-			case "--reference":
-				reference = argv[i]
-			case "--schema":
-				schema = argv[i]
-			case "--reference-toolchain":
-				toolchain = argv[i]
-			case "--owner-dir":
-				ownerDir = argv[i]
-			}
-			continue
-		}
-		if strings.HasPrefix(arg, "--") {
-			fmt.Fprintln(stderr, testUsage)
-			return 2
-		}
-		positional = append(positional, arg)
-	}
-	if candidate == "" || reference == "" || len(positional) != 1 {
-		fmt.Fprintln(stderr, testUsage)
-		return 2
-	}
-	if schema != testListSchema {
-		fmt.Fprintln(stderr, testUsage)
-		fmt.Fprintf(stderr, "unknown test schema %q: want %q\n", schema, testListSchema)
-		return 2
-	}
-	if list && (toolchain != "" || ownerDir != "") {
-		fmt.Fprintln(stderr, testUsage)
-		fmt.Fprintln(stderr, "--list takes no execution parameters")
-		return 2
-	}
-	if !list && (toolchain == "" || ownerDir == "") {
-		fmt.Fprintln(stderr, testUsage)
-		fmt.Fprintln(stderr, "test execution needs --reference-toolchain PATH and --owner-dir PATH")
-		return 2
-	}
-	directory := positional[0]
-	graph, err := project.Load(directory)
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return 1
-	}
-	if len(graph.Errors) != 0 {
-		fmt.Fprintln(stderr, graph.Errors[0])
-		return 1
-	}
-	ids := map[string]string{}
-	for _, pkg := range graph.Packages {
-		ids[pkg.Name] = pkg.ID
-	}
-	candidateID, ok := ids[candidate]
-	if !ok {
-		fmt.Fprintf(stderr, "unknown candidate package %q\n", candidate)
-		return 1
-	}
-	if _, ok := ids[reference]; !ok {
-		fmt.Fprintf(stderr, "unknown reference package %q\n", reference)
-		return 1
-	}
-	if !list {
-		if info, err := os.Stat(toolchain); err != nil || info.IsDir() {
-			fmt.Fprintf(stderr, "reference toolchain absent: %s\n", toolchain)
-			return 1
-		}
-		if info, err := os.Stat(ownerDir); err != nil || !info.IsDir() {
-			fmt.Fprintf(stderr, "owner absent: %s\n", ownerDir)
-			return 1
-		}
-		fmt.Fprintln(stderr, "test execution is gated by P23: selection validated, live R/N runner unimplemented")
-		return 1
-	}
-	program, err := check.CheckAssertionProgram(graph)
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return 1
-	}
-	doc := testListDoc{Schema: testListSchema, Kind: "can.test.list", Project: directory, Candidate: candidate, Reference: reference, Roots: []testListRoot{}}
-	for _, assertion := range program.Assertions {
-		if assertion.Root.Package != candidateID {
-			continue
-		}
-		doc.Roots = append(doc.Roots, testListRoot{Package: assertion.Root.Package, Declaration: assertion.Root.Declaration, Name: assertion.Root.Name})
-	}
-	encoded, err := json.Marshal(doc)
-	if err != nil {
-		fmt.Fprintln(stderr, err)
-		return 1
-	}
-	fmt.Fprintln(stdout, string(encoded))
-	return 0
 }
 
 const checkUsage = "usage: canlc check --json [--schema 1] PROJECT"

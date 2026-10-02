@@ -1,5 +1,0 @@
-{
-  "status": "reviewed before send",
-  "equivalence": "All three state passages preserve every requirement, newly discovered checker constraint, injected-context/boundary-fixture alternative, shutdown ordering fact and limit on evidence. Both questions and all six option descriptions are fully reworded. Exact syntax/API/status identifiers stay unchanged. No prior answer is supplied.",
-  "limits": "Manual semantic review and complete-field text differences do not prove unbiased advice or implementation feasibility."
-}

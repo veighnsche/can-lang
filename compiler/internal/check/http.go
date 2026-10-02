@@ -67,7 +67,7 @@ func isScopeRequest(typ *types.Type) bool {
 	if typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == "can.std.http@1::request" {
 		return true
 	}
-	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ) || isCryptoKeyScopeRequest(typ) || isWebSocketScopeRequest(typ) || isBrowserScopeRequest(typ) || isHttpPeerScopeRequest(typ) || isNativeScopeRequest(typ) || isDescriptorScopeRequest(typ)
+	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ) || isCryptoKeyScopeRequest(typ) || isWebSocketScopeRequest(typ) || isBrowserScopeRequest(typ)
 }
 
 // isBrowserScopeRequest admits the T22 browser handles to assertion

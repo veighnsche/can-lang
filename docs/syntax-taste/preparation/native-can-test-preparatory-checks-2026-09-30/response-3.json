@@ -1,1 +1,0 @@
-{"model":"jev-1.13.0","answers":{"temporary_owner":{"type":"choice","choice":"python_scoped","confidence":1.0,"probabilities":{"python_scoped":1.0,"go_small":0.0,"full_owner":0.0}},"source_ingress":{"type":"choice","choice":"source_partial","confidence":0.62,"probabilities":{"source_partial":0.75,"compiled_now":0.0,"defer":0.25}}},"usage":{"input_tokens":1031,"output_tokens":86}}

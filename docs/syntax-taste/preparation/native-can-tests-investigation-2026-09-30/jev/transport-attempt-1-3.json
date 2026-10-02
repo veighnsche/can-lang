@@ -1,7 +1,0 @@
-{
-  "request_sha256": "3012990a273946330400c640f6d4d94cf1f5fa911ca3ccd7234af88ef67f6c44",
-  "attempt": 1,
-  "status": "failed",
-  "error": "<urlopen error [Errno 8] nodename nor servname provided, or not known>",
-  "elapsed_seconds": 0.017
-}

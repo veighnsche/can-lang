@@ -320,15 +320,12 @@ var identifier = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 
 // taskID admits the I/B1/LF implementation tasks, the T-list integration
 // tasks from docs/syntax-taste/can-implementation-task-list-2026-09-24.md,
-// the lane tasks (A01-H14) from
-// docs/syntax-taste/can-implementation-task-list-2026-09-26.md, and the
-// native-testing migration tasks (NT-P/K/I/Q/M/Znn) from
-// docs/implementation/native-can-tests-plan-2026-09-30/. The NT- qualifier
-// keeps migration traceability unambiguous: bare P/I numbers already name
-// main-program phases. T-tasked, lane-tasked and NT-tasked operations
-// record acceptance in committed tests rather than I/B1 evidence logs;
+// and the lane tasks (A01-H14) from
+// docs/syntax-taste/can-implementation-task-list-2026-09-26.md.
+// T-tasked and lane-tasked operations record acceptance in committed
+// tests rather than I/B1 evidence logs;
 // TestCatalogueInclusionInventory enforces that rule.
-var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2}|B1-[0-9]{2}|T[0-9]{2}|[A-H][0-9]{2}|NT-[PKIQMZ][0-9]{2})$`)
+var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2}|B1-[0-9]{2}|T[0-9]{2}|[A-H][0-9]{2})$`)
 
 func (c *Catalogue) identity(name string) (string, error) {
 	if p, m, ok := strings.Cut(name, "::"); ok {
