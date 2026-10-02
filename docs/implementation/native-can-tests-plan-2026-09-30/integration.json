@@ -529,7 +529,7 @@
       "acceptance": "Dropped facet, missing engine, undeclared duplicate credit, unaccepted reference and later invalidation each prevent complete coverage. Validate the 292-row ledger and 30 delegate inventory against current sources. Reject cherry-picked passing reports, unregistered jobs, incompatible identities and unions of partial attempts that fabricate a completed case; retain every declared campaign entry and required matrix cell.",
       "evidence": "evidence/Z01.json plus per-row/file control and commit links",
       "commit": "feat(testing): reconcile migration coverage evidence",
-      "status": "planned",
+      "status": "active",
       "scope": "incremental retirement and final acceptance"
     },
     {

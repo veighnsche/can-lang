@@ -6,15 +6,24 @@ Exit 0 when the slice file + evidence conform; prints FAIL lines otherwise.
 
 Checks (all mechanical, no judgment):
 - package/provides/uses shape; provides disjoint across the migration package
-- every group row covered; row_ids valid; (row, case) pairs unique
+- covered rows == the reviewed manifest entry exactly (no dropped row passes);
+  campaign rows == manifest rows in order; (row, case) pairs unique
 - dispositions consistent with row-evidence kind (port/decide/blocked/missing)
 - sha256 bindings match disk (ports, decide files, capture evidence)
 - case/check IDs identical (IDs and order) to row evidence; decide cases are
-  package/fn with assert-label checks verified in the decide file
+  package/fn with assert-label checks verified in the decide file; every
+  assert-block line matches the arm shape (no silently dropped arm)
+- decide file verdict agrees in assert + body and with the evidence prose
+- bound source is listed in the row evidence changed_paths (port/decide rows)
 - facets/variants/environments/delegates verbatim vs coverage-map.json
   (["default"] / ["bun-prototype-env"] fallback where empty); receipts triple
-- campaign manifest IDs/rows match the evidence json; declared rows == group
-- claim/validate fns contain the required resolution/gate/diagnostic arms
+- campaign manifest IDs/rows match the evidence json; evidence case lines
+  match the slice (tamper check between the two files)
+- claim/validate fns contain the required resolution/gate/diagnostic arms,
+  with all 8 diagnostic kinds present in the claim body (not just asserts)
+
+Authority chain: z01-slices.json assigns rows to stems (reviewed);
+check-z01-partition.py verifies the manifest partitions the 292-row ledger.
 """
 import hashlib
 import io
@@ -94,8 +103,23 @@ def check_provides_disjoint(stem, provides):
             fail(f"provides clash with {other.name}: {sorted(clash)}")
 
 
-def check_claim_shape(src, stem):
+KINDS_8 = (
+    "unknown-row",
+    "unretained-row",
+    "unregistered-job",
+    "incompatible-identity",
+    "missing-engine",
+    "undeclared-delegate",
+    "extra-delegate",
+    "unaccepted-reference",
+)
+
+
+def check_claim_shape(src, stem, has_retained, has_nonret):
     tag = f"migration::claim_{stem}_identity_problems"
+    if tag not in src:
+        fail("claim fn tag missing from slice")
+        return
     need_calls = [
         f"call {stem}_slice(",
         "call row_case_index(",
@@ -110,41 +134,71 @@ def check_claim_shape(src, stem):
     for call in need_calls:
         if call not in src:
             fail(f"claim fn lacks {call}")
-    for kind in (
-        "unknown-row",
-        "unretained-row",
-        "unregistered-job",
-        "incompatible-identity",
-        "missing-engine",
-        "undeclared-delegate",
-        "extra-delegate",
-        "unaccepted-reference",
-    ):
-        if f'"{kind}"' not in src or tag not in src:
-            fail(f"claim fn lacks diagnostic kind {kind}")
+    try:
+        claim_start = src.index(f"fn spec::diagnostic[] claim_{stem}_identity_problems")
+        body_start = src.index(f"match call {stem}_slice(", claim_start)
+        validate_start = src.index(
+            "/// Validate one complete-coverage claim", body_start
+        )
+    except ValueError:
+        fail("claim fn region markers missing or out of order")
+        return
+    asserts_region = src[claim_start:body_start]
+    body_region = src[body_start:validate_start]
+    for kind in KINDS_8:
+        if f'"{kind}"' not in body_region:
+            fail(f"claim body lacks diagnostic kind {kind}")
+    # Assert-side presence is conditional by template design: the retained
+    # block emits 6 of the 8 kinds, unretained_hit emits unretained-row, and
+    # undeclared-delegate is body-only (no subset-direction assert exists).
+    want_asserts = {"unknown-row"}
+    if has_retained:
+        want_asserts |= {
+            "unregistered-job",
+            "incompatible-identity",
+            "missing-engine",
+            "extra-delegate",
+            "unaccepted-reference",
+        }
+    if has_nonret:
+        want_asserts.add("unretained-row")
+    for kind in sorted(want_asserts):
+        if f'"{kind}"' not in asserts_region:
+            fail(f"claim asserts lack diagnostic kind {kind}")
     if f"call claim_{stem}_identity_problems(entries, c)" not in src:
         fail("validate fn does not call the slice claim fn")
     if "call claim_credit_problems(entries, c, shaped)" not in src:
         fail("validate fn does not call shared claim_credit_problems")
 
 
-def main():
-    if len(sys.argv) != 3:
-        print("usage: check-z01-slice.py <slice.can> <z01-evidence.json>")
-        sys.exit(2)
-    can_path, ev_path = sys.argv[1], sys.argv[2]
+def finish(can_path, n_rows=0, n_covered=0):
+    if FAIL:
+        print(f"FAIL {can_path}:")
+        for line in FAIL:
+            print(f"  - {line}")
+        return 1
+    print(f"OK {can_path}: {n_rows} row_maps, {n_covered} rows conform")
+    return 0
+
+
+def run(can_path, ev_path):
     src, stem = load_slice(can_path)
-    group = re.match(r"m(\d+)", stem).group(1)
-    mid = f"M{group}"
+    man = json.load(io.open(PLAN / "z01-slices.json", encoding="utf-8"))
+    entry = man.get(stem)
+    if entry is None:
+        fail(f"stem {stem} has no z01-slices.json entry")
+        return finish(can_path)
+    mid = entry["group"]
+    expected = entry["rows"]
+    tasks = json.load(io.open(PLAN / "tasks.json", encoding="utf-8"))
+    by_id = {t["id"]: t for t in tasks["tasks"]}
+    if mid not in by_id:
+        fail(f"manifest group {mid} unknown to tasks.json")
+        return finish(can_path)
     provides = check_package(src, stem)
     if provides:
         check_provides_disjoint(stem, provides)
-    if stem != "machinery":
-        check_claim_shape(src, stem)
 
-    tasks = json.load(io.open(PLAN / "tasks.json", encoding="utf-8"))
-    by_id = {t["id"]: t for t in tasks["tasks"]}
-    group_rows = by_id[mid].get("row_ids", [])
     cov = {
         r["row_id"]: r
         for r in json.load(io.open(PLAN / "coverage-map.json", encoding="utf-8"))[
@@ -164,19 +218,26 @@ def main():
     if len(set(pairs)) != len(pairs):
         fail("duplicate (row, case) pairs")
     covered = {r[0] for r in rows}
-    # split slices cover a row-range; the campaign manifest declares the slice rows
+    if stem != "machinery":
+        check_claim_shape(
+            src, stem, any(r[1] == "retained" for r in rows), any(r[1] != "retained" for r in rows)
+        )
     m = re.search(
         r'campaign\("([^"]+)", "([^"]+)", \[([^\]]*)\]\)', src
     )
     if not m:
         fail("campaign manifest literal missing")
-        return 1
+        return finish(can_path)
     manifest_id, campaign_id, camp_rows = m.group(1), m.group(2), strs(m.group(3))
-    if set(camp_rows) != covered:
-        fail(f"campaign rows {camp_rows} != mapped rows {sorted(covered)}")
-    unknown = covered - set(group_rows)
-    if unknown:
-        fail(f"rows outside {mid}: {sorted(unknown)}")
+    if len(camp_rows) != len(set(camp_rows)):
+        fail("campaign manifest declares duplicate rows")
+    if camp_rows != expected:
+        fail(f"campaign rows != manifest {stem} rows (IDs or order)")
+    if covered != set(expected):
+        fail(
+            f"mapped rows {sorted(covered)} != manifest {stem} rows "
+            f"{sorted(set(expected))}"
+        )
 
     for row in rows:
         (row_id, disp, source, h, case, checks, facets, variants, envs, delegates, receipts, head) = row
@@ -200,7 +261,8 @@ def main():
             ev0 = json.load(io.open(ev_file, encoding="utf-8"))
             corrections = ev0.get("corrections") or []
             if corrections:
-                want_head = (corrections[-1].get("commit") or "").split()[0]
+                toks = (corrections[-1].get("commit") or "").split()
+                want_head = toks[0] if toks else ""
         if head != want_head:
             fail(f"{row_id}: correction_head {head!r} != latest correction commit {want_head!r}")
         ev_file = PLAN / "evidence" / f"{mid}-{row_id}.json"
@@ -226,23 +288,47 @@ def main():
         is_decide = "provides [decide, disposition]" in disk_body and bool(
             re.search(r"^fn disposition decide$", disk_body, re.M)
         )
+        if source not in (ev.get("changed_paths") or []):
+            fail(f"{row_id}: bound source absent from row-evidence changed_paths")
         if is_decide:
             disk = hashlib.sha256(disk_body.encode("utf-8")).hexdigest()
             if disk != h:
                 fail(f"{row_id}: decide file hash mismatch")
-            vm = re.search(
+            verdicts = re.findall(
                 r'disposition\("' + re.escape(row_id) + r'", "([a-z-]+)"',
                 disk_body,
             )
-            verdict = vm.group(1) if vm else None
+            if not verdicts:
+                fail(f"{row_id}: decide verdict missing from file")
+                continue
+            if len(set(verdicts)) != 1:
+                fail(f"{row_id}: decide assert/body verdicts disagree {sorted(set(verdicts))}")
+                continue
+            verdict = verdicts[0]
             if verdict not in ("obsolete", "preserve", "retain-fixture"):
-                fail(f"{row_id}: decide verdict missing or outside vocabulary")
+                fail(f"{row_id}: decide verdict outside vocabulary")
             elif disp != verdict:
                 fail(f"{row_id}: decide disposition {disp} != file verdict {verdict}")
+            prose = " ".join(ccs)
+            cands = re.findall(
+                re.escape(row_id) + r" -> ([a-z-]+)", prose
+            ) + re.findall(r"\('" + re.escape(row_id) + r"','([a-z-]+)',", prose)
+            if not cands:
+                fail(f"{row_id}: no prose verdict for the row in the evidence entry")
+            elif any(c != verdict for c in cands):
+                fail(f"{row_id}: evidence prose verdict {cands} != file verdict {verdict}")
             pkg = re.search(r"^package (\w+)$", disk_body, re.M)
             fn = re.search(r"^fn \w+ (\w+)$", disk_body, re.M)
-            if not pkg or case != f"{pkg.group(1)}/{fn.group(1)}":
+            if not pkg or not fn or case != f"{pkg.group(1)}/{fn.group(1)}":
                 fail(f"{row_id}: decide case must be package/fn, got {case!r}")
+            am = re.search(r"^    asserts\n(.*?)^    match ", disk_body, re.M | re.S)
+            if not am:
+                fail(f"{row_id}: decide file has no asserts block")
+                continue
+            for ln in am.group(1).split("\n"):
+                if ln.strip() and not re.match(r"^\s+(\w+): .* => ok ", ln):
+                    fail(f"{row_id}: decide assert line outside the arm shape: {ln[:80]!r}")
+                    break
             arms = re.findall(r"^\s+(\w+): .* => ok ", disk_body, re.M)
             if strs(checks) != arms:
                 fail(f"{row_id}: decide checks must be the assert arms {arms}")
@@ -286,14 +372,25 @@ def main():
         fail(f"manifest_id shape unexpected: {manifest_id}")
     if not re.fullmatch(r"z01-campaign/[a-z0-9-]+/attempt-1", campaign_id):
         fail(f"campaign_id shape unexpected: {campaign_id}")
+    want_lines = [
+        f"{r} {c or '(no case)'}: {len(strs(ch))} checks"
+        for (r, _d, _s, _h, c, ch, *_rest) in rows
+    ]
+    if ev.get("coverage", {}).get("case_check_ids") != want_lines:
+        fail("evidence case_check_ids differ from the slice row_maps")
+    return finish(can_path, len(rows), len(covered))
 
-    if FAIL:
-        print(f"FAIL {can_path}:")
-        for line in FAIL:
-            print(f"  - {line}")
+
+def main():
+    if len(sys.argv) != 3:
+        print("usage: check-z01-slice.py <slice.can> <z01-evidence.json>")
+        sys.exit(2)
+    try:
+        return run(sys.argv[1], sys.argv[2])
+    except Exception as e:
+        print(f"FAIL {sys.argv[1]}:")
+        print(f"  - gate crashed: {type(e).__name__}: {e}")
         return 1
-    print(f"OK {can_path}: {len(rows)} row_maps, {len(covered)} rows conform")
-    return 0
 
 
 if __name__ == "__main__":

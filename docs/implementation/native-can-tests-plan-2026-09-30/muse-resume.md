@@ -1,3 +1,26 @@
+# Z01 reconciliation in review — 2026-10-02 (HEAD 37f09fea; 47 complete / 10 blocked / 41 planned / 45 active)
+
+M-task reconciliation landed (a75d30a9): M01-M12/M27/M28 planned->active (row evidence + Can landed, accept gates pending); M32/M33 active->complete (27/27 rows, empty accept_after, reachable owned commits); fixed 4 stale files[] patterns to real migration dirs (M25/M26/M29/M30). Validators: 47/10/41/45, both pass.
+Z01 authoring landed (19 commits 8967155f..37f09fea): reviewed generator (self-test green) + conformance gate + 46 generated slices + m31 pattern-proof + machinery (row_case_index/row_retained); 49 campaigns cover 292/292 rows exactly once (171 retained incl. 8 pilot, 37 obsolete, 8 preserve, 6 retain-fixture, 12 blocked, 58 missing); 30/30 delegates transcribed; live check accepted:true + 2 pre-existing warnings. Gate found + fixed: M10 evidence case IDs (a406fc79+bind 5649a951), decide file-shape classification (M32/M34/M36 wordings), preserve/retain-fixture verdicts. No worker transcription by design (mechanical transcription; generator+gate+review supply assurance) — rationale in Z01.json method. Pending: review subagent findings -> resolve -> commit Z01.json + flip Z01 active (ledger edit uncommitted) -> validators.
+READY now: Z01 aggregate acceptance (after review), then Z02-Z06 (retirement gates need P23; likely blocked-capture + Z06 review). Next: resolve review findings, commit Z01.json + flip, run validators.
+
+# I05 + I12 landed — 2026-10-02 (HEAD 8c7024aa; 45 complete / 10 blocked / 55 planned / 33 active)
+
+I05 complete (7 commits d05bbc23..9d754aff, flipped active; ws family: +8 types +7 http_peer::ws_ ops, K21 verbatim port + adapter 10/10, $canWs emission, ops pin 462). Evidence I05.json/I05-can.json; validators green.
+I12 complete (10 commits 91420a18..8c7024aa, flipped active; single probe_lease op reusing the descriptor package + I11-forwarded lease_report + descriptor_fault, NT-I12 tag; envelope adapter 6/6 over stubbed dispatch; $canLease emission; staged lease project; Can 4+2 with 23/23 truth-table differential; ops pin 463). No Jev (settled I11-envelope + I14 same-package precedent). Evidence I12.json/I12-can.json; validators green. Satellites: cafad9a2 (modules.json inventory repair — TestRuntimeInventoryMatchesBodies was pre-existing red with 20 strays, now green with 21 entries) and 726bc5a7 (fix(i11-can) wrong direction_known hold pin found during I12 Can work). /tmp/i12* all removed. No EMFILE. Tree clean except this file.
+READY now: Z01 (authorable; acceptance waits P23), M01-M08/M10/M11/M27/M28 (ledger-planned though rows reportedly done — reconcile flip requirements). Next: M-task flip reconciliation + Z01 authoring.
+
+# I17 landed, frontier recomputed — 2026-10-02 (HEAD d726c774; 45 complete / 10 blocked / 57 planned / 31 active)
+
+I17 complete (7 commits 6ebb2c9b..d726c774, flipped active; store family: 1 pkg + 1 err + 8 types + 15 store:: ops, NT-I17 tag only (no closed vocab), verbatim K27 port + createStore adapter with 11/11 contract tests, $canStore emission, 6+15+2 Can surface, ops pin 455). Jev: round-1 unanimous package (new store::) + token-compose; caught own framing flaw (omitted identical db::connection_token_for_test precedent); corrected round-2 unanimous expose (p 1.0/0.99/0.99). Evidence I17.json/I17-can.json/I17-jev/; both validators green. K27.json status field stale-blocked vs ledger-complete noted in evidence. /tmp/i17* all removed.
+READY now: I05 (WebSocket K21, 557-line TS service — familiar slice shape, do first), I12 (fd-4 lease K19, GO fixture — novel shape, do second), Z01 (authorable; acceptance waits P23), M01-M08/M10/M11/M27/M28 (ledger-planned though rows reportedly done — reconcile flip requirements after slices). I05+I12 both touch shared compiler/catalogue/emit files → sequential through integrator, no parallel workers. No EMFILE. Tree clean at d726c774 except this file.
+
+# I16 landed, I17 Jev decided — 2026-10-02 (HEAD 6067dfda; 45 complete / 10 blocked / 58 planned / 30 active)
+
+I16 complete (7 commits 7842231c..6067dfda, flipped active; deadline family: 11 types + 17 db:: ops, NT-I16 checker tag + driver_outcome/server_effect allowlists + engine reuse, verbatim K26 port + createDbDeadline adapter with 10/10 contract tests, $canDbDeadline emission, 5+26+2 Can surface, ops pin 440). Evidence I16.json/I16-can.json; both validators green. TestW4MeasuredLegs proven load-flaky via interleaved A/B (base 3/3 fail, mine 1/3 pass; driver program outside the touched closure) — owned outside migration, left alone. /tmp/i16* all removed.
+I17 in progress: K27 read (844-line service.ts, 15 methods, 20 codes, 7 fact types). Jev round 1 (3 fresh, unanimous): new store:: package + store::store_fault AND compose-token — then caught my own framing flaw (omitted the identical I13 db::connection_token_for_test expose precedent). Corrected round 2 (3 fresh token-only, parity-patched + resent T2/T3): expose_token_op 3-0 at p 1.0/0.99/0.99. FINAL: new store:: package, 15 ops incl. verbatim store::session_token_for_test. Record: evidence/I17-jev/ (requests/responses/decision/wording-audit/metadata). K27.json status field reads stale "blocked"; ledger says complete (validators verify) — noted for I17 evidence. No checker vocab (all K27 inputs dynamic); only NT-I17 admission. Next: catalogue delta (+1 pkg, +1 err, +8 types, +15 ops) per evidence/I17-jev/decision.json implementation_shape.
+Uncommitted: this file + evidence/I17-jev/ (new dir). No EMFILE. Tree otherwise clean at 6067dfda.
+
 # EMFILE PAUSE 7 — 2026-10-01 (integrator shell exhausted; instance restart required)
 
 Event: integrator bash hit tool-layer EMFILE (os error 24) on a read-only survey command; even `sleep 60` fails to spawn. File tools (read/edit) still work. P28 independent reviewer child FAILED at spawn (same storm). K24 worker also FAILED; K25 presumed failed (same storm) — none of the three ran. All three dispatches must be re-issued after restart; no worker output exists to accept.
@@ -876,3 +899,244 @@ Next: accept wave 15 as it lands; dispatch C039; next integrator slice (I02 read
 
 ## I02 scope (Jev x3 837cd485, unanimous split; implement next)
 DECISION: pure K04 seam checks become candidate-visible c:: catalogue ops (check_module, parse_module over module source text, owner-first) + inert facts records, implemented by merged c-ingress.ts in slices/i02/ with no witness authority. Stateful K05 witness merges host-side with NO catalogue ops (QN2 harness only), preserving minted-triple independence. Can package ports K04 verdicts (regex groups + recursion) with 19 K04 rows + inert-facts validation + seam example. NT-I02 admits pure ops (kind-literal allowlist executable/assertion_root/assertion_case; owner elision in rows); no witness handles in scope. Precedent-consistent where independence-free: owner-first order, NT tag + elision, shared-owner adapter, emitter fixture chain, provisional until P14.
+
+## Checkpoint 2026-10-01 (wave 17 dispatched; I02 + wave 16 complete)
+Wave 15 fully landed: M09-C030 635bff7c (neg 21), C031 a70b1664 (neg 29), C034 1e58c30a (neg 19); all exact-match. M09 remainder C039 BLOCKED (K07 active, K08/K09 blocked).
+I02 source slice complete (9 commits): Jev 837cd485, types a65f51f7, scope a93f5578, ops 6e3e6690, checker 96cfe83d (kind allowlist + 3 tests), runtime 84bb6e33 (K04 port byte-identical + $canC adapter, 11/11 contract tests), emitter 26301249 ($canC contribution), Can 4bd4e6a6 (12 validators + example, staged 0-diag, regex truth 8/8), evidence 656c5765 (I02.json + I02-can.json; flipped I02 planned->active). Provisional; promotion waits for P14.
+Wave 16 fully landed: M10-C016 93dbadf9 (neg 27), C036 0ef62a8e (neg 25), C015 67f3682b (neg 31). C015 worker died on subscription quota 429 mid-run (exit 1, no evidence file); integrator repaired the generator's text->str field-type bug (95 sites, matched 95 resolve errors 1:1), ran all gates fresh, wrote integrator-completed evidence. Control added to all worker prompts (str-never-text vocabulary check + quota partial-checkpoint rule).
+Wave 17 running (3/3): M10-C037/C046 (finish M10) + M12-BROWSER-001 (new m12 dir). Logs/prompts /tmp/muse-wave17-{c037,c046,b001}.{log,md} (never stage). M11 already fully migrated (2c57e904/8961edd4/fe83fb59).
+Quota risk: subscription resets 2026-10-05T00:00Z; if wave-17 workers 429, complete rows as integrator (C015 precedent).
+Next integrator slice: I03 candidate but K05/K06 audit-vs-complete question OPEN (audit demanded actual generated-C-path witness evidence; K05.json limitation defers it to QN2; resolve before starting I03). Alternatives ready: I05 (K21), I12 (I11+K19), I13 (K22/K23, unblocks I14/I15/I16), I17 (K27). TestW4MeasuredLegs still flaky/inherited (not a gate). No EMFILE. Tree clean at 67f3682b.
+
+## Checkpoint 2026-10-01 (wave 19 dispatched; I03 + waves 17/18 complete)
+Wave 17 fully landed: M10-C037 2b57557c (neg 21), C046 108db6e9 (neg 35), M12-B001 33e1a500 (neg 27); all exact-match. M10 FULLY MIGRATED (5/5). C037 worker hit transient 'stale generated catalogue' panic from concurrent I03 catalogue commits; resolved by retry; prompt now tells workers to wait+retry once.
+I03 source slice complete (8 commits): Jev 51fe6a4b (unanimous adapter-held 0.85/0.73/0.77), types 802151a4 (44/204/127), ops 73e84042 (377 ops, 13 late ops), checker be4d7a8a (4 vocab allowlists, 5 tests), runtime 65ced4e0 (K06 port + support closure, 38-call differential proof, 9/9 contract tests), emitter cc6ce39d ($canLate x13), Can e49b25cf (7 vocab + 31 per-word wrappers + 3-flow example, staged 0-diag, regex 5/5), evidence 30325307 (I03.json + I03-can.json; flipped I03 planned->active). K05/K06 audit-vs-complete RESOLVED (both legitimate post-audit re-completions; receipts verified). Mapping correction: all K06 rejections map verbatim to late_fault (verdicts must stay visible); consult briefs' i11-style stale gloss superseded, shape unaffected. Catalogue inventory gate failed transiently at ops commit by design (NT tasks need Go + runtime tests); cleared by runtime commit.
+Wave 18 fully landed: B002 4f21f2cb (neg 31), B004 fe92b142 (neg 57), B003 a12c9b46 (neg 35, secret bytes independently verified absent). M12 4/6; B005/B048 blocked (K07/K08/K09/K10).
+Wave 19 running (3/3): M22 H001/H002/H015 (new m22-postgresql-query-semantics dir). Logs/prompts /tmp/muse-wave19-{h001,h002,h015}.{log,md} (never stage).
+Coverage: 65/292 rows evidenced. M01-M08/M10/M11/M28 DONE; M09 missing C039 (K07/K08/K09); M13-M21 browser-blocked; M22-M40/M42/M43 READY (HISTORY/LIFE/EDGE queues).
+Quota risk persists (resets 2026-10-05T00:00Z); no 429 since C015.
+Next integrator slice: I13 (DB row observation; K22/K23 surveyed, audits generic, start gate holds; unblocks I14/I15/I16). Then I05/I12/I17. TestW4MeasuredLegs still flaky/inherited (not a gate). No EMFILE. Tree clean at a12c9b46 + live checkpoint.
+## Checkpoint 2026-10-01 (H001 landed; wave 19/20 running 3/3)
+M22-HISTORY-001 committed c93bbc2f (staged 0-diag, neg 51 exact-match naming src/queries, live 2 pre-existing warnings; M22 planned->active). 66/292 rows.
+Running: H002 + H015 (slices written, in gates phase; logs /tmp/muse-wave19-{h002,h015}.log), H020 dispatched (log /tmp/muse-wave20-h020.log, prompt /tmp/muse-wave20-h020.md).
+Ledger flips per row commit: task-level planned->active only (migration-tasks.json + tasks.json); no per-row status field exists (coverage-map rows have no status; evidence JSONs are the row receipts). Do NOT attempt row flips in migration JSONs again.
+Next: accept H002/H015/H020 as they land; then wave 21 (M23+ HISTORY/LIFE/EDGE queues); I13 slice when a sustained integrator window opens.
+## Checkpoint 2026-10-01 (H015 landed; 3/3 running)
+H015 committed ee4d1752 (staged 0-diag first run, neg 37 exact-match naming src/seed, live 2 pre-existing warnings, driver md5 7bfa76b7 / sql md5 9037f078 verified, no DB contacted). validation.json refreshed 8757e0d0 (45/10/79/9, both validators pass). 67/292 rows.
+Running: H002 (evidence written, worker finishing), H020, H003 (M23 first row, new m23-transactions-and-persistence dir; log /tmp/muse-wave21-h003.log).
+I13 prep: start gates K22/K23/P28/P29 all complete; db-observer surface = core/deadline/poison/returning/transactions (+check files); i04 slice already active (peer/http). I13 = DB row observation over K22(raw observer)+K23(RETURNING); note I03 already ported core.ts+returning.ts — I13 scope boundary vs I03 needs care at seal time.
+Next: accept H002/H020/H003 as they land; dispatch M23 remainder (H004/H017/H022).
+## Checkpoint 2026-10-01 (H002 landed; 3/3 running)
+H002 committed 2762399d (staged 0-diag first run, neg 43 exact-match naming src/run, live 2 pre-existing warnings, sql_test.go md5 02ae97c2 consistent with H001, credential pins structural-only verified, no DB contacted). 68/292 rows. M22 3/4 (H020 running).
+Running: H020, H003 (M23), H004 (M23 live tx; log /tmp/muse-wave21-h004.log).
+Next: accept H020/H003/H004 as they land; dispatch M23 remainder (H017/H022); then M24+.
+## Checkpoint 2026-10-01 (H004+H003 landed; 3/3 running)
+H004 committed fc1f99ed (staged 0-diag, neg 43 exact-match naming src/run, live 2 pre-existing warnings, secrets clean, no DB; M23 planned->active). H003 committed 91e4f71a (staged 0-diag first run, neg 65 exact-match naming src/tx [32+32+1], live 2 warnings). 70/292 rows. M23 2/4.
+Running: H020 (M22 last), H017, H022 (M23 remainder; logs /tmp/muse-wave22-h017.log, /tmp/muse-wave22-h022.log).
+Note: bundled:agents skill loaded per reminder; its agents.py/host-manager thread model does not map onto this plan's muse-exec-worker pattern — established integrator-accept pattern retained (independent replication already satisfies its verify-after-claim rule).
+Next: accept H020/H017/H022 as they land (M22+M23 complete); then M24+.
+## Checkpoint 2026-10-01 (M22 FULLY MIGRATED; 3/3 running)
+H020 committed 0f8a5aec (staged 0-diag first run, neg 37 exact-match naming src/roots; TRUE arithmetic 18+18+1 verified from start_line list — worker evidence prose typo says 17+17, correction recorded in commit message; live 2 warnings, fixture md5 9037f078 verified). M22 4/4 rows complete. 71/292 rows.
+Prompt hardening: worker briefs now require dead-seed counts to sum consistently with neg arithmetic verified against the start_line list.
+Running: H017, H022 (M23 remainder), H005 (M24 first row, new m24-descriptor-sql-wiring dir; log /tmp/muse-wave23-h005.log).
+Next: accept H017/H022/H005 as they land; dispatch M24 remainder (H006/H011/H018).
+## Checkpoint 2026-10-01 (M23 FULLY MIGRATED; 3/3 running)
+H022 committed bce44fdd (staged 0-diag first run, neg 23 exact-match naming src/seed [11+11+1], live 2 warnings, fixture md5 dc8e13a8 verified). H017 committed 4bc22663 (staged 0-diag first run, neg 27 exact-match naming src/seed [13+13+1], live 2 warnings, driver md5 509f3edc verified, no DB). M23 4/4 rows complete. 73/292 rows.
+Running: H005, H006, H011 (all M24; logs /tmp/muse-wave23-h005.log, /tmp/muse-wave23-h006.log, /tmp/muse-wave23-h011.log).
+Next: accept H005/H006/H011 as they land; dispatch H018 (M24 last); then M25+.
+## Checkpoint 2026-10-01 (H005 landed; 3/3 running)
+H005 committed c03b3ac7 (staged 0-diag first run, neg 55 exact-match naming src/desc [27+27+1], live 2 warnings, Go md5 7f900d47 verified; M24 planned->active). 74/292 rows. M24 1/4.
+Running: H006, H011, H018 (M24 remainder; logs /tmp/muse-wave23-h006.log, /tmp/muse-wave23-h011.log, /tmp/muse-wave24-h018.log).
+Next: accept H006/H011/H018 as they land (M24 complete); then M25+.
+## Checkpoint 2026-10-01 (H011+H006 landed; 3/3 running)
+H011 committed 4d6e0ffa (staged 0-diag first run, neg 35 exact-match naming src/seed [17+17+1], live 2 warnings, driver md5 ebeb43a8 verified, no DB). H006 committed 72f68494 (staged 0-diag, neg 47 exact-match naming src/run [23+23+1], live 2 warnings, Go md5 7f900d47 consistent with H005, secrets clean, no DB). 76/292 rows. M24 3/4.
+Note: bundled:git skill loaded; user task text explicitly authorizes new commits (COMMIT EARLY AND OFTEN) — no amend/push/tag/rewrites performed. H006 worker tail mentioned skipping a poster step (loaded build-in-public skill, no image tool) — harmless.
+Running: H018 (M24 last), H007, H008 (M25; logs /tmp/muse-wave25-h007.log, /tmp/muse-wave25-h008.log).
+Next: accept H018/H007/H008 as they land; dispatch M25 remainder (H012/H013); then M26+.
+## Checkpoint 2026-10-01 (M24 FULLY MIGRATED; 3/3 running)
+H018 committed 8f21f607 (staged 0-diag first run, neg 21 exact-match naming src/seed [10+10+1], live 2 warnings, fixture md5 6c0774a0 verified). M24 4/4 rows complete. 77/292 rows. M22+M23+M24 fully migrated back-to-back-to-back.
+Running: H007, H008, H012 (all M25; logs /tmp/muse-wave25-h007.log, /tmp/muse-wave25-h008.log, /tmp/muse-wave25-h012.log).
+Next: accept H007/H008/H012 as they land; dispatch H013 (M25 last); then M26+.
+## Checkpoint 2026-10-01 (H007 landed; 3/3 running)
+H007 committed 2085dd98 (staged 0-diag first run, neg 67 exact-match naming src/lock [33+33+1], live 2 warnings, Go md5 a7db31ec verified, no DB; M25 planned->active). Redaction audit: <redacted-url>/<redacted-password> confirmed genuine Go source literals (sanitizer placeholders, sql_f02_test.go L31/L35) — correctly pinned as byte truth, not masking artifacts. Briefs now carry this note. 78/292 rows. M25 1/4.
+Running: H008, H012, H013 (M25 remainder; logs /tmp/muse-wave25-h008.log, /tmp/muse-wave25-h012.log, /tmp/muse-wave26-h013.log).
+Next: accept H008/H012/H013 as they land (M25 complete); then M26+.
+## Checkpoint 2026-10-01 (H008 landed; 3/3 running)
+H008 committed 829537b7 (staged 0-diag, neg 79 exact-match naming src/run [39+39+1], live 2 warnings, Go md5 894d6360 verified, secrets clean, no DB). Worker misobserved history-007 files as 'renamed' — verified present under original names (committed 2085dd98); harmless. 79/292 rows. M25 2/4.
+Running: H012, H013 (M25 remainder), H009 (M26 first row, new m26-mysql-sqlite-persistence dir; log /tmp/muse-wave27-h009.log).
+Next: accept H012/H013/H009 as they land; dispatch M26 remainder (H010/H014/H016/H019/H021).
+## Checkpoint 2026-10-01 (M25 FULLY MIGRATED; 3/3 running)
+H013 committed f0ad0b52 (staged 0-diag first run, neg 37 exact-match naming src/seed [18+18+1], live 2 warnings, driver md5 24cf741f verified, no DB). H012 committed 123ba834 (staged 0-diag first run, neg 79 exact-match naming src/roots [39+39+1], live 2 warnings, driver md5 f1f1da71 verified, all DB URLs unset). M25 4/4 rows complete. 81/292 rows. M22-M25 fully migrated (16 rows).
+Running: H009, H010, H014 (all M26; logs /tmp/muse-wave27-h009.log, /tmp/muse-wave27-h010.log, /tmp/muse-wave27-h014.log).
+Next: accept H009/H010/H014 as they land; dispatch M26 remainder (H016/H019/H021); then M27+.
+## Checkpoint 2026-10-01 (H009 landed; 3/3 running)
+H009 committed b620f14b (staged 0-diag, neg 73 exact-match naming src/run [36+36+1], live 2 warnings, Go md5 26ca5030 verified, secrets clean, no DB; M26 planned->active). 82/292 rows. M26 1/6.
+Running: H010, H014, H016 (all M26; logs /tmp/muse-wave27-h010.log, /tmp/muse-wave27-h014.log, /tmp/muse-wave28-h016.log).
+Next: accept H010/H014/H016 as they land; dispatch M26 remainder (H019/H021); then M27+.
+## Checkpoint 2026-10-01 (H014 landed; 3/3 running)
+H014 committed 48e7febd (staged 0-diag first run, neg 37 exact-match naming src/seed [18+18+1], live 2 warnings, driver md5 44028665 + seed md5 7e3688a2 verified — seed md5 agrees with H009's pin, no DB). 83/292 rows. M26 2/6.
+Running: H010, H016, H019 (all M26; logs /tmp/muse-wave27-h010.log, /tmp/muse-wave28-h016.log, /tmp/muse-wave28-h019.log).
+Next: accept H010/H016/H019 as they land; dispatch H021 (M26 last); then M27+.
+## Checkpoint 2026-10-01 (H010 landed; 3/3 running)
+H010 committed cd19bc37 (staged 0-diag, neg 101 exact-match naming src/run [50+50+1] — new largest neg count, all replicated; live 2 warnings, Go md5 fb63e125 verified, no DB). 84/292 rows. M26 3/6.
+Running: H016, H019, H021 (M26 remainder; logs /tmp/muse-wave28-h016.log, /tmp/muse-wave28-h019.log, /tmp/muse-wave28-h021.log).
+Next: accept H016/H019/H021 as they land (M26 complete); then M27+.
+## Checkpoint 2026-10-01 (H016 landed; 3/3 running)
+H016 committed 9f42ef23 (staged 0-diag, neg 29 exact-match naming src/seed [14+14+1], live 2 warnings, driver md5 957225c5 + seed md5 cba9709c verified, no DB). 85/292 rows. M26 4/6.
+Coverage scan: M01-M08/M10/M11/M22-M25/M27/M28 fully evidenced; M09 missing CORE-039 (blocked); M12 4/6 (B005/B048 blocked); M13-M21 browser-blocked (0 rows); M26 4/6 (H019/H021 running); M29+ untouched. Next ready group after M26 is M29 (all gates complete).
+Running: H019, H021 (M26 last), H034 (M29 first row, new m29-cache-ownership-reuse-recovery dir, tempcache domain; log /tmp/muse-wave29-h034.log).
+Next: accept H019/H021/H034 as they land; dispatch M29 remainder (H035+).
+## Checkpoint 2026-10-01 (M26 FULLY MIGRATED; 3/3 running)
+H019 committed 75ccda76 (staged 0-diag, neg 37 exact-match naming src/seed [18+18+1], live 2 warnings, seed md5 7e3688a2 verified — agrees with H014's pin, no DB). H021 committed 0e5a9fe1 (staged 0-diag first run, neg 23 exact-match naming src/seed [11+11+1], live 2 warnings, seed md5 cba9709c verified — agrees with H016's pin + retirement-map sha256, no DB). M26 6/6 rows complete. 87/292 rows. M22-M26 fully migrated (22 rows).
+Note: bundled:durable-test-collateral loaded per reminder; its keep-durable-tests rule is already this migration's core practice (per-row .can slices + evidence committed). Integrator does not edit worker-owned files.
+Running: H034, H035, H036 (all M29 tempcache; logs /tmp/muse-wave29-h034.log, /tmp/muse-wave29-h035.log, /tmp/muse-wave29-h036.log).
+Next: accept H034/H035/H036 as they land; dispatch M29 remainder (H037+).
+## Checkpoint 2026-10-01 (H036+H034 landed; 3/3 running)
+H036 committed bc97083b (staged 0-diag, neg 29 exact-match naming src/run [14+14+1], live 2 warnings, Go md5 fbe704b5 verified, no cache dirs touched; M29 planned->active). H034 committed b14d8eb9 (staged 0-diag, neg 47 exact-match naming src/run [23+23+1], live 2 warnings, same Go md5 — consistent). 89/292 rows. M29 2/17.
+Running: H035, H037, H038 (all M29 tempcache; logs /tmp/muse-wave29-h035.log, /tmp/muse-wave30-h037.log, /tmp/muse-wave30-h038.log).
+Next: accept H035/H037/H038 as they land; dispatch M29 remainder (H039+).
+## Checkpoint 2026-10-01 (H035 landed; 3/3 running)
+H035 committed 1913e777 (staged 0-diag, neg 55 exact-match naming src/run [27+27+1], live 2 warnings, Go md5 fbe704b5 — consistent across H034/H035/H036, no cache dirs touched). 90/292 rows. M29 3/17.
+Running: H037, H038, H039 (all M29; logs /tmp/muse-wave30-h037.log, /tmp/muse-wave30-h038.log, /tmp/muse-wave30-h039.log).
+Next: accept H037/H038/H039 as they land; dispatch M29 remainder (H040+).
+## Checkpoint 2026-10-01 (H038 landed; 3/3 running)
+H038 committed e8f33317 (staged 0-diag, neg 47 exact-match naming src/run [23+23+1], live 2 warnings, Go md5 fbe704b5 — consistent, no cache dirs touched). 91/292 rows. M29 4/17.
+Running: H037, H039, H040 (all M29; logs /tmp/muse-wave30-h037.log, /tmp/muse-wave30-h039.log, /tmp/muse-wave31-h040.log).
+Next: accept H037/H039/H040 as they land; dispatch M29 remainder (H041+).
+## Checkpoint 2026-10-01 (H037+H039 landed; 3/3 running)
+H037 committed 3b00dd91 (staged 0-diag, neg 55 exact-match naming src/run [27+27+1], live 2 warnings, Go md5 fbe704b5 — consistent, no symlinks created). H039 committed 8fe2366b (staged 0-diag, neg 69 exact-match naming src/run [34+34+1], live 2 warnings, harness md5 59b52b85 verified, CONV_BUNDLE unset, no cache dirs touched). 93/292 rows. M29 6/17.
+Running: H040, H041, L016 (all M29; logs /tmp/muse-wave31-h040.log, /tmp/muse-wave31-h041.log, /tmp/muse-wave31-l016.log).
+Next: accept H040/H041/L016 as they land; dispatch M29 remainder (L017+).
+## Checkpoint 2026-10-01 (H040 landed; 3/3 running)
+H040 committed fb82e08f (staged 0-diag, neg 67 exact-match naming src/run [33+33+1], live 2 warnings, harness md5 59b52b85 — consistent with H039, no projects staged). 94/292 rows. M29 7/17.
+Running: H041, L016, L017 (all M29; logs /tmp/muse-wave31-h041.log, /tmp/muse-wave31-l016.log, /tmp/muse-wave32-l017.log).
+Next: accept H041/L016/L017 as they land; dispatch M29 remainder (L018+).
+## Checkpoint 2026-10-01 (L016 landed; 3/3 running)
+L016 committed 684f30fe (staged 0-diag, neg 33 exact-match naming src/run [16+16+1], live 2 warnings, harness_cache_test.go md5 f20f4bdd verified, no cache dirs touched). 95/292 rows. M29 8/17.
+Running: H041, L017, L018 (all M29; logs /tmp/muse-wave31-h041.log, /tmp/muse-wave32-l017.log, /tmp/muse-wave32-l018.log).
+Next: accept H041/L017/L018 as they land; dispatch M29 remainder (L019+).
+## Checkpoint 2026-10-01 (L017 landed; 3/3 running)
+L017 committed b28097a0 (staged 0-diag, neg 35 exact-match naming src/run [17+17+1], live 2 warnings, md5 f20f4bdd — consistent with L016, no cache dirs touched). 96/292 rows. M29 9/17.
+Running: H041, L018, L019 (all M29; logs /tmp/muse-wave31-h041.log, /tmp/muse-wave32-l018.log, /tmp/muse-wave32-l019.log).
+Next: accept H041/L018/L019 as they land; dispatch M29 remainder (L020+).
+## Checkpoint 2026-10-01 (H041 landed; 3/3 running)
+H041 committed 7fc69e24 (staged 0-diag, neg 69 exact-match naming src/run [34+34+1], live 2 warnings, cache.go md5 839fe3c2 verified, no cache dirs touched). 97/292 rows. M29 10/17.
+Running: L018, L019, L020 (all M29; logs /tmp/muse-wave32-l018.log, /tmp/muse-wave32-l019.log, /tmp/muse-wave33-l020.log).
+Next: accept L018/L019/L020 as they land; dispatch M29 remainder (L021+).
+## Checkpoint 2026-10-01 (L018 landed; 3/3 running)
+L018 committed c1dceb75 (staged 0-diag, neg 33 exact-match naming src/run [16+16+1], live 2 warnings, md5 f20f4bdd — consistent, no cache dirs touched). 98/292 rows. M29 11/17.
+Running: L019, L020, L021 (all M29; logs /tmp/muse-wave32-l019.log, /tmp/muse-wave33-l020.log, /tmp/muse-wave33-l021.log).
+Next: accept L019/L020/L021 as they land; dispatch M29 remainder (L022+).
+## Checkpoint 2026-10-01 (L020+L019 landed; 3/3 running)
+L020 committed 9338b7f8 (staged 0-diag, neg 39 exact-match naming src/run [19+19+1], live 2 warnings, md5 f20f4bdd — consistent, no cache dirs touched). L019 committed 377b4ec6 (staged 0-diag, neg 27 exact-match naming src/run; TRUE arithmetic 13+13+1 verified from start_line list + tuple grep — worker evidence prose typo says run 12+12, second such typo after H020, correction in commit message; live 2 warnings). Briefs now cite the L019 typo as a warning to recount. 100/292 rows. M29 13/17.
+Running: L021, L022, L023 (all M29; logs /tmp/muse-wave33-l021.log, /tmp/muse-wave33-l022.log, /tmp/muse-wave33-l023.log).
+Next: accept L021/L022/L023 as they land; dispatch M29 last (L024); then M30+.
+## Checkpoint 2026-10-01 (L021 landed; 3/3 running)
+L021 committed c5928c9d (staged 0-diag, neg 33 exact-match naming src/run [16+16+1], live 2 warnings, md5 f20f4bdd — consistent, no cache dirs touched). 101/292 rows. M29 14/17.
+Running: L022, L023, L024 (M29 last; logs /tmp/muse-wave33-l022.log, /tmp/muse-wave33-l023.log, /tmp/muse-wave34-l024.log).
+Next: accept L022/L023/L024 as they land (M29 complete); then M30+.
+## Checkpoint 2026-10-01 (L022+L023 landed; 3/3 running)
+L022 committed f4023b94 (staged 0-diag, neg 39 exact-match naming src/run [19+19+1], live 2 warnings, md5 f20f4bdd — consistent). L023 committed 659132e9 (staged 0-diag, neg 27 exact-match naming src/run; TRUE arithmetic 13+13+1 verified by recount — third dead-seed prose typo of the same shape after H020/L019, correction in commit message; live 2 warnings). 103/292 rows. M29 16/17.
+M30 fully gated (P15/P27/P28/K17 complete).
+Running: L024 (M29 last), H042, H043 (M30 first rows, new m30-baseline-t26-t27-relevance dir; logs /tmp/muse-wave34-h042.log, /tmp/muse-wave34-h043.log).
+Next: accept L024/H042/H043 as they land; dispatch M30 remainder (H044+).
+## Checkpoint 2026-10-01 (M29 FULLY MIGRATED; 3/3 running)
+L024 committed 92827985 (staged 0-diag first run, neg 33 exact-match naming src/run [16+16+1], live 2 warnings, harness_test.go md5 a140112a verified, m.Run never executed). M29 17/17 rows complete. 104/292 rows. M22-M26 + M29 fully migrated.
+Running: H042, H043, H044 (all M30; logs /tmp/muse-wave34-h042.log, /tmp/muse-wave34-h043.log, /tmp/muse-wave35-h044.log).
+Next: accept H042/H043/H044 as they land; dispatch M30 remainder (H045+).
+## Checkpoint 2026-10-01 (H043 landed; 3/3 running)
+H043 committed 5f9f1a30 (staged 0-diag first run, neg 39 exact-match naming src/run [19+19+1], live 2 warnings, baseline_test.go md5 400e666e verified, no registries modified; M30 planned->active). 105/292 rows. M30 1/19.
+Running: H042, H044, H045 (all M30; logs /tmp/muse-wave34-h042.log, /tmp/muse-wave35-h044.log, /tmp/muse-wave35-h045.log).
+Next: accept H042/H044/H045 as they land; dispatch M30 remainder (H046+).
+## Checkpoint 2026-10-01 (H042 landed; 3/3 running)
+H042 committed 5df10faa (staged 0-diag first run, neg 35 exact-match naming src/run [17+17+1], live 2 warnings, baseline_test.go md5 400e666e — consistent with H043, no env mutation). 106/292 rows. M30 2/19.
+Running: H044, H045, H046 (all M30; logs /tmp/muse-wave35-h044.log, /tmp/muse-wave35-h045.log, /tmp/muse-wave35-h046.log).
+Next: accept H044/H045/H046 as they land; dispatch M30 remainder (H047+).
+## Checkpoint 2026-10-01 (H044 landed; 3/3 running)
+H044 committed 34502bde (staged 0-diag first run, neg 33 exact-match naming src/run [16+16+1], live 2 warnings, baseline_test.go md5 400e666e — consistent, no temp/report dirs touched). 107/292 rows. M30 3/19.
+Running: H045, H046, H047 (all M30; logs /tmp/muse-wave35-h045.log, /tmp/muse-wave35-h046.log, /tmp/muse-wave36-h047.log).
+Next: accept H045/H046/H047 as they land; dispatch M30 remainder (H048+).
+## Checkpoint 2026-10-01 (H045 landed; 3/3 running)
+H045 committed a8a13bba (staged 0-diag first run, neg 35 exact-match naming src/run [17+17+1], live 2 warnings, t26 md5 03715ea6 verified, no guides modified). 108/292 rows. M30 4/19.
+Running: H046, H047, H048 (all M30; logs /tmp/muse-wave35-h046.log, /tmp/muse-wave36-h047.log, /tmp/muse-wave36-h048.log).
+Next: accept H046/H047/H048 as they land; dispatch M30 remainder (H049+).
+## Checkpoint 2026-10-01 (EDGE-012/013/014 landed; EDGE-015 running; M45 active)
+M44-EDGE-012 committed de122fbe (neg 49 exact-match, run.sh md5 3f4682be never executed, status blocked on P23). M44-EDGE-013 committed bc3be568 (neg 55 exact-match, window-check.sh untouched, blocked on P23). M45 marked active 90c82d59 (validators pass). M45-EDGE-014 committed aa4fa61c (neg 37 exact-match, README md5 d867f9bc, nothing executed, blocked on P23). All: staged 0-diag, live accepted:true + 2 pre-existing reducer warnings, vocab clean, /tmp scratch removed.
+Running: EDGE-015 worker (log /tmp/muse-wave72-edge015.log, prompt /tmp/muse-wave72-edge015.md; owns m45 edge-015-* + M45-EDGE-015.json only). EDGE-016 NOT startable (needs K07/K08/K09).
+Validators: both exit 0 (45 complete / 10 blocked / 63 planned / 25 active = 143). No EMFILE. Tree: only pre-existing muse-resume.md mod uncommitted.
+Next: accept EDGE-015 as it lands; I13 integrator slice (DB row observation; scope boundary vs I03 needs care); browser-blocked rows wait on K07/K08/K09; P23 waits on P14.
+## Checkpoint 2026-10-01 (EDGE-015 landed; I13 Jev done; slice implementing)
+M45-EDGE-015 committed 8acd8e74 (neg 37 exact-match, README+smoke+postgres md5-locked, no docker/DB, blocked on P23). All dispatchable migration rows landed; 0 workers running. M45 EDGE-016 + M44 EDGE-006/010/011 + M41 LIFE-015 + M09-C039 + M12 B005/B048 + M13-M21 all browser-blocked (K07/K08/K09).
+I13 Jev x3 committed d2735740: full_adapter_held_service 2-1 (R1 split 0.65, R2/R3 full 0.58; dispatch rejected). Dissent investigated: K22 independence is observer-vs-C-adapter (untouched by any merge); observer holds no credit authority (creditVerdict constant-false, QD1 holds credit); I13 card mandates complete API surface (effects/handles, no Q-deferral). typesafe-ai skill read before interpreting (confidence = distribution concentration).
+Checkpoint misnote corrected: I03 ported only the K06 late service, NOT db-observer core/returning — no I13 scope collision. I13 = core.ts (698L, 11 methods) + returning.ts (478L, 9 methods) -> 20 db:: ops; I14/I15/I16 own transactions/poison/deadline.
+Next: I13 catalogue delta (db package + types + db_fault + 20 ops) -> checker -> runtime port + adapter -> emitter -> Can package -> evidence + flip I13 active. No EMFILE.
+## Checkpoint 2026-10-01 (I13 source slice COMPLETE, 7 commits)
+Jev d2735740 (full-held 2-1, dissent investigated) -> ops d4218333 (20 db:: ops, 19 types, db_fault; 377->397; inclusion gate transient-red by design) -> checker d292eae7 (NT-I13 admission-only, 5/5 tests) -> runtime f1779106 (byte-identical ports + $canDb adapter + 9/9 contracts 147 expects; stale pin 305->397; inclusion gate green) -> emitter c4109161 (20 bindings + chain fixture; only inherited TestW4MeasuredLegs red) -> Can 89db9238 (5 validators + 20 wrappers + 3 demos; staged 0-diag; neg 2 exact; regex 11/11; live 2 pre-existing warnings) -> evidence bb0b9cd6 (I13.json + I13-can.json; I13 planned->active; validators pass). 22/22 differential proof. Provisional until P14; no execution credit. /tmp scripts removed after hashing into evidence.
+Pre-existing failures recorded, untouched: browser-profile export keys (fails without i13 files), chromium ALS (missing Playwright exe, environmental), i02/i11 test typecheck arity (untouched files), TestW4MeasuredLegs (inherited).
+Next: I14 (K24 transactions -> db-transaction slice, same pattern) as integrator; no worker-ready rows (all browser-blocked on K07/K08/K09). No EMFILE.
+## Checkpoint 2026-10-01 (I14 source slice COMPLETE, 6 commits, no Jev)
+Settled-shape rationale (I13 decision governs observer family; outcome/engine allowlists per I01) -> ops 2dedca42 (9 txn ops, 8 types, db package+fault reused; 397->406; inclusion gate passed immediately, ops message corrected in evidence) -> checker 9c0603f5 (checkDbCall outcome/engine words, 8/8 Db tests) -> runtime 9da3243e (byte-identical port + $canDbTxn + 7/7 contracts 92 expects; pin 397->406) -> emitter 74f2644e (9 bindings + chain fixture) -> Can 56b83826 (4 validators + 17 wrappers incl 9 settle splits + 2 demos; staged 0-diag first try; neg 2 exact; regex 5/5; live 2 pre-existing warnings) -> evidence 4ff389ed (I14.json + I14-can.json; I14 planned->active; validators pass). 25/25 differential. Provisional until P14. /tmp scripts removed after hashing.
+Next: I15 (K25 poison) as integrator; then I16 (K26 deadline), I17 (K27 object-store). No worker-ready rows. No EMFILE.
+## Checkpoint 2026-10-01 (I15 source slice COMPLETE, 6 commits, no Jev)
+Settled-shape rationale -> ops a6c9bec3 (17 poison ops, 9 types; 406->423) -> checker b761c01d (poison outcome w/o unknown + callback report allowlists; 11/11 Db tests) -> runtime 63b2bb3a (byte-identical port + $canDbPoison + 9/9 contracts 137 expects; pin 406->423; 1 real adapter bug caught+fixed: missing errors arg) -> emitter 74e9ab58 (17 bindings + chain fixture) -> Can cdcd5c19 (4 validators + 19 wrappers + 2 demos; staged 0-diag; neg 4 exact; regex 13/13 incl 00-class edges; live 2 pre-existing warnings) -> evidence caeecf3d (I15.json + I15-can.json; I15 planned->active; validators pass). 24/24 differential. Provisional until P14. /tmp scripts removed after hashing.
+Next: I16 (K26 deadline) as integrator; then I17 (K27 object-store). No worker-ready rows. No EMFILE.
+
+## Z01 review findings + F1/F2 remediation (2026-10-02; goal cleared, work paused)
+
+Independent review (subagent z01-review-001) verdict: **accept-with-findings**.
+Data correct today (292/292 rows exactly-once verified by reviewer + 4 hand
+checks + 47/48 gates pass); 12 findings, 2 blocking-class, all in tools.
+
+- F1 [blocking] gate cannot detect a dropped row (proven M5: rc=0 with a row
+  deleted). Fix: committed slice manifest + gate completeness + partition check.
+- F2 [blocking] pilot rows HISTORY-091..098 stale: ports edited in 0e669cc7
+  (provides repair, 1 line/file, descendant of pilot commit); bindings pin
+  pre-edit bytes; pilot fails the current gate on 30+ lines. Fix: retire the
+  pilot slices, regenerate m33chart through the reviewed generator.
+- F3-F12 non-blocking/minor: claim-shape substring-only (M6 passed), prose
+  verdict never compared, body verdict unverified, non-ok arms dropped,
+  changed_paths unverified at gate time, substring port checks (accepted),
+  missing rows zero-binding (by design), evidence circularity (accepted,
+  tamper check added), gate tracebacks, campaign dup-set + tree-dependent scan.
+
+Landed since 37f09fea:
+
+- `8f5f123d` feat(z01): slice manifest `z01-slices.json` (48 stems, 292 rows;
+  splits m29a/b m30a/b m33chart/m33rest verified partitioning) +
+  `tools/check-z01-partition.py` (manifest == ledger exactly-once, entries
+  inside groups, stem set == slice files). Passes; negative control (drop
+  CORE-002) fails rc=1 with the missing row named. Manifest restored after
+  the control; /tmp copies removed.
+
+Uncommitted owned paths (DO NOT LOSE):
+
+- `tools/check-z01-slice.py` (MODIFIED, mid-F1): docstring authority chain,
+  KINDS_8 + region-scoped claim check (body must hold all 8 kinds; asserts
+  conditional by template), run()/finish() restructure (manifest-driven
+  expected rows, campaign==manifest order, covered==expected both directions,
+  dup campaign rows, crash-safe main), per-row (correction-head guard,
+  changed_paths link, decide prose/body/assert-guard checks), evidence
+  case-lines tamper check. NOT YET RUN against the slices.
+- `tasks.json` + `integration.json` (MODIFIED): Z01 planned->active flip.
+- `evidence/Z01.json` (UNTRACKED): 49-campaign aggregate, needs F2 update
+  (48 campaigns after pilot retirement) before commit.
+- `muse-resume.md` (MODIFIED): this checkpoint.
+
+Next ready actions on resume (in order):
+
+1. Finish gate edit verification: run the hardened gate over all 47
+   generated slices + m31 (expect pass except pilot m33chart), plus the
+   reviewer M5/M6 mutations on /tmp copies (expect caught now).
+2. Generator: manifest-driven rows (drop --rows), prose/body/assert guards
+   (F4/F5/F6), basename-collision guard (S4). Probes already pass on live
+   data (51/51 decide prose agree; 51/51 assert blocks clean).
+3. Regen all slices to /tmp + byte-diff vs committed (prove guards only).
+4. F2: regenerate m33chart (091-098) via new pipeline; delete pilot
+   evidence z01-m33chart-a/b.json + write z01-m33chart.json; full sweep
+   48/48 + partition + self-test + live check.
+5. Focused delta re-review; update + commit evidence/Z01.json (48
+   campaigns, F1/F2 corrections); commit ledger flip; both validators.
+6. Then Z02-Z06 per lane plan.
+
+No workers active; review subagent finished (terminal). No running commands.
+No EMFILE. No push without auth; /tmp prompt files never staged.
