@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "4f5f568745af0ebd333b2cc47b8750c469a71b38e55fe1aa55d995ad19aaee65";
+export const catalogueSHA256 = "d836ef810620c5d882c6d41ba5b4378b21fdcf4a3d0ae908399395897dc20be4";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -5970,6 +5970,254 @@ export const catalogue = freeze({
     {
      "name": "digest",
      "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_connection_handle",
+   "identity": "can.std.http_peer@1::ws_connection_handle",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "kind",
+     "type": "str"
+    },
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_close_facts",
+   "identity": "can.std.http_peer@1::ws_close_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "origin",
+     "type": "str"
+    },
+    {
+     "name": "close_code",
+     "type": "int"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_event",
+   "identity": "can.std.http_peer@1::ws_event",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "opcode",
+     "type": "str"
+    },
+    {
+     "name": "payload",
+     "type": "int[]"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_connection_facts",
+   "identity": "can.std.http_peer@1::ws_connection_facts",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "id",
+     "type": "str"
+    },
+    {
+     "name": "owner",
+     "type": "str"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    },
+    {
+     "name": "state",
+     "type": "str"
+    },
+    {
+     "name": "local_close",
+     "type": "option::value<http_peer::ws_close_facts>"
+    },
+    {
+     "name": "remote_close",
+     "type": "option::value<http_peer::ws_close_facts>"
+    },
+    {
+     "name": "sent_frames",
+     "type": "int"
+    },
+    {
+     "name": "sent_bytes",
+     "type": "int"
+    },
+    {
+     "name": "delivered_events",
+     "type": "int"
+    },
+    {
+     "name": "consumed_events",
+     "type": "int"
+    },
+    {
+     "name": "pending_events",
+     "type": "int"
+    },
+    {
+     "name": "pending_bytes",
+     "type": "int"
+    },
+    {
+     "name": "dropped_events",
+     "type": "int"
+    },
+    {
+     "name": "dropped_bytes",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_send_receipt",
+   "identity": "can.std.http_peer@1::ws_send_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "opcode",
+     "type": "str"
+    },
+    {
+     "name": "accepted",
+     "type": "int"
+    },
+    {
+     "name": "sent_frames_total",
+     "type": "int"
+    },
+    {
+     "name": "sent_bytes_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_deliver_receipt",
+   "identity": "can.std.http_peer@1::ws_deliver_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "opcode",
+     "type": "str"
+    },
+    {
+     "name": "pending_events",
+     "type": "int"
+    },
+    {
+     "name": "pending_bytes",
+     "type": "int"
+    },
+    {
+     "name": "delivered_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_poll_result",
+   "identity": "can.std.http_peer@1::ws_poll_result",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "event",
+     "type": "option::value<http_peer::ws_event>"
+    },
+    {
+     "name": "pending_events",
+     "type": "int"
+    },
+    {
+     "name": "consumed_total",
+     "type": "int"
+    },
+    {
+     "name": "delivered_total",
+     "type": "int"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http_peer::ws_close_receipt",
+   "identity": "can.std.http_peer@1::ws_close_receipt",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "origin",
+     "type": "str"
+    },
+    {
+     "name": "close_code",
+     "type": "int"
+    },
+    {
+     "name": "terminal",
+     "type": "bool"
+    },
+    {
+     "name": "dropped_events",
+     "type": "int"
+    },
+    {
+     "name": "dropped_bytes",
+     "type": "int"
     }
    ],
    "leaves": [],
@@ -24586,6 +24834,298 @@ export const catalogue = freeze({
    "refs": [
     "NT-I17"
    ]
+  },
+  {
+   "name": "http_peer::ws_connect",
+   "identity": "can.std.http_peer@1::ws_connect",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "destination",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_connection_handle",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Array.prototype.includes",
+     "Map.prototype.set"
+    ],
+    "adapter": "Connect one client to a declared destination; the admitted grant is the service owner (K21 connect).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_send",
+   "identity": "can.std.http_peer@1::ws_send",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "opcode",
+     "type": "str"
+    },
+    {
+     "name": "payload",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_send_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Send one frame on an open connection; empty payloads are legal frames (K21 send).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_deliver_event",
+   "identity": "can.std.http_peer@1::ws_deliver_event",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "opcode",
+     "type": "str"
+    },
+    {
+     "name": "payload",
+     "type": "int[]"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_deliver_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.push"
+    ],
+    "adapter": "Inject one scripted remote event; nothing inbound arrives on its own (K21 deliverEvent).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_poll_event",
+   "identity": "can.std.http_peer@1::ws_poll_event",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_poll_result",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get",
+     "Array.prototype.shift"
+    ],
+    "adapter": "Poll one queued event; empty polls on live connections return event none (K21 pollEvent).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_close",
+   "identity": "can.std.http_peer@1::ws_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "close_code",
+     "type": "int"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_close_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Record the local close; the second close completes the handshake and counts drops (K21 close).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_deliver_remote_close",
+   "identity": "can.std.http_peer@1::ws_deliver_remote_close",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    },
+    {
+     "name": "close_code",
+     "type": "int"
+    },
+    {
+     "name": "reason",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_close_receipt",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "test::closed_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Inject the scripted remote close; second or contradicting deliveries reject (K21 deliverRemoteClose).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
+  },
+  {
+   "name": "http_peer::ws_read_connection_facts",
+   "identity": "can.std.http_peer@1::ws_read_connection_facts",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "connection",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http_peer::ws_connection_facts",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "http_peer::peer_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "Map.prototype.get"
+    ],
+    "adapter": "Read connection facts; local and remote closes stay independent (K21 connectionFacts).",
+    "task": "NT-I05"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I05"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -32887,6 +33427,378 @@ export const catalogueTypeShapes = freeze([
         "name": "digest",
         "type": {
           "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_connection_handle",
+    "identity": "can.std.http_peer@1::ws_connection_handle",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "destination",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_close_facts",
+    "identity": "can.std.http_peer@1::ws_close_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "origin",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "close_code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_event",
+    "identity": "can.std.http_peer@1::ws_event",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "opcode",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "payload",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_connection_facts",
+    "identity": "can.std.http_peer@1::ws_connection_facts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "owner",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "destination",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "state",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "local_close",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::ws_close_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "remote_close",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::ws_close_facts",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "sent_frames",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "sent_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "delivered_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "consumed_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_send_receipt",
+    "identity": "can.std.http_peer@1::ws_send_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "opcode",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "accepted",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "sent_frames_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "sent_bytes_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_deliver_receipt",
+    "identity": "can.std.http_peer@1::ws_deliver_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "opcode",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "pending_bytes",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "delivered_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_poll_result",
+    "identity": "can.std.http_peer@1::ws_poll_result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "event",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "http_peer::ws_event",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "pending_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "consumed_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "delivered_total",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http_peer::ws_close_receipt",
+    "identity": "can.std.http_peer@1::ws_close_receipt",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "origin",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "close_code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "terminal",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped_events",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "dropped_bytes",
+        "type": {
+          "name": "int",
           "arguments": null
         }
       }

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 4f5f568745af0ebd333b2cc47b8750c469a71b38e55fe1aa55d995ad19aaee65.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d836ef810620c5d882c6d41ba5b4378b21fdcf4a3d0ae908399395897dc20be4.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -323,6 +323,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | store::pending_facts | record |  | str prefix, store::write_facts[] writes, int count | true |
 | store::stored_object | record |  | str key, bytes::buffer bytes, int size, str digest | true |
 | store::cleanup_receipt | record |  | str prefix, str owner, str handle_digest, int objects, int pending, int generation, str digest | true |
+| http_peer::ws_connection_handle | record |  | str kind, str id, str owner, str destination | true |
+| http_peer::ws_close_facts | record |  | str origin, int close_code, str reason | true |
+| http_peer::ws_event | record |  | str opcode, int[] payload | true |
+| http_peer::ws_connection_facts | record |  | str id, str owner, str destination, str state, option::value&lt;http_peer::ws_close_facts&gt; local_close, option::value&lt;http_peer::ws_close_facts&gt; remote_close, int sent_frames, int sent_bytes, int delivered_events, int consumed_events, int pending_events, int pending_bytes, int dropped_events, int dropped_bytes | true |
+| http_peer::ws_send_receipt | record |  | str opcode, int accepted, int sent_frames_total, int sent_bytes_total | true |
+| http_peer::ws_deliver_receipt | record |  | str opcode, int pending_events, int pending_bytes, int delivered_total | true |
+| http_peer::ws_poll_result | record |  | option::value&lt;http_peer::ws_event&gt; event, int pending_events, int consumed_total, int delivered_total | true |
+| http_peer::ws_close_receipt | record |  | str origin, int close_code, bool terminal, int dropped_events, int dropped_bytes | true |
 
 ## Domain errors
 
@@ -923,6 +931,13 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | store::list | test::owner owner, str grant_owner, str prefix, str session, str token, int limit, option::value&lt;str&gt; continuation → store::page_facts | {test::stale_handle, store::store_fault} |  | Map.prototype.get, Map.prototype.set, Array.prototype.sort, crypto.createHash, crypto.randomBytes | List one page of settled keys; none starts the listing, continuations are opaque single-use edges (K27 list). | supplied | NT-I17 / NT-I17 |
 | store::seal_cleanup | test::owner owner, str grant_owner, str prefix → store::cleanup_receipt | {test::stale_handle, store::store_fault} |  | Map.prototype.get, crypto.createHash | Seal the prefix as cleaned up: no live sessions, writes, objects, plus a terminal empty scan at this generation (K27 sealCleanup). | supplied | NT-I17 / NT-I17 |
 | store::shared_digest | test::owner owner → str | {test::stale_handle} |  | Array.prototype.sort, crypto.createHash | Digest the foreign shared bucket the observer never reads or mutates (K27 sharedDigest). | supplied | NT-I17 / NT-I17 |
+| http_peer::ws_connect | test::owner owner, str destination → http_peer::ws_connection_handle | {test::stale_handle, http_peer::peer_fault} |  | Array.prototype.includes, Map.prototype.set | Connect one client to a declared destination; the admitted grant is the service owner (K21 connect). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_send | test::owner owner, str connection, str opcode, int[] payload → http_peer::ws_send_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get | Send one frame on an open connection; empty payloads are legal frames (K21 send). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_deliver_event | test::owner owner, str connection, str opcode, int[] payload → http_peer::ws_deliver_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get, Array.prototype.push | Inject one scripted remote event; nothing inbound arrives on its own (K21 deliverEvent). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_poll_event | test::owner owner, str connection → http_peer::ws_poll_result | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get, Array.prototype.shift | Poll one queued event; empty polls on live connections return event none (K21 pollEvent). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_close | test::owner owner, str connection, int close_code, str reason → http_peer::ws_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get | Record the local close; the second close completes the handshake and counts drops (K21 close). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_deliver_remote_close | test::owner owner, str connection, int close_code, str reason → http_peer::ws_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get | Inject the scripted remote close; second or contradicting deliveries reject (K21 deliverRemoteClose). | supplied | NT-I05 / NT-I05 |
+| http_peer::ws_read_connection_facts | test::owner owner, str connection → http_peer::ws_connection_facts | {test::stale_handle, http_peer::peer_fault} |  | Map.prototype.get | Read connection facts; local and remote closes stay independent (K21 connectionFacts). | supplied | NT-I05 / NT-I05 |
 
 ## Native declaration profiles
 
