@@ -5,6 +5,36 @@ import (
 	"testing"
 )
 
+func TestHttpPeerWsEmission(t *testing.T) {
+	program := sourceProgram(t, "../../testdata/current/http-peer-ws/main.can")
+	artifacts, err := AssertionModules(program, "runtime", httpDependencies(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var joined strings.Builder
+	for _, artifact := range artifacts {
+		joined.Write(artifact.Bytes)
+	}
+	for _, want := range []string{
+		"$canHttpPeer.ws.connect",
+		"$canHttpPeer.ws.send",
+		"$canHttpPeer.ws.deliverEvent",
+		"$canHttpPeer.ws.pollEvent",
+		"$canHttpPeer.ws.close",
+		"$canHttpPeer.ws.deliverRemoteClose",
+		"$canHttpPeer.ws.readConnectionFacts",
+		"$canCreateHttpPeerWs",
+		"export let $canHttpPeer:",
+		"test-support/slices/i05/websocket.ts",
+		"$canTest.owner",
+		"peerFault:",
+	} {
+		if !strings.Contains(joined.String(), want) {
+			t.Fatalf("missing %s", want)
+		}
+	}
+}
+
 func TestHttpPeerEmission(t *testing.T) {
 	program := sourceProgram(t, "../../testdata/current/http-peer/peer.can")
 	artifacts, err := AssertionModules(program, "runtime", httpDependencies(t))

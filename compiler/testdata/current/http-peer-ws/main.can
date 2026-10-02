@@ -1,0 +1,30 @@
+package test_http_peer_ws
+    provides []
+    uses [http_peer, option, test]
+fn int ws_roundtrip
+    emits {test::invalid_grant, test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call http_peer::ws_connect(owner, "ws-a") as http_peer::ws_connection_handle connected
+        call http_peer::ws_send(owner, "w1", "text", [1, 2, 3]) as http_peer::ws_send_receipt sent
+        call http_peer::ws_deliver_event(owner, "w1", "binary", [4, 5]) as http_peer::ws_deliver_receipt injected
+        call http_peer::ws_poll_event(owner, "w1") as http_peer::ws_poll_result polled
+        call http_peer::ws_close(owner, "w1", 1000, "done") as http_peer::ws_close_receipt local
+        call http_peer::ws_deliver_remote_close(owner, "w1", 1000, "bye") as http_peer::ws_close_receipt remote
+        call http_peer::ws_read_connection_facts(owner, "w1") as http_peer::ws_connection_facts facts
+        test::invalid_grant
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
