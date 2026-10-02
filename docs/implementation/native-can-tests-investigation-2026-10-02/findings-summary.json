@@ -1,0 +1,75 @@
+{
+  "assertion_source": {
+    "all_native_test_files": 691,
+    "all_native_test_bytes": 19534128,
+    "active_can_files": 89,
+    "active_can_bytes": 2155724,
+    "active_can_lines": 14971,
+    "staged_can_files": 553,
+    "staged_can_bytes": 17202896,
+    "staged_can_lines": 142955,
+    "active_manifest_full_copy_characters": 479560,
+    "active_repeated_ok_rhs_characters": 532845,
+    "staged_repeated_ok_rhs_characters": 4774440,
+    "active_assert_like_line_characters": 1038443,
+    "staged_observe_functions": 502,
+    "staged_observe_characters": 7872489
+  },
+  "plan": {
+    "files": 505,
+    "bytes": 9871167,
+    "evidence_files": 472,
+    "evidence_bytes": 6667202,
+    "row_receipts": 234,
+    "row_receipt_bytes": 5326717,
+    "command_records": 3915,
+    "row_command_records": 3168,
+    "excess_repeated_json_string_bytes": 971001,
+    "excess_repeated_result_string_bytes": 571986,
+    "structured_duration_fields": 0,
+    "result_records_containing_package_timings": 49,
+    "task_status": {
+      "complete": 47,
+      "active": 46,
+      "planned": 40,
+      "blocked": 10
+    },
+    "z01_manifest_stems": 48,
+    "z01_campaign_receipts": 49,
+    "p23_unconditional_row_gates": 196,
+    "p23_if_retained_row_gates": 71,
+    "browser_direct_row_gates": 38
+  },
+  "interpretation_limits": [
+    "Exact duplicate text is a count, not a safe-removal promise.",
+    "Command records include shared results duplicated across receipts; not unique executions.",
+    "No generated output emission, build, live scenario or benchmark was run.",
+    "All source counts refer to initial b1a9a9a8, unaffected by investigation documents."
+  ],
+  "jev": {
+    "consultations": 3,
+    "models": [
+      "jev-1.13.0",
+      "jev-1.13.0",
+      "jev-1.13.0"
+    ],
+    "input_tokens": 5424,
+    "output_tokens": 390,
+    "scope_choices": [
+      "retarget_minimal",
+      "retarget_minimal",
+      "retarget_minimal"
+    ],
+    "fixture_choices": [
+      "existing_updates",
+      "existing_updates",
+      "existing_updates"
+    ],
+    "sequence_choices": [
+      "vertical_live",
+      "vertical_live",
+      "vertical_live"
+    ],
+    "dissent": "No alternative won; consultation 3 assigns 0.01 to each competing scope alternative. Confidence is not proof."
+  }
+}

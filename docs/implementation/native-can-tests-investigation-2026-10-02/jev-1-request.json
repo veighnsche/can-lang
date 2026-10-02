@@ -1,0 +1,72 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "verified_facts": {
+      "can_head": "b1a9a9a8",
+      "can_plan_files": 224,
+      "can_plan_rows": 292,
+      "can_plan_tasks": 143,
+      "task_status": {
+        "complete": 47,
+        "active": 46,
+        "planned": 40,
+        "blocked": 10
+      },
+      "manolea_test_files": 28,
+      "manolea_code_files": 25,
+      "manolea_replaced_code_files": 0,
+      "retirement_paths_resolving_in_can": 224,
+      "retirement_paths_resolving_in_manolea": 0,
+      "staged_migration_can_files": 553,
+      "staged_migration_bytes": 17202896,
+      "active_source_can_files": 89,
+      "active_source_bytes": 2155724,
+      "duplicate_manifest_copy_characters": 479560,
+      "largest_staged_file_bytes": 213158,
+      "record_fields_in_largest_fixture": 61,
+      "record_variants_in_largest_fixture": 62,
+      "row_command_records": 3168,
+      "row_receipts": 234,
+      "row_receipt_bytes": 5326717,
+      "p23_direct_row_gates": 196,
+      "p23_conditional_row_gates": 71,
+      "browser_gated_rows": 38,
+      "git_commits_in_window": 497,
+      "window_start_utc": "2026-09-30T01:54:14.896958+00:00",
+      "window_end_utc": "2026-10-02T01:54:14.896958+00:00",
+      "worker_log_sum_agent_hours_proxy": 24.451955,
+      "worker_log_union_wall_hours_proxy": 11.348195,
+      "exact_execution_fraction_available": false
+    },
+    "interpretation_context": "The deliverable the human identifies is replacement of all code files in manolea-2/tests by Can-owned runnable tests. The current 143-task programme instead covers can-lang/tests. Every retirement path resolves in Can and none resolves in Manolea; no Manolea test file has been replaced. Three Manolea Can drivers already call production operations, with surrounding host probes still providing fixtures and verdicts. Remaining Manolea needs include process/readiness/restarts, SQLite observations, filesystem failure facts, HTTP and TLS boundary controls, and real browser interactions. Five browser subject files contain HTML/CSS/JavaScript and can be emitted as exact fixture bytes without changing their meaning. The other files comprise sixteen host probe entries, one Python mail helper, three Can drivers and three documents.\nThe existing compiler command can test returns a refusal because P23 has no live runner. Its current suite main only renders descriptors. All staged migration files import text or nothing, carry no external native effects, and lie outside the configured source_root=src. Their observation tables mainly return copied old-harness literals and compare those literals; granting runner qualification would not create missing live scenarios. A 61-field observation is restated for a baseline and every one-field drift, then repeated as both assert expectations and match implementation. Existing immutable record with updates can express the deltas. Manifest expectations are also copied in full into their function bodies. The runner already delegates equality to strict Bun.deepEquals with necessary identity guards and gives short diagnostics. Separately, emitted assertion modules import all authored functions/native bindings and repeat the entire model type graph; emitted size has not been measured.\nReal catches include wrong M10 case IDs, a dropped row accepted by an incomplete gate, stale pilot source hashes, exported-private type errors, an I11 false hold expectation missed by static checks, and owner pipe/refusal defects. Keep independent behavioral observations, omission detection, source-change invalidation, and cleanup controls. Evidence contains repeated checks and prose, not complete elapsed timings. Commit counts and surviving log lifetimes cannot prove the 80% implementation-time rule. The Mac has constrained disk/load; broad builds and performance runs remain deferred. There are no external users or compatibility requirement. Can should lower operations to native JavaScript/Bun, with only contract/immutability adapters. The human requires early, frequent implementation commits. This investigation changes no gate and implements nothing; consultation recommendations need explicit risk descriptions. P13 lacks the current strict memory/temp enforcement, P14 uses an ACK helper instead of the actual owner, and P13->P14->P23 blocks real qualification under that existing contract."
+  },
+  "questions": {
+    "scope": {
+      "type": "choice",
+      "instructions": "Which project boundary best advances the stated replacement goal while retaining real behavior coverage?",
+      "criteria": {
+        "retarget_minimal": "Anchor work to the 25 Manolea code files, reuse relevant existing Can mechanisms, add only needed native adapters and runner capabilities, preserve every actual probe obligation, and postpone unrelated Can-suite migrations.",
+        "finish_existing": "Make all 143 Can-suite tasks and 292 coverage rows accepted before beginning the Manolea replacements, keeping the present broad qualification and retirement barriers.",
+        "host_verdicts": "Remove host files from tests by relocating scenario policy and verdict computation into general TypeScript helpers, letting Can merely invoke them; accept weaker Can ownership."
+      }
+    },
+    "fixtures": {
+      "type": "choice",
+      "instructions": "Which treatment of repeated fixtures most reduces avoidable size while preserving independent expectations?",
+      "criteria": {
+        "existing_updates": "Use existing immutable with deltas for mutation fixtures, maintain independent field/verdict checks, keep exact bytes where they are the contract, and store provenance once with complete inventory/hash checks.",
+        "new_syntax": "Add assertion-root fixture-template syntax and an expanded abstraction system before addressing repeated record bodies or manifest arrays.",
+        "keep_clones": "Retain all full-record seed tables and full expected/body manifest copies as a mandatory assurance layer, including duplicates derived from the same generator."
+      }
+    },
+    "sequence": {
+      "type": "choice",
+      "instructions": "What implementation order gives the strongest early evidence that the new system can replace a real probe?",
+      "criteria": {
+        "vertical_live": "First complete one actual Manolea scenario through the runner, native mechanisms, independent facts and a deliberate defect; then port disjoint families in parallel and batch compatible qualification evidence.",
+        "static_first": "Write the rest of the static row campaigns and detailed per-row receipts before implementing live execution, qualifying the runner only after those artifacts are complete.",
+        "waive_execution": "Mark copied static expectations as replaced coverage and delete the original probes without executing their production subjects."
+      }
+    }
+  }
+}

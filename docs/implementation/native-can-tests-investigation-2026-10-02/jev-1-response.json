@@ -1,0 +1,39 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "scope": {
+      "type": "choice",
+      "choice": "retarget_minimal",
+      "confidence": 1.0,
+      "probabilities": {
+        "host_verdicts": 0.0,
+        "retarget_minimal": 1.0,
+        "finish_existing": 0.0
+      }
+    },
+    "fixtures": {
+      "type": "choice",
+      "choice": "existing_updates",
+      "confidence": 1.0,
+      "probabilities": {
+        "new_syntax": 0.0,
+        "existing_updates": 1.0,
+        "keep_clones": 0.0
+      }
+    },
+    "sequence": {
+      "type": "choice",
+      "choice": "vertical_live",
+      "confidence": 1.0,
+      "probabilities": {
+        "vertical_live": 1.0,
+        "waive_execution": 0.0,
+        "static_first": 0.0
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1804,
+    "output_tokens": 130
+  }
+}

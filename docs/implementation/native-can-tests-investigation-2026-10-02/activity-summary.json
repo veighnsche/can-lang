@@ -133,5 +133,34 @@
     "Commit types and added lines are proxies, not wall-time attribution.",
     "No claim that 40-50% implementation time or individual gate hours has been proved.",
     "Only project-related log metadata retained; no credentials or logs copied."
-  ]
+  ],
+  "commit_interval_activity_proxy": {
+    "method": "Assign each consecutive commit interval <=30 minutes to the activity category of the ending commit; leave longer intervals unassigned. This is a low-quality, incomplete activity proxy: an interval can contain several activities and parallel workers. It does not prove actual implementation fraction.",
+    "commit_counts": {
+      "compiler, runtime and native capabilities": 85,
+      "other language/editor/docs work": 54,
+      "plan evidence, ledger and checkpoints": 117,
+      "host owner and harness engineering": 27,
+      "Can controller, protocols and capabilities": 28,
+      "static migration and coverage campaigns": 186
+    },
+    "assigned_interval_hours": {
+      "other language/editor/docs work": 4.3728,
+      "compiler, runtime and native capabilities": 4.9594,
+      "plan evidence, ledger and checkpoints": 1.9803,
+      "host owner and harness engineering": 3.2261,
+      "Can controller, protocols and capabilities": 2.0742,
+      "static migration and coverage campaigns": 10.1356
+    },
+    "assigned_interval_shares": {
+      "other language/editor/docs work": 16.35,
+      "compiler, runtime and native capabilities": 18.54,
+      "plan evidence, ledger and checkpoints": 7.4,
+      "host owner and harness engineering": 12.06,
+      "Can controller, protocols and capabilities": 7.75,
+      "static migration and coverage campaigns": 37.89
+    },
+    "unassigned_long_gap_hours": 20.845833333333335,
+    "total_commit_span_hours": 47.594166666666666
+  }
 }

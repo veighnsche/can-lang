@@ -1,0 +1,6 @@
+{
+  "fact_values_equal": true,
+  "all_context_instructions_option_prose_pairwise_distinct": true,
+  "manual_semantic_review": "All variants retain the same target, inventory, execution gap, positive control findings, constraints and three sets of alternatives. Recommendations cover scope, existing syntax duplication remedies and execution-first scheduling. Numeric facts and technical identifiers remain exact. No response was used to rewrite a later request.",
+  "consultation_count": 3
+}

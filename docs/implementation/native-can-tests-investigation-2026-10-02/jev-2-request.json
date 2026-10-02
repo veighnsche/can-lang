@@ -1,0 +1,72 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "verified_facts": {
+      "can_head": "b1a9a9a8",
+      "can_plan_files": 224,
+      "can_plan_rows": 292,
+      "can_plan_tasks": 143,
+      "task_status": {
+        "complete": 47,
+        "active": 46,
+        "planned": 40,
+        "blocked": 10
+      },
+      "manolea_test_files": 28,
+      "manolea_code_files": 25,
+      "manolea_replaced_code_files": 0,
+      "retirement_paths_resolving_in_can": 224,
+      "retirement_paths_resolving_in_manolea": 0,
+      "staged_migration_can_files": 553,
+      "staged_migration_bytes": 17202896,
+      "active_source_can_files": 89,
+      "active_source_bytes": 2155724,
+      "duplicate_manifest_copy_characters": 479560,
+      "largest_staged_file_bytes": 213158,
+      "record_fields_in_largest_fixture": 61,
+      "record_variants_in_largest_fixture": 62,
+      "row_command_records": 3168,
+      "row_receipts": 234,
+      "row_receipt_bytes": 5326717,
+      "p23_direct_row_gates": 196,
+      "p23_conditional_row_gates": 71,
+      "browser_gated_rows": 38,
+      "git_commits_in_window": 497,
+      "window_start_utc": "2026-09-30T01:54:14.896958+00:00",
+      "window_end_utc": "2026-10-02T01:54:14.896958+00:00",
+      "worker_log_sum_agent_hours_proxy": 24.451955,
+      "worker_log_union_wall_hours_proxy": 11.348195,
+      "exact_execution_fraction_available": false
+    },
+    "interpretation_context": "What must be delivered is an executable Can replacement for the code in manolea-2/tests. Inspection shows the present task system inventories the Can repository's own tests: all listed retirement locations belong there, with no matching Manolea locations. Manolea has seen no migrated test files. Its three existing Can exercise programs reach production functionality but rely on Python for preparation and assessment. Completing the actual suite requires managed subprocesses with startup/restart handling, independent SQLite queries, filesystem damage/recovery facts, HTTP/TLS checks and browser activity. Exact HTML, CSS and JavaScript payloads in five uploaded-site fixtures must remain equivalent even if Can writes their bytes into scratch. The inventory otherwise contains sixteen host probe launch files, a Python mail fixture, three Can exercise programs and three documentation files.\nP23 is absent as running functionality: can test rejects execution and suite main only prints a skeleton description. The 553 migration packages use just text or no imports, expose no live external effects, and are excluded by source_root=src. Numerous apparent observations consist of old test text manufactured locally and checked against matching constants. Accepting P23 alone cannot supply those missing operations. Fixture growth arises by spelling an entire 61-member record for 62 baseline/drift inputs and duplicating that expansion in the asserted answers and match arms. Immutable with updates already provide a compact delta representation. Large manifest-returning functions also contain their complete output a second time as an expectation. Assertion comparison itself uses guarded strict Bun.deepEquals and terse failure messages. The generator additionally places every function/native import and all program types in each assertion unit; no output-size experiment was performed.\nThere is evidence that case-ID reconciliation, external completeness anchors, closure hashes, staged typechecking, semantic cross-checks and owner race/refusal controls find defects. In particular I11's incorrect false hold vector survived static acceptance. Independent subject facts, missing-entry checks, changed-source invalidation and reliable cleanup should survive simplification. Receipts repeatedly restate commands and descriptions, while elapsed accounting is incomplete; Git categories and file-lifetime proxies cannot establish an implementation percentage. Disk and laptop load are limited and broad compilation/benchmarking remains postponed. External customers and legacy compatibility are absent. Native JavaScript/Bun operations with necessary Can contract/immutability adaptation are the required execution model. Implementation must land small commits promptly. No source or acceptance policy is altered by this audit. Any proposed control removal must identify its risk. Under current acceptance, deficient strict memory/temp isolation in P13, the helper-only N in P14 and absent P23 execution are an actual serial qualification barrier."
+  },
+  "questions": {
+    "scope": {
+      "type": "choice",
+      "instructions": "What scope should guide the next work to fulfil the human endpoint with faithful behavioral checks?",
+      "criteria": {
+        "retarget_minimal": "Build around Manolea\u2019s 25 source obligations; retain useful Can infrastructure, implement demanded runner/native facilities, keep all probe semantics, and defer Can compiler-suite work unrelated to them.",
+        "finish_existing": "Require closure of the current 143-task, 292-row Can migration and its full acceptance/retirement chain before authoring replacements for Manolea.",
+        "host_verdicts": "Satisfy directory replacement by moving setup sequences and expected-result logic to generic TypeScript modules called from thin Can entrypoints, reducing Can\u2019s ownership of the tests."
+      }
+    },
+    "fixtures": {
+      "type": "choice",
+      "instructions": "How should duplicated test inputs be revised to lower file cost without sharing the answer with the implementation?",
+      "criteria": {
+        "existing_updates": "Represent seed changes with the already-supported immutable with operation, assert independent affected fields and outcomes, preserve byte-exact contracts, and centralize provenance behind inventory/closure validation.",
+        "new_syntax": "Prioritize a new template language for assertion inputs and more abstraction features before reducing the existing whole-record and manifest duplication.",
+        "keep_clones": "Continue requiring the complete expanded seed records and both full manifest expressions, even when one generation routine produced all copies."
+      }
+    },
+    "sequence": {
+      "type": "choice",
+      "instructions": "Which next-step ordering provides useful proof of real test replacement soonest?",
+      "criteria": {
+        "vertical_live": "Connect a genuine Manolea probe end to end with runner dispatch, native effects, independent observations and a known failure; follow with parallel family ports and shared qualification receipts.",
+        "static_first": "Finish producing nonexecuting migration tables plus individual proof documents, and only subsequently implement and accept the runtime test path.",
+        "waive_execution": "Treat locally manufactured literal comparisons as completed migration and retire the old probes despite the lack of production-subject runs."
+      }
+    }
+  }
+}
