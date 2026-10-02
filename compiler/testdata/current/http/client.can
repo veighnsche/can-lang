@@ -6,7 +6,8 @@ package http_client_qual
 /// builds the router and server config (sandbox-safe: no bind, no fetch).
 /// With ["live", port] it serves in-process and runs every client leg plus
 /// refusal controls: raw bytes round-trip, response headers, non-2xx as
-/// data, refused connection, bad method, and deadline expiry.
+/// data, refused connection, bad method, deadline expiry, and single,
+/// repeated and missing query parameters.
 fn http::server_response ping
     emits {}
     given
@@ -72,6 +73,30 @@ fn http::server_response hdr
             ok http::server_headers hd => match call http::response_text(st, hd, "h")
                 ok http::server_response res => ok res
 
+/// Query route: echoes the single id parameter; missing or repeated ids
+/// answer 400 through the query validator.
+fn http::server_response qitem
+    emits {}
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::query_one(req, "id")
+        when
+            sample: req, "id" => ok "7"
+        http::invalid_request => match call http::make_body_status(400)
+            http::invalid_request => match call http::status_internal()
+                ok http::body_status st => match call http::empty_server_headers()
+                    ok http::server_headers hd => match call http::response_text(st, hd, "bad")
+                        ok http::server_response res => ok res
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_text(st, hd, "bad id")
+                    ok http::server_response res => ok res
+        ok str id => match call http::status_ok()
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_text(st, hd, "item " + id)
+                    ok http::server_response res => ok res
+
 /// Body-text verdicts. Each row pins its mismatch refusal with real
 /// evaluation; the live row overrides the decode result so the pinned
 /// path reaches ok, while matching content only proves live, where
@@ -104,6 +129,20 @@ fn void check_hello
             false => checks::failed{"body mismatch"}
             true => ok
 
+fn void check_item
+    emits {checks::failed}
+    given
+        bytes::buffer body
+    asserts
+        bad: call bytes::empty() => checks::failed{"body mismatch"}
+    match call bytes::to_utf8(body)
+        when
+            live: body => ok "item 7"
+        codec::invalid_data => checks::failed{"body text"}
+        ok str said => match said is "item 7"
+            false => checks::failed{"body mismatch"}
+            true => ok
+
 /// Marker-header predicate for the client-side header search.
 fn bool is_probe_header
     emits {}
@@ -116,7 +155,7 @@ fn bool is_probe_header
         true => ok true
         false => ok false
 
-/// Build the four-legged router. Router construction is real: invalid
+/// Build the five-legged router. Router construction is real: invalid
 /// routes fail here, before any socket exists.
 fn http::router build_router
     emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
@@ -130,10 +169,12 @@ fn http::router build_router
                 http::invalid_route
                 ok http::route slowed => match call http::route_get("/hdr", callable hdr)
                     http::invalid_route
-                    ok http::route headed => match call http::make_router([pinged, echoed, slowed, headed])
-                        http::duplicate_route
-                        http::ambiguous_route
-                        ok http::router built => ok built
+                    ok http::route headed => match call http::route_get("/qitem", callable qitem)
+                        http::invalid_route
+                        ok http::route queried => match call http::make_router([pinged, echoed, slowed, headed, queried])
+                            http::duplicate_route
+                            http::ambiguous_route
+                            ok http::router built => ok built
 
 fn void main
     emits {checks::failed}
@@ -215,11 +256,37 @@ fn void main
                                                                                             http::invalid_request => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/slow", [], bare, 50, 65536)
                                                                                                 when
                                                                                                     live: "GET", "http://127.0.0.1:18337/slow", [], bare, 50, 65536 => http::transport_failed{"timeout"}
-                                                                                                http::transport_failed => match call http::server_stop(srv)
+                                                                                                http::transport_failed => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/qitem?id=7", [], bare, 5000, 65536)
                                                                                                     when
-                                                                                                        live: srv => ok
-                                                                                                    http::shutdown_failed => checks::failed{"stop failed"}
-                                                                                                    ok => ok
+                                                                                                        live: "GET", "http://127.0.0.1:18337/qitem?id=7", [], bare, 5000, 65536 => ok http::bytes_response(200, [], call bytes::empty())
+                                                                                                    http::transport_failed => checks::failed{"query transport"}
+                                                                                                    http::invalid_request => checks::failed{"query request"}
+                                                                                                    http::body_limit => checks::failed{"query limit"}
+                                                                                                    ok http::bytes_response qr => match qr.status is 200
+                                                                                                        false => checks::failed{"query status"}
+                                                                                                        true => match call check_item(qr.body)
+                                                                                                            checks::failed => checks::failed{"query body"}
+                                                                                                            ok => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/qitem?id=1&id=2", [], bare, 5000, 65536)
+                                                                                                                when
+                                                                                                                    live: "GET", "http://127.0.0.1:18337/qitem?id=1&id=2", [], bare, 5000, 65536 => ok http::bytes_response(400, [], call bytes::empty())
+                                                                                                                http::transport_failed => checks::failed{"dup transport"}
+                                                                                                                http::invalid_request => checks::failed{"dup request"}
+                                                                                                                http::body_limit => checks::failed{"dup limit"}
+                                                                                                                ok http::bytes_response dup => match dup.status is 400
+                                                                                                                    false => checks::failed{"dup status"}
+                                                                                                                    true => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/qitem", [], bare, 5000, 65536)
+                                                                                                                        when
+                                                                                                                            live: "GET", "http://127.0.0.1:18337/qitem", [], bare, 5000, 65536 => ok http::bytes_response(400, [], call bytes::empty())
+                                                                                                                        http::transport_failed => checks::failed{"bare transport"}
+                                                                                                                        http::invalid_request => checks::failed{"bare request"}
+                                                                                                                        http::body_limit => checks::failed{"bare limit"}
+                                                                                                                        ok http::bytes_response plain => match plain.status is 400
+                                                                                                                            false => checks::failed{"bare status"}
+                                                                                                                            true => match call http::server_stop(srv)
+                                                                                                                                when
+                                                                                                                                    live: srv => ok
+                                                                                                                                http::shutdown_failed => checks::failed{"stop failed"}
+                                                                                                                                ok => ok
                                                                                                 http::invalid_request => checks::failed{"slow request"}
                                                                                                 http::body_limit => checks::failed{"slow limit"}
                                                                                                 ok http::bytes_response patient => checks::failed{"slow answered"}

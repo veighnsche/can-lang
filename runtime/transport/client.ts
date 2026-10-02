@@ -54,6 +54,19 @@ export function createHTTPClient(
     ): Promise<Completion<unknown>> {
       if (typeof method !== "string" || !methods.has(method)) return invalid("method");
       if (typeof url !== "string" || url === "") return invalid("url");
+      let endpoint: string;
+      const query: { name: string; value: string }[] = [];
+      try {
+        const parsed = new URL(url);
+        // The shared transport takes the query apart from the endpoint;
+        // split here so one op serves plain and parameterized URLs.
+        // Repeats and order survive via URLSearchParams iteration.
+        for (const [name, value] of parsed.searchParams) query.push({ name, value });
+        parsed.search = "";
+        endpoint = parsed.href;
+      } catch {
+        return invalid("url");
+      }
       const entries: { name: string; value: string }[] = [];
       for (const item of dataArray(headers)) {
         const name = dataProperty(item, "name"),
@@ -69,7 +82,7 @@ export function createHTTPClient(
       const hasBody = payload.byteLength > 0;
       if (hasBody && (method === "GET" || method === "HEAD")) return invalid("method_body");
       const connection: Connection = {
-        endpoint: url,
+        endpoint,
         timeoutMilliseconds: Number(timeout),
         maxBodyBytes: Number(cap),
         headers: [],
@@ -77,7 +90,7 @@ export function createHTTPClient(
       const request: NativeRequest = {
         path: "",
         method: method as NativeRequest["method"],
-        query: [],
+        query,
         headers: entries,
         body: hasBody ? payload : undefined,
         bodyEncoding: hasBody ? "bytes" : undefined,

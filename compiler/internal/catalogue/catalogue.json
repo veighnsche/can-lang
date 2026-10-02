@@ -14621,7 +14621,7 @@
     "native": [
      "fetch"
     ],
-    "adapter": "Raw HTTP client over the shared transport: caller-supplied uppercase method, absolute http(s) URL without query, fragment or userinfo, explicit headers, raw bytes body, deadline and response cap. Every status returns an http::bytes_response envelope (never status_error); redirects are manual; deadline expiry reports transport_failed phase timeout like the JSON action client. Empty body sends no entity; a body on GET/HEAD is invalid_request. Header names use underscores (content_type), rewritten to hyphens on the wire; hyphenated or forbidden names are invalid_request.",
+    "adapter": "Raw HTTP client over the shared transport: caller-supplied uppercase method, absolute http(s) URL without fragment or userinfo, explicit headers, raw bytes body, deadline and response cap. A query string splits into repeat-preserving parameters (validated names; anything else is invalid_request). Every status returns an http::bytes_response envelope (never status_error); redirects are manual; deadline expiry reports transport_failed phase timeout like the JSON action client. Empty body sends no entity; a body on GET/HEAD is invalid_request. Header names use underscores (content_type), rewritten to hyphens on the wire; hyphenated or forbidden names are invalid_request.",
     "task": "T24"
    },
    "assertion": "supplied",
