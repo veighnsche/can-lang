@@ -1,0 +1,137 @@
+{
+  "window_start_utc": "2026-09-30T01:54:14.896958+00:00",
+  "window_end_utc": "2026-10-02T01:54:14.896958+00:00",
+  "head_before_investigation": "b1a9a9a8990e259c94f6ec3c17719f5de5c57641",
+  "commit_count": 497,
+  "commit_types": {
+    "fix": 21,
+    "test": 57,
+    "refactor": 2,
+    "docs": 101,
+    "feat": 268,
+    "update": 1,
+    "chore": 47
+  },
+  "line_categories_added_deleted_path_occurrences": {
+    "compiler-runtime": [
+      82410,
+      28083,
+      424
+    ],
+    "other": [
+      66081,
+      2962,
+      636
+    ],
+    "tests": [
+      162634,
+      440,
+      799
+    ],
+    "tools": [
+      72236,
+      850,
+      214
+    ],
+    "generated-catalogue": [
+      55674,
+      38203,
+      21
+    ],
+    "plan-ledger-docs": [
+      58116,
+      1239,
+      364
+    ],
+    "plan-evidence": [
+      25594,
+      653,
+      577
+    ],
+    "plan-tools": [
+      1569,
+      80,
+      10
+    ]
+  },
+  "total_added_lines": 524314,
+  "first_commit": {
+    "hash": "48ae7162452c950ff044ca5f4feb1b31ca1105a3",
+    "time": "2026-09-30T04:14:22+02:00",
+    "subject": "fix(cli): configure assertion budget for run"
+  },
+  "last_commit": {
+    "hash": "b1a9a9a8990e259c94f6ec3c17719f5de5c57641",
+    "time": "2026-10-02T03:50:01+02:00",
+    "subject": "feat(z01): update integration and task statuses to active"
+  },
+  "commit_gap_median_seconds": 108.0,
+  "commit_gaps_under_60s": 208,
+  "commit_gaps_over_30m": 13,
+  "largest_gaps": [
+    {
+      "seconds": 16461.0,
+      "before": "8961edd4",
+      "after": "3cfa4e2f",
+      "after_subject": "docs(p26): mark core reference generation active"
+    },
+    {
+      "seconds": 13460.0,
+      "before": "9c283544",
+      "after": "ab764c08",
+      "after_subject": "fix(editor): recover precise diagnostics and complete language features"
+    },
+    {
+      "seconds": 7832.0,
+      "before": "4cf8f91d",
+      "after": "12f41fe7",
+      "after_subject": "docs(testing): record implementation baseline and lane ownership"
+    },
+    {
+      "seconds": 7157.0,
+      "before": "288a3820",
+      "after": "0cc9fcc5",
+      "after_subject": "docs(grouped-errors): preserve review and Jev evidence"
+    },
+    {
+      "seconds": 6510.0,
+      "before": "fe83fb59",
+      "after": "1274392a",
+      "after_subject": "feat(m28): migrate HISTORY-031 over-attempt to Can"
+    },
+    {
+      "seconds": 4417.0,
+      "before": "5804b686",
+      "after": "d6d5e6b1",
+      "after_subject": "docs(grouped-errors): checkpoint design evidence and pending language docs"
+    },
+    {
+      "seconds": 3578.0,
+      "before": "226730af",
+      "after": "421c635f",
+      "after_subject": "feat(m28): migrate HISTORY-032 add-error isolation to Can"
+    },
+    {
+      "seconds": 3398.0,
+      "before": "8f6e884f",
+      "after": "fd5093aa",
+      "after_subject": "docs(grouped-errors): record validation results and blocked review status"
+    }
+  ],
+  "worker_log_lifetime_proxy": {
+    "logs": 170,
+    "sum_agent_hours": 24.451955388585727,
+    "union_wall_hours": 11.348195382555327,
+    "median_seconds": 505.3061112165451,
+    "interpretation": "Filesystem birth/last-write intervals approximate launched worker lifetimes, including generation and checks. They do not distinguish code writing from evidence or gate time, may omit vanished/other logs, and are not complete execution telemetry."
+  },
+  "temporary_inventory_existing_not_owned": {
+    "muse_top_level_entries": 339,
+    "regular_file_bytes": 1296777
+  },
+  "limits": [
+    "Commit types and added lines are proxies, not wall-time attribution.",
+    "No claim that 40-50% implementation time or individual gate hours has been proved.",
+    "Only project-related log metadata retained; no credentials or logs copied."
+  ]
+}
