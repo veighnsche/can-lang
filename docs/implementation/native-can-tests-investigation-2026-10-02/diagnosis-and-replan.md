@@ -1,6 +1,8 @@
 # Delete the legacy testing apparatus; replace Manolea tests
 
-**Proposed plan only. Nothing has been deleted or changed in implementation.** This revision merges the new deletion brief into the existing investigation instead of creating a second diagnosis. It supersedes the first round's incremental keep/batch/defer recommendations. The factual diagnosis below retains its frozen evidence window.
+**Current execution state:** The approved cut landed in `708c0b1f`; the historical planning text below is frozen. Remaining work is governed by the [Manolea task list](../manolea-native-tests/tasks.md), not the deleted 143-task programme.
+
+**Original planning round:** This was a proposed plan; that round changed no implementation and deleted nothing. It merged the new deletion brief into the existing investigation instead of creating a second diagnosis and superseded the first round's incremental keep/batch/defer recommendations. The factual diagnosis below retains its frozen evidence window.
 
 The user’s endpoint is the **28 tracked records in `manolea-2/tests`: 25 code files and 3 documents**. Goal-oriented work either replaces one of those records faithfully or implements a native mechanism that a named record actually cannot run without. New framework features need that concrete edge. Existing compiler/product functionality outside the migration-specific cut remains the system that compiles and serves the subjects; this is not authorization to purge unrelated repository work.
 
