@@ -190,8 +190,15 @@ def main():
             fail(f"{row_id}: delegates not verbatim")
         if strs(receipts) != ["qualified-report", "n-receipt", "cleanup-receipt"]:
             fail(f"{row_id}: receipts differ from the standard triple")
-        if head != "":
-            fail(f"{row_id}: correction_head must be empty (no corrections recorded)")
+        ev_file = PLAN / "evidence" / f"{mid}-{row_id}.json"
+        want_head = ""
+        if ev_file.is_file():
+            ev0 = json.load(io.open(ev_file, encoding="utf-8"))
+            corrections = ev0.get("corrections") or []
+            if corrections:
+                want_head = (corrections[-1].get("commit") or "").split()[0]
+        if head != want_head:
+            fail(f"{row_id}: correction_head {head!r} != latest correction commit {want_head!r}")
         ev_file = PLAN / "evidence" / f"{mid}-{row_id}.json"
         if not ev_file.is_file():
             if disp != "missing" or source or h or case or strs(checks):

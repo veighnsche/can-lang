@@ -97,8 +97,8 @@ fn campaign campaign_m31_manifest
     given
         str scope
     asserts
-        m31: "m31" => ok campaign("z01-manifest/m31-admission/2026-10-02", "z01-campaign/m31-admission/attempt-1", ["HISTORY-061", "HISTORY-062", "HISTORY-063"])
+        m31: "m31" => ok campaign("z01-manifest/m31/2026-10-02", "z01-campaign/m31/attempt-1", ["HISTORY-061", "HISTORY-062", "HISTORY-063"])
         other: "nope" => ok campaign("", "", [])
     match scope is "m31"
         false => ok campaign("", "", [])
-        true => ok campaign("z01-manifest/m31-admission/2026-10-02", "z01-campaign/m31-admission/attempt-1", ["HISTORY-061", "HISTORY-062", "HISTORY-063"])
+        true => ok campaign("z01-manifest/m31/2026-10-02", "z01-campaign/m31/attempt-1", ["HISTORY-061", "HISTORY-062", "HISTORY-063"])
