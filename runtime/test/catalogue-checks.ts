@@ -14,7 +14,7 @@ export function checkCatalogue(): string[] {
     passed.push(name);
   }
   check("complete operation lookup", () => {
-    assert.equal(catalogue.operations.length, 455);
+    assert.equal(catalogue.operations.length, 462);
     for (const item of catalogue.operations)
       assert.equal(operation(item.name).identity, item.identity);
   });
