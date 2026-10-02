@@ -1,0 +1,404 @@
+package i16
+    provides [dispatch_postgres, dispatch_sqlite, dispatch_mysql, read_dispatch, watch_deadline, read_deadline, settle_driver_completed, settle_driver_timed_out, read_driver, ack_server_applied, ack_server_absent, ack_server_unknown, read_server, grant_cancel_postgres, grant_cancel_sqlite, grant_cancel_mysql, ask_cancel, read_cancel, rest_postgres, rest_sqlite, rest_mysql, fence_work, read_fence, read_lease, free_work, read_release]
+    uses [db, test]
+
+/// Deadline-settlement operation wrappers (I16): one function
+/// per operation, except dispatch, record_driver_settlement,
+/// record_server_ack, acquire_cancel_grant and quiesce_engine,
+/// which split one per word forced by the NT-I16 literal
+/// allowlists (I01 per-kind precedent). Wrappers are
+/// check-time-only: when-stubs pin the call shape and stub
+/// facts; rows execute live at the Q gate. Owners are
+/// admission-first (test::owner elides in rows). Rejection
+/// verdicts stay visible as db::db_fault{layer, code} (the
+/// adapter contract tests pin those verdicts instead). The
+/// sqlite/mysql cancel-grant wrappers pin the call shape only:
+/// those engines have no server-cancel channel, so live
+/// execution always refuses malformed-statement.
+
+/// Dispatch one SQL work item to postgres; the statement is
+/// named by digest only, never executed.
+fn db::dispatched_work dispatch_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str statement
+    asserts
+        first: "work-0", "SELECT 1" => ok db::dispatched_work(db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+    match call db::dispatch(owner, work, statement, "postgres")
+        when
+            first: owner, "work-0", "SELECT 1", "postgres" => ok db::dispatched_work(db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::dispatched_work got => ok got
+/// Dispatch one SQL work item to sqlite.
+fn db::dispatched_work dispatch_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str statement
+    asserts
+        first: "work-0", "SELECT 1" => ok db::dispatched_work(db::dispatch_record("work-0", "sqlite", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+    match call db::dispatch(owner, work, statement, "sqlite")
+        when
+            first: owner, "work-0", "SELECT 1", "sqlite" => ok db::dispatched_work(db::dispatch_record("work-0", "sqlite", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::dispatched_work got => ok got
+/// Dispatch one SQL work item to mysql.
+fn db::dispatched_work dispatch_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str statement
+    asserts
+        first: "work-0", "SELECT 1" => ok db::dispatched_work(db::dispatch_record("work-0", "mysql", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+    match call db::dispatch(owner, work, statement, "mysql")
+        when
+            first: owner, "work-0", "SELECT 1", "mysql" => ok db::dispatched_work(db::dispatch_record("work-0", "mysql", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::dispatched_work got => ok got
+/// Re-read dispatch facts for one work item.
+fn db::dispatch_record read_dispatch
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub")
+    match call db::dispatch_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::dispatch_record got => ok got
+/// Observe the visible deadline tick for one dispatched work;
+/// single record, and driver settlement needs it first.
+fn db::deadline_record watch_deadline
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+        int deadline_ms
+    asserts
+        first: "work-0", "tok-stub", 50 => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+    match call db::observe_deadline(owner, work, token, deadline_ms)
+        when
+            first: owner, "work-0", "tok-stub", 50 => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::deadline_record got => ok got
+/// Re-read deadline facts for one work item.
+fn db::deadline_record read_deadline
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+    match call db::deadline_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::deadline_record got => ok got
+/// Record a completed driver settlement: the driver's local
+/// view only, tagged server_effect unresolved.
+fn db::driver_settlement_facts settle_driver_completed
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::driver_settlement_facts("work-0", "postgres", "completed", "unresolved", "sha256:stub")
+    match call db::record_driver_settlement(owner, work, token, "completed")
+        when
+            first: owner, "work-0", "tok-stub", "completed" => ok db::driver_settlement_facts("work-0", "postgres", "completed", "unresolved", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::driver_settlement_facts got => ok got
+/// Record a timed-out driver settlement: the driver's local
+/// view only, tagged server_effect unresolved.
+fn db::driver_settlement_facts settle_driver_timed_out
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+    match call db::record_driver_settlement(owner, work, token, "timed-out")
+        when
+            first: owner, "work-0", "tok-stub", "timed-out" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::driver_settlement_facts got => ok got
+/// Re-read driver settlement facts for one work item.
+fn db::driver_settlement_facts read_driver
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+    match call db::driver_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::driver_settlement_facts got => ok got
+/// Record an applied server acknowledgment: the reconciled
+/// server effect, after driver settlement.
+fn db::server_ack_facts ack_server_applied
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+    match call db::record_server_ack(owner, work, token, "applied")
+        when
+            first: owner, "work-0", "tok-stub", "applied" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::server_ack_facts got => ok got
+/// Record an absent server acknowledgment: the reconciled
+/// server effect, after driver settlement.
+fn db::server_ack_facts ack_server_absent
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::server_ack_facts("work-0", "postgres", "absent", "sha256:stub")
+    match call db::record_server_ack(owner, work, token, "absent")
+        when
+            first: owner, "work-0", "tok-stub", "absent" => ok db::server_ack_facts("work-0", "postgres", "absent", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::server_ack_facts got => ok got
+/// Record an unknown server acknowledgment: explicit, not a
+/// gap, and it blocks cleanup until reconciled.
+fn db::server_ack_facts ack_server_unknown
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::server_ack_facts("work-0", "postgres", "unknown", "sha256:stub")
+    match call db::record_server_ack(owner, work, token, "unknown")
+        when
+            first: owner, "work-0", "tok-stub", "unknown" => ok db::server_ack_facts("work-0", "postgres", "unknown", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::server_ack_facts got => ok got
+/// Re-read server acknowledgment facts for one work item.
+fn db::server_ack_facts read_server
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+    match call db::server_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::server_ack_facts got => ok got
+/// Acquire a postgres cancel grant: the only engine with a
+/// server-cancel channel.
+fn db::cancel_grant grant_cancel_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok db::cancel_grant(db::cancel_grant_facts("postgres", "sha256:stub"), "grant-stub")
+    match call db::acquire_cancel_grant(owner, "postgres")
+        when
+            first: owner, "postgres" => ok db::cancel_grant(db::cancel_grant_facts("postgres", "sha256:stub"), "grant-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::cancel_grant got => ok got
+/// Acquire a sqlite cancel grant: call shape only, live
+/// execution always refuses (no server-cancel channel).
+fn db::cancel_grant grant_cancel_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok db::cancel_grant(db::cancel_grant_facts("sqlite", "sha256:stub"), "grant-stub")
+    match call db::acquire_cancel_grant(owner, "sqlite")
+        when
+            first: owner, "sqlite" => ok db::cancel_grant(db::cancel_grant_facts("sqlite", "sha256:stub"), "grant-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::cancel_grant got => ok got
+/// Acquire a mysql cancel grant: call shape only, live
+/// execution always refuses (no server-cancel channel).
+fn db::cancel_grant grant_cancel_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok db::cancel_grant(db::cancel_grant_facts("mysql", "sha256:stub"), "grant-stub")
+    match call db::acquire_cancel_grant(owner, "mysql")
+        when
+            first: owner, "mysql" => ok db::cancel_grant(db::cancel_grant_facts("mysql", "sha256:stub"), "grant-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::cancel_grant got => ok got
+/// Request cancellation under a capable grant; the recorded
+/// cancel proves nothing about the server.
+fn db::cancel_record ask_cancel
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+        str grant
+    asserts
+        first: "work-0", "tok-stub", "grant-stub" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+    match call db::request_cancel(owner, work, token, grant)
+        when
+            first: owner, "work-0", "tok-stub", "grant-stub" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::cancel_record got => ok got
+/// Re-read cancel facts for one work item.
+fn db::cancel_record read_cancel
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+    match call db::cancel_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::cancel_record got => ok got
+/// Quiesce postgres: stop new dispatches, report live work.
+fn str[] rest_postgres
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok ["work-0"]
+    match call db::quiesce_engine(owner, "postgres")
+        when
+            first: owner, "postgres" => ok ["work-0"]
+        test::stale_handle
+        db::db_fault
+        ok str[] got => ok got
+/// Quiesce sqlite: stop new dispatches, report live work.
+fn str[] rest_sqlite
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok ["work-0"]
+    match call db::quiesce_engine(owner, "sqlite")
+        when
+            first: owner, "sqlite" => ok ["work-0"]
+        test::stale_handle
+        db::db_fault
+        ok str[] got => ok got
+/// Quiesce mysql: stop new dispatches, report live work.
+fn str[] rest_mysql
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        first: => ok ["work-0"]
+    match call db::quiesce_engine(owner, "mysql")
+        when
+            first: owner, "mysql" => ok ["work-0"]
+        test::stale_handle
+        db::db_fault
+        ok str[] got => ok got
+/// Fence one work under its quiesced engine; the fence
+/// surveys and settles nothing.
+fn db::fence_record fence_work
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+    match call db::fence(owner, work, token)
+        when
+            first: owner, "work-0", "tok-stub" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::fence_record got => ok got
+/// Re-read fence facts for one work item.
+fn db::fence_record read_fence
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+    match call db::fence_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::fence_record got => ok got
+/// Re-read the retained-lease survey for one work item; after
+/// release the lease shows released.
+fn db::lease_record read_lease
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::lease_record("work-0", "postgres", "ns-alpha", "sha256:stub", true)
+    match call db::lease_facts(owner, work)
+        when
+            first: owner, "work-0" => ok db::lease_record("work-0", "postgres", "ns-alpha", "sha256:stub", true)
+        test::stale_handle
+        db::db_fault
+        ok db::lease_record got => ok got
+/// Release one work after driver settlement, a known server
+/// effect, and a fence; unknown effects block cleanup.
+fn db::deadline_release_record free_work
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+        str token
+    asserts
+        first: "work-0", "tok-stub" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+    match call db::deadline_release(owner, work, token)
+        when
+            first: owner, "work-0", "tok-stub" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::deadline_release_record got => ok got
+/// Re-read the deadline release acknowledgment.
+fn db::deadline_release_record read_release
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+        str work
+    asserts
+        first: "work-0" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+    match call db::deadline_release_ack(owner, work)
+        when
+            first: owner, "work-0" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::deadline_release_record got => ok got

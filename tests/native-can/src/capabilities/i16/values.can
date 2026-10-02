@@ -1,0 +1,96 @@
+package i16
+    provides [engine_known, driver_outcome_known, server_effect_known, work_ok, work_length_ok]
+    uses [text]
+
+/// Deadline-settlement closed vocabularies and work shapes
+/// (I16). The engine set reuses exactly the K24 words
+/// (postgres/sqlite/mysql); the driver-outcome set is exactly
+/// the K26 words (completed/timed-out with no unknown: the
+/// driver must report what it saw); the server-effect set is
+/// exactly the K26 words (applied/absent/unknown, where unknown
+/// is an explicitly recorded effect that blocks cleanup).
+/// work_ok compiles the K26 checkLabel shape
+/// (^[A-Za-z0-9][A-Za-z0-9_.:-]*$), and work_length_ok pins the
+/// 128-code cap. These mirror the NT-I16 checker allowlists
+/// statically; the adapter re-validates at runtime and fails
+/// unknown words as db_fault. Regex failures relay
+/// invalid_regex/invalid_limit (patterns are static literals, so
+/// rows never see them); every assert pins a real computed
+/// answer. Length edge: the service counts UTF-16 code units
+/// while Can counts Unicode scalars; the adapter enforces the
+/// exact bound.
+
+/// Closed engine vocabulary: exactly postgres/sqlite/mysql.
+fn bool engine_known
+    emits {}
+    given
+        str engine
+    asserts
+        postgres: "postgres" => ok true
+        sqlite: "sqlite" => ok true
+        mysql: "mysql" => ok true
+        oracle: "oracle" => ok false
+        empty: "" => ok false
+    match engine
+        "postgres" => ok true
+        "sqlite" => ok true
+        "mysql" => ok true
+        _ => ok false
+/// Closed driver-outcome vocabulary: completed/timed-out only.
+fn bool driver_outcome_known
+    emits {}
+    given
+        str outcome
+    asserts
+        completed: "completed" => ok true
+        timed_out: "timed-out" => ok true
+        unknown: "unknown" => ok false
+        done: "done" => ok false
+        empty: "" => ok false
+    match outcome
+        "completed" => ok true
+        "timed-out" => ok true
+        _ => ok false
+/// Closed server-effect vocabulary: applied/absent/unknown.
+fn bool server_effect_known
+    emits {}
+    given
+        str effect
+    asserts
+        applied: "applied" => ok true
+        absent: "absent" => ok true
+        unknown: "unknown" => ok true
+        denied: "denied" => ok false
+        empty: "" => ok false
+    match effect
+        "applied" => ok true
+        "absent" => ok true
+        "unknown" => ok true
+        _ => ok false
+/// K26 work charset: ^[A-Za-z0-9][A-Za-z0-9_.:-]*$.
+fn bool work_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str work
+    asserts
+        plain: "work-0" => ok true
+        dotted: "job-2:retry" => ok true
+        leading_dash: "-work" => ok false
+        spaced: "work 0" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^[A-Za-z0-9][A-Za-z0-9_.:-]*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, work, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K26 work length cap: at most 128 codes (scalars approximation).
+fn bool work_length_ok
+    emits {text::invalid_unicode}
+    given
+        str work
+    asserts
+        short: "work-0" => ok true
+        empty: "" => ok true
+    match call text::scalars(work)
+        text::invalid_unicode
+        ok int[] points => ok points.length <= 128

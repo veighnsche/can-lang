@@ -1,0 +1,115 @@
+package i16_example
+    provides [dispatch_demo, full_demo]
+    uses [db, i16, test]
+
+/// Tiny typed I16 example: two worked flows over the deadline
+/// wrappers. dispatch_demo runs dispatch with re-read plus the
+/// visible deadline with re-read; full_demo runs driver
+/// settlement with re-read, an applied server ack with re-read,
+/// a capable cancel with re-read, quiesce, a fence with
+/// re-read, the lease survey, and release with its
+/// acknowledgment. Rows are offline/provisional asserts
+/// (static until qualified execution); when-stubs pin the
+/// wrapper call shapes.
+
+/// Dispatch one work item and observe its visible deadline.
+fn db::deadline_record dispatch_demo
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+    match call i16::dispatch_postgres(owner, "work-0", "SELECT 1")
+        when
+            fresh: owner, "work-0", "SELECT 1" => ok db::dispatched_work(db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub"), "tok-stub")
+        test::stale_handle
+        db::db_fault
+        ok db::dispatched_work sent => match call i16::read_dispatch(owner, "work-0")
+            when
+                fresh: owner, "work-0" => ok db::dispatch_record("work-0", "postgres", "ns-alpha", "sha256:stub", "sha256:stub")
+            test::stale_handle
+            db::db_fault
+            ok db::dispatch_record known => match call i16::watch_deadline(owner, "work-0", "tok-stub", 50)
+                when
+                    fresh: owner, "work-0", "tok-stub", 50 => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+                test::stale_handle
+                db::db_fault
+                ok db::deadline_record watched => match call i16::read_deadline(owner, "work-0")
+                    when
+                        fresh: owner, "work-0" => ok db::deadline_record("work-0", "postgres", 50, "sha256:stub")
+                    test::stale_handle
+                    db::db_fault
+                    ok db::deadline_record reread => ok reread
+/// Settle timed-out, ack applied, cancel, quiesce, fence, release.
+fn db::deadline_release_record full_demo
+    emits {test::stale_handle, db::db_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+    match call i16::settle_driver_timed_out(owner, "work-0", "tok-stub")
+        when
+            fresh: owner, "work-0", "tok-stub" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+        test::stale_handle
+        db::db_fault
+        ok db::driver_settlement_facts settled => match call i16::read_driver(owner, "work-0")
+            when
+                fresh: owner, "work-0" => ok db::driver_settlement_facts("work-0", "postgres", "timed-out", "unresolved", "sha256:stub")
+            test::stale_handle
+            db::db_fault
+            ok db::driver_settlement_facts reread_driver => match call i16::ack_server_applied(owner, "work-0", "tok-stub")
+                when
+                    fresh: owner, "work-0", "tok-stub" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+                test::stale_handle
+                db::db_fault
+                ok db::server_ack_facts acked => match call i16::read_server(owner, "work-0")
+                    when
+                        fresh: owner, "work-0" => ok db::server_ack_facts("work-0", "postgres", "applied", "sha256:stub")
+                    test::stale_handle
+                    db::db_fault
+                    ok db::server_ack_facts reread_server => match call i16::grant_cancel_postgres(owner)
+                        when
+                            fresh: owner => ok db::cancel_grant(db::cancel_grant_facts("postgres", "sha256:stub"), "grant-stub")
+                        test::stale_handle
+                        db::db_fault
+                        ok db::cancel_grant granted => match call i16::ask_cancel(owner, "work-0", "tok-stub", "grant-stub")
+                            when
+                                fresh: owner, "work-0", "tok-stub", "grant-stub" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+                            test::stale_handle
+                            db::db_fault
+                            ok db::cancel_record cancelled => match call i16::read_cancel(owner, "work-0")
+                                when
+                                    fresh: owner, "work-0" => ok db::cancel_record("work-0", "postgres", "nothing-about-server", "sha256:stub")
+                                test::stale_handle
+                                db::db_fault
+                                ok db::cancel_record reread_cancel => match call i16::rest_postgres(owner)
+                                    when
+                                        fresh: owner => ok ["work-0"]
+                                    test::stale_handle
+                                    db::db_fault
+                                    ok str[] live => match call i16::fence_work(owner, "work-0", "tok-stub")
+                                        when
+                                            fresh: owner, "work-0", "tok-stub" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+                                        test::stale_handle
+                                        db::db_fault
+                                        ok db::fence_record fenced => match call i16::read_fence(owner, "work-0")
+                                            when
+                                                fresh: owner, "work-0" => ok db::fence_record("work-0", "postgres", "nothing", "sha256:stub")
+                                            test::stale_handle
+                                            db::db_fault
+                                            ok db::fence_record reread_fence => match call i16::read_lease(owner, "work-0")
+                                                when
+                                                    fresh: owner, "work-0" => ok db::lease_record("work-0", "postgres", "ns-alpha", "sha256:stub", true)
+                                                test::stale_handle
+                                                db::db_fault
+                                                ok db::lease_record leased => match call i16::free_work(owner, "work-0", "tok-stub")
+                                                    when
+                                                        fresh: owner, "work-0", "tok-stub" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+                                                    test::stale_handle
+                                                    db::db_fault
+                                                    ok db::deadline_release_record freed => match call i16::read_release(owner, "work-0")
+                                                        when
+                                                            fresh: owner, "work-0" => ok db::deadline_release_record("work-0", "postgres", true, "sha256:stub")
+                                                        test::stale_handle
+                                                        db::db_fault
+                                                        ok db::deadline_release_record reread_release => ok reread_release
