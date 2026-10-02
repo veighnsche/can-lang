@@ -1,0 +1,45 @@
+package i12_example
+    provides [verdict_demo, echo_demo]
+    uses [descriptor, i12]
+
+/// Tiny typed I12 example: the lease verdict helpers end to end over
+/// fixture-shaped reports. verdict_demo classifies held/free/released
+/// verdicts; echo_demo accepts a matching probe pair and rejects a
+/// mismatched echo. Rows are offline/provisional asserts (static until
+/// qualified execution). The probe op has no Can wrapper by scope
+/// decision (all rows would bet on live N execution).
+
+/// Classify three fixture verdicts: held, free, released. Literal
+/// match arms pin each classifier output against its expected word.
+fn bool verdict_demo
+    emits {}
+    given
+        descriptor::lease_report first
+        descriptor::lease_report second
+        descriptor::lease_report third
+    asserts
+        lifecycle: descriptor::lease_report("/tmp/can-fd4.lease", true, true, false), descriptor::lease_report("/tmp/can-fd4.lease", true, false, false), descriptor::lease_report("/tmp/can-fd4.lease", true, false, true) => ok true
+        free_first: descriptor::lease_report("/tmp/can-fd4.lease", true, false, false), descriptor::lease_report("/tmp/can-fd4.lease", true, false, false), descriptor::lease_report("/tmp/can-fd4.lease", true, false, true) => ok false
+    match call i12::lease_state(first)
+        ok str first_state => match first_state
+            "held" => match call i12::lease_state(second)
+                ok str second_state => match second_state
+                    "free" => match call i12::lease_state(third)
+                        ok str third_state => match third_state
+                            "released" => ok true
+                            _ => ok false
+                    _ => ok false
+            _ => ok false
+/// Accept one probe pair: exact echo plus coherence.
+fn bool echo_demo
+    emits {}
+    given
+        str expected
+        descriptor::lease_report report
+    asserts
+        hit: "/tmp/can-fd4.lease", descriptor::lease_report("/tmp/can-fd4.lease", true, true, false) => ok true
+        mismatch: "/tmp/can-fd4.lease", descriptor::lease_report("/tmp/other.lease", true, true, false) => ok false
+    match call i12::probe_report_ok(expected, report)
+        ok bool good => match good
+            true => ok true
+            false => ok false
