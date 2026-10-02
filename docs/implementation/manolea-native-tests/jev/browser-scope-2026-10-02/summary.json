@@ -1,0 +1,41 @@
+{
+ "decisions": [
+  {
+   "request": "request-1.json",
+   "model": "jev-1.13.0",
+   "choice": "port_wire_with_blocked",
+   "confidence": 0.96,
+   "probabilities": {
+    "defer_browser_queues": 0.01,
+    "port_wire_with_blocked": 0.97,
+    "build_driving_ops": 0.02
+   }
+  },
+  {
+   "request": "request-2.json",
+   "model": "jev-1.13.0",
+   "choice": "port_wire_with_blocked",
+   "confidence": 0.98,
+   "probabilities": {
+    "defer_browser_queues": 0.0,
+    "build_driving_ops": 0.01,
+    "port_wire_with_blocked": 0.99
+   }
+  },
+  {
+   "request": "request-3.json",
+   "model": "jev-1.13.0",
+   "choice": "port_wire_with_blocked",
+   "confidence": 0.96,
+   "probabilities": {
+    "defer_browser_queues": 0.02,
+    "port_wire_with_blocked": 0.97,
+    "build_driving_ops": 0.01
+   }
+  }
+ ],
+ "totals": {
+  "input_tokens": 4688,
+  "output_tokens": 171
+ }
+}

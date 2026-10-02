@@ -1,0 +1,140 @@
+{
+ "compared_fields": [
+  {
+   "field": "instructions",
+   "lengths": [
+    154,
+    139,
+    166
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "criteria.build_driving_ops",
+   "lengths": [
+    433,
+    492,
+    456
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "criteria.defer_browser_queues",
+   "lengths": [
+    343,
+    387,
+    382
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "criteria.port_wire_with_blocked",
+   "lengths": [
+    523,
+    520,
+    703
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.baselines",
+   "lengths": [
+    504,
+    587,
+    572
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.browser_only_legs",
+   "lengths": [
+    572,
+    673,
+    642
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.mandate",
+   "lengths": [
+    484,
+    500,
+    479
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.mechanism_inventory",
+   "lengths": [
+    467,
+    542,
+    517
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.portable_legs",
+   "lengths": [
+    743,
+    865,
+    818
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  },
+  {
+   "field": "state.tls_position",
+   "lengths": [
+    526,
+    596,
+    516
+   ],
+   "pairwise_differ": {
+    "1v2": true,
+    "1v3": true,
+    "2v3": true
+   }
+  }
+ ],
+ "full_request_sha256": {
+  "request-1.json": "ce04a814d01f6337e8e3db0982add53a1c2d80dfc5b0c0d0a5e35a9da18c7d13",
+  "request-2.json": "76bb763ec5836a0a5044f761a8a420edfdb6c1683a94231c8ccaa1330093a6a2",
+  "request-3.json": "bf0d30e55725ba36c249b4a2dda352438da15bcc05e8fc92d8ebe8afa2b504b0"
+ },
+ "identifier_tokens_verified": 26
+}
