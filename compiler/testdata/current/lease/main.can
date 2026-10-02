@@ -1,0 +1,23 @@
+package test_descriptor_lease
+    provides []
+    uses [descriptor, test]
+fn int lease_roundtrip
+    emits {test::invalid_grant, test::stale_handle, descriptor::descriptor_fault}
+    given
+        str grant
+    asserts
+        probe: "ng1-0123456789abcdef0123456789abcdef" => ok 0
+    match chain
+        call test::grant_admit(grant) as test::owner owner
+        call descriptor::probe_lease(owner, "/tmp/can-fd4.lease") as descriptor::lease_report seen
+        test::invalid_grant
+        test::stale_handle
+        descriptor::descriptor_fault
+        ok => ok 0
+fn void main
+    emits {}
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
