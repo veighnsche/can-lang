@@ -1,0 +1,50 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "facts": {
+      "pre_deletion_head": "1c56acd5e29cbaa1bb0bf707b8cacd6e634639d6",
+      "goal_files": 28,
+      "goal_code_files": 25,
+      "goal_docs": 3,
+      "legacy_candidates": 1787,
+      "candidate_bytes": 36155161,
+      "legacy_plan_files": 505,
+      "staged_can_files": 553,
+      "live_candidate_imports_exist": true,
+      "old_runner_implemented": false,
+      "manolea_replaced_files": 0,
+      "strict_mac_memory_and_temp_enforcement": false,
+      "old_time_fraction_measured": false
+    },
+    "context": "Success means that Can drives and evaluates the behaviors in all 28 Manolea test records, preserves the browser fixture meanings and rewrites current instructions. This turn only prepares a removal proposal: executing removals or changing source is forbidden. The existing 143-item project concerns a 224-file/292-row Can suite, leaving Manolea unconverted. Proposed candidates include its entire planning/evidence machinery, native-can implementation and literal campaigns, seed/owner/schema tooling, runtime test ports and their compiler-only glue. One bootstrap package opens P04-manifest from the plan; retiring package and manifest together resolves the read. Ordinary generated programs import test-support irrespective of demand, so its removal must be coupled to emitter cleanup, catalogue-entry pruning, official generated-file refresh and runtime module-map updates. The old staging, reuse, launch and generation-lease driver paths belong to that framework. Actual production machinery for native AI declarations, core ownership and ordinary assertions is separate and stays. Real SQLite, network fetching, filesystem/process and listener facilities already use Bun/JavaScript primitives. The practical additions should be limited to persistent subprocess handles, filesystem kind/edge observations and browser automation. Current test-db objects cannot independently inspect Manolea\u2019s real SQLite data.\nExisting tests operate trusted scenarios in operator-owned storage. They still need genuine independent facts, meaningful bad-result detection and dependable shutdown/scratch reclamation. Laptop load and disk budgets are binding. Cooperative resource discipline does not establish enforced hostile-process memory or temporary-disk isolation. Strict P13/P14/P23 and the R/N/C/S/A scheme come from the old system\u2019s acceptance policy, without a demonstrated necessity for any Manolea record. Coverage/identity drift checks, executed semantic answers and process-lifecycle tests have found defects; manufactured constant comparisons and copied receipts do not replace actual product runs. Timing evidence cannot prove a prior implementation ratio or hours per caught defect. The three historical specimen classes can live as pinned Git references without archive copies. Small checked implementation should be committed promptly. Continuous lightweight time/cost accounting needs preset limits, avoiding another large workflow system."
+  },
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Select a runtime strategy that fulfils Can test ownership under an honest resource contract.",
+      "criteria": {
+        "minimal_native": "Explicitly replace legacy acceptance with a trusted bounded local profile, native Bun/JavaScript facilities and narrowly missing adapters; retain Can policy, external evidence and reclamation while acknowledging absent adversarial RSS/tmp enforcement.",
+        "strict_framework": "Make full R/N/C/S/A reference-owner architecture and strict host approval compulsory first, allowing unresolved host limits and longer serial infrastructure work.",
+        "wrapper": "Leave preparation and expected-value logic in relocated host probes, called by Can wrappers; this lowers initial effort but fails complete Can ownership."
+      }
+    },
+    "removal": {
+      "type": "choice",
+      "instructions": "Choose the dependency-aware disposition of the oversized legacy apparatus.",
+      "criteria": {
+        "closed_cut": "Delete the complete named obsolete layers together with matching wiring/API/module repairs; keep only Git-pinned receipt/slice/ledger specimens rather than copied archives.",
+        "rehome_all": "Transfer the entire old apparatus into new product paths and preserve its public contracts and qualification gates for subsequent work.",
+        "blind_delete": "Remove bulky source/data first regardless of remaining imports and manifest loads, postponing compiler/runtime breakage repairs."
+      }
+    },
+    "controls": {
+      "type": "choice",
+      "instructions": "Choose the minimum finality criterion for a ported behavior family.",
+      "criteria": {
+        "minimal_actual": "Obtain genuine independent observations, demonstrate an applicable wrong-result failure, reconcile mandatory checks and cleanup, retain one shared family run/identity record and end assurance expansion.",
+        "ladder": "Require every historic row to retain expanded fixture parity, long evidence narratives and slice-by-slice review with successive gate/re-review layers.",
+        "skip": "Allow a parsed/typechecked synthetic expectation table to authorize old-probe removal without actual subject execution or meaningful defect/lifecycle controls."
+      }
+    }
+  }
+}

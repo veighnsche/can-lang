@@ -1,0 +1,50 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "facts": {
+      "pre_deletion_head": "1c56acd5e29cbaa1bb0bf707b8cacd6e634639d6",
+      "goal_files": 28,
+      "goal_code_files": 25,
+      "goal_docs": 3,
+      "legacy_candidates": 1787,
+      "candidate_bytes": 36155161,
+      "legacy_plan_files": 505,
+      "staged_can_files": 553,
+      "live_candidate_imports_exist": true,
+      "old_runner_implemented": false,
+      "manolea_replaced_files": 0,
+      "strict_mac_memory_and_temp_enforcement": false,
+      "old_time_fraction_measured": false
+    },
+    "context": "The objective is executable Can ownership of every scenario and judgment currently represented by manolea-2/tests, including faithful uploaded-site assets and updated documentation. This planning-only round must name aggressive deletion, paired dependencies and accepted risks; no source deletion or implementation is permitted. The previous 143-task apparatus maps Can's own 224 files/292 rows and has no actual Manolea replacement. Default removal covers the old plans/evidence/tools, all native-can source/campaigns/bootstrap, owner/reference/schema services, test-support ports and exclusive compiler adapters. A committed P04-manifest is read by bootstrap/reference; deleting both removes that live dependency. Shared emitter code unconditionally imports runtime/test-support; deleting adapters requires removing its wiring, catalogue operation entries, module index entries and regenerating official mirrors. Compiler driver stage/reuse/launch/lease code only serves the old test framework. Baseline native AI declaration support, runtime owner-core and ordinary assertions remain production dependencies; they are distinct from the extra test owner. The existing ordinary SQLite, HTTP/fetch, files, process and server operations already lower to native Bun/JavaScript. Narrow gaps concern running service handles, real filesystem edge facts and Playwright automation. The test DB service is an in-memory observer, not a query of actual Manolea SQLite.\nThe original probes assume trusted test code/operator-owned roots, require real independent observations, deliberate-defect refusal and reliable resource cleanup. Hard Mac storage/load constraints remain. A cooperative bounded local runner cannot promise hard RSS/tmp containment against hostile processes. Current P13/P14/P23 strict acceptance is a contract of the old framework; no inspected Manolea obligation requires its whole R/N/C/S/A identity hierarchy. Useful findings came from inventory/source consistency, semantic vectors, and real lifecycle controls; per-row cloned tables and prose cannot establish product behavior. No measured historical percentage or control-hours is available. Keep three specimen links to pinned Git objects, not copied archives. Commit coherent changes early. A small timer/cost record with fixed ceilings can prevent another proof ladder; it should not become a new management application."
+  },
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Which replacement execution boundary best serves the actual tests while stating the isolation tradeoff?",
+      "criteria": {
+        "minimal_native": "Replace the old framework contract explicitly with a bounded trusted local runner using existing native Bun/JavaScript operations and only necessary typed adapters; Can keeps every scenario/verdict, cleanup and independent checks; disclose lack of hostile RSS/tmp containment.",
+        "strict_framework": "Retain and finish the full reference/owner identity scheme plus strict host qualification before Manolea can progress; accept unknown host unblock and additional serial framework implementation.",
+        "wrapper": "Move host probe code outside tests and invoke it from Can; host code keeps scenarios and judgments, with cheap directory cleanup but incomplete Can replacement."
+      }
+    },
+    "removal": {
+      "type": "choice",
+      "instructions": "How should historical artifacts and dependency-bound deletions be handled?",
+      "criteria": {
+        "closed_cut": "Remove the enumerated legacy layers with all paired source/import/catalogue fixes, preserving specimen Git references and three provenance examples without separate archive copies.",
+        "rehome_all": "Rename or relocate the full old plan and testing machinery into product directories, preserving its APIs and gates as mandatory prerequisites.",
+        "blind_delete": "Delete only the large files/directories immediately, leaving callers, unconditional imports and P04 manifest reads to fail until later."
+      }
+    },
+    "controls": {
+      "type": "choice",
+      "instructions": "What assurance stopping rule should govern each changed real test boundary?",
+      "criteria": {
+        "minimal_actual": "Require real independent results, one relevant deliberate defect, required-check completeness and cleanup; share one family receipt and source identities, then stop adding proof layers.",
+        "ladder": "Continue per-row clone audits, detailed prose, per-slice review, new gates over gates and repeated re-review until every legacy apparatus count closes.",
+        "skip": "Retire old probes using only typechecking and synthetic constant comparisons, without live subjects or failure/cleanup controls."
+      }
+    }
+  }
+}

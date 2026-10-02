@@ -1,0 +1,6 @@
+{
+  "fact_values_equal": true,
+  "all_explanatory_fields_pairwise_distinct": true,
+  "manual_semantic_review": "Equivalent goal, deletion scope, dependent fixes, production survivor distinctions, trusted-resource limitation, controls and alternatives in all variants. All requests authored before results. Exact technical identifiers and numbers preserved.",
+  "fresh_consultations": 3
+}

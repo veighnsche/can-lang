@@ -1,0 +1,50 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "facts": {
+      "pre_deletion_head": "1c56acd5e29cbaa1bb0bf707b8cacd6e634639d6",
+      "goal_files": 28,
+      "goal_code_files": 25,
+      "goal_docs": 3,
+      "legacy_candidates": 1787,
+      "candidate_bytes": 36155161,
+      "legacy_plan_files": 505,
+      "staged_can_files": 553,
+      "live_candidate_imports_exist": true,
+      "old_runner_implemented": false,
+      "manolea_replaced_files": 0,
+      "strict_mac_memory_and_temp_enforcement": false,
+      "old_time_fraction_measured": false
+    },
+    "context": "The finish condition is faithful runnable replacement of manolea-2/tests, with Can responsible for setup/actions/expectations, exact fixture assets preserved and documentation current. This is a deletion planning request, not authorization to alter or remove implementation. Legacy scope is Can\u2019s 143-task, 224-file, 292-row self-suite, which has replaced none of the requested Manolea files. The candidate list drops old ledgers, evidence and Python gates, native-can campaigns/controllers/bootstrap, owner/reference and schema code, runtime testing services and exclusive compiler support. Bootstrap/reference reads a committed P04 seed anchor in the plan; both can disappear in a single paired cut. Emission currently injects all test-support imports, requiring simultaneous pruning of state/binding code, catalogue definitions and module metadata plus normal mirror regeneration. Driver staging/cache/worker/lease facilities are dedicated to that legacy route. Preserve ordinary assertion execution, native AI declarations and core owner functionality that production operations use. Existing platform SQL, file/process, fetch and server implementations use native JavaScript/Bun. Remaining test requirements call for narrow child-lifetime handles, filesystem failure/kind facts and Playwright control; the legacy in-memory DB observer cannot stand in for independent real-database evidence.\nThe subjects are trusted and existing recovery probes use operator-owned roots. Preserve independent external results, deliberate wrong-result/missing-check rejection and complete cleanup, while respecting limited Mac load/storage. A local cooperative profile lacks adversarial hard memory/tmp limits. The old framework mandates strict P13/P14/P23 identities R/N/C/S/A, yet no audited Manolea behavior establishes a need for that entire protocol. Inventory reconciliation, source change detection, behavioral vectors and actual owner lifecycle controls earned their cost; repeated literals and proof narration do not establish equivalent execution. Reliable prior percentage and per-control hour figures are absent. Preserve one example each of receipt, slice and ledger through pinned Git object addresses, without duplicating deleted material. Land coherent checked commits immediately. A bounded automatic elapsed/usage log should enforce explicit ceilings without recreating the previous management stack."
+  },
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Choose how the new suite should execute without making unsupported isolation claims.",
+      "criteria": {
+        "minimal_native": "Adopt an explicitly revised trusted cooperative runtime with bounded native JavaScript/Bun mechanics and small needed adapters, keeping all test decisions in Can, independent facts and cleanup, and naming the missing hard hostile-resource guarantee.",
+        "strict_framework": "Complete the entire sealed reference/resource-owner model and current strict qualification as a prerequisite, with uncertain environmental delay and additional shared engineering.",
+        "wrapper": "Retain the original host scenario/verdict implementation elsewhere and let Can launch it, accepting that the file move leaves the intended semantic migration undone."
+      }
+    },
+    "removal": {
+      "type": "choice",
+      "instructions": "Which removal plan meets the aggressive reset and preserves a coherent executable tree?",
+      "criteria": {
+        "closed_cut": "Retire all selected framework layers while editing their dependent imports, metadata and source in the same increments; historical examples are recovered by pinned Git identity with no copy archive.",
+        "rehome_all": "Keep all old proof and execution subsystems under renamed locations, maintaining their existing API and prerequisite chains.",
+        "blind_delete": "Drop the largest directories without coupling dependent compiler imports or seed-anchor reads, accepting temporarily broken verification and output."
+      }
+    },
+    "controls": {
+      "type": "choice",
+      "instructions": "Select an explicit point at which sufficient behavioral assurance stops further process work.",
+      "criteria": {
+        "minimal_actual": "Finish after external facts, one targeted bad-result control, complete required-check identities and cleanup are demonstrated; use a single shared family receipt with source binding.",
+        "ladder": "Keep producing row parity proofs, prose receipts, individual reviews and extra validation layers until the old management system is fully accepted.",
+        "skip": "Count literal self-consistency plus static acceptance as enough to delete executing tests, omitting real product runs and deliberate failure/release evidence."
+      }
+    }
+  }
+}

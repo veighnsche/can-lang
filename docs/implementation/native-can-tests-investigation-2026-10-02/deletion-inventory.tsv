@@ -1,0 +1,1790 @@
+# Proposed deletions only; not approved or executed.
+# Baseline 1c56acd5e29cbaa1bb0bf707b8cacd6e634639d6
+# TSV: group, logical bytes, repository-relative path
+exclusive compiler driver emitter checker apparatus	4745	compiler/internal/catalogue/c_operations_test.go
+exclusive compiler driver emitter checker apparatus	5466	compiler/internal/catalogue/db_deadline_operations_test.go
+exclusive compiler driver emitter checker apparatus	7235	compiler/internal/catalogue/db_operations_test.go
+exclusive compiler driver emitter checker apparatus	5764	compiler/internal/catalogue/db_poison_operations_test.go
+exclusive compiler driver emitter checker apparatus	5153	compiler/internal/catalogue/db_transaction_operations_test.go
+exclusive compiler driver emitter checker apparatus	2833	compiler/internal/catalogue/descriptor_lease_operations_test.go
+exclusive compiler driver emitter checker apparatus	5256	compiler/internal/catalogue/descriptor_operations_test.go
+exclusive compiler driver emitter checker apparatus	7182	compiler/internal/catalogue/http_peer_operations_test.go
+exclusive compiler driver emitter checker apparatus	5362	compiler/internal/catalogue/late_operations_test.go
+exclusive compiler driver emitter checker apparatus	5227	compiler/internal/catalogue/native_operations_test.go
+exclusive compiler driver emitter checker apparatus	6462	compiler/internal/catalogue/store_operations_test.go
+exclusive compiler driver emitter checker apparatus	11491	compiler/internal/catalogue/test_operations_test.go
+exclusive compiler driver emitter checker apparatus	2581	compiler/internal/check/c.go
+exclusive compiler driver emitter checker apparatus	2568	compiler/internal/check/c_test.go
+exclusive compiler driver emitter checker apparatus	4500	compiler/internal/check/db.go
+exclusive compiler driver emitter checker apparatus	7173	compiler/internal/check/db_deadline_test.go
+exclusive compiler driver emitter checker apparatus	4320	compiler/internal/check/db_poison_test.go
+exclusive compiler driver emitter checker apparatus	3921	compiler/internal/check/db_test.go
+exclusive compiler driver emitter checker apparatus	3278	compiler/internal/check/db_transaction_test.go
+exclusive compiler driver emitter checker apparatus	667	compiler/internal/check/descriptor.go
+exclusive compiler driver emitter checker apparatus	2114	compiler/internal/check/descriptor_lease_test.go
+exclusive compiler driver emitter checker apparatus	1276	compiler/internal/check/descriptor_test.go
+exclusive compiler driver emitter checker apparatus	920	compiler/internal/check/http_peer.go
+exclusive compiler driver emitter checker apparatus	1774	compiler/internal/check/http_peer_test.go
+exclusive compiler driver emitter checker apparatus	2320	compiler/internal/check/http_peer_ws.go
+exclusive compiler driver emitter checker apparatus	4886	compiler/internal/check/http_peer_ws_test.go
+exclusive compiler driver emitter checker apparatus	4248	compiler/internal/check/late.go
+exclusive compiler driver emitter checker apparatus	6775	compiler/internal/check/late_test.go
+exclusive compiler driver emitter checker apparatus	4259	compiler/internal/check/native_values.go
+exclusive compiler driver emitter checker apparatus	4974	compiler/internal/check/native_values_test.go
+exclusive compiler driver emitter checker apparatus	6402	compiler/internal/check/store_test.go
+exclusive compiler driver emitter checker apparatus	6519	compiler/internal/driver/test_generation_lease.go
+exclusive compiler driver emitter checker apparatus	10206	compiler/internal/driver/test_generation_lease_test.go
+exclusive compiler driver emitter checker apparatus	13953	compiler/internal/driver/test_launch.go
+exclusive compiler driver emitter checker apparatus	10788	compiler/internal/driver/test_launch_test.go
+exclusive compiler driver emitter checker apparatus	18931	compiler/internal/driver/test_reuse.go
+exclusive compiler driver emitter checker apparatus	27251	compiler/internal/driver/test_reuse_test.go
+exclusive compiler driver emitter checker apparatus	9855	compiler/internal/driver/test_stage.go
+exclusive compiler driver emitter checker apparatus	19391	compiler/internal/driver/test_stage_test.go
+exclusive compiler driver emitter checker apparatus	2281	compiler/internal/emit/c_operations.go
+exclusive compiler driver emitter checker apparatus	721	compiler/internal/emit/c_operations_test.go
+exclusive compiler driver emitter checker apparatus	4474	compiler/internal/emit/db_deadline_operations.go
+exclusive compiler driver emitter checker apparatus	1291	compiler/internal/emit/db_deadline_operations_test.go
+exclusive compiler driver emitter checker apparatus	4754	compiler/internal/emit/db_operations.go
+exclusive compiler driver emitter checker apparatus	1189	compiler/internal/emit/db_operations_test.go
+exclusive compiler driver emitter checker apparatus	4719	compiler/internal/emit/db_poison_operations.go
+exclusive compiler driver emitter checker apparatus	1321	compiler/internal/emit/db_poison_operations_test.go
+exclusive compiler driver emitter checker apparatus	3688	compiler/internal/emit/db_transaction_operations.go
+exclusive compiler driver emitter checker apparatus	998	compiler/internal/emit/db_transaction_operations_test.go
+exclusive compiler driver emitter checker apparatus	2390	compiler/internal/emit/descriptor_lease_operations.go
+exclusive compiler driver emitter checker apparatus	740	compiler/internal/emit/descriptor_lease_operations_test.go
+exclusive compiler driver emitter checker apparatus	3158	compiler/internal/emit/descriptor_operations.go
+exclusive compiler driver emitter checker apparatus	943	compiler/internal/emit/descriptor_operations_test.go
+exclusive compiler driver emitter checker apparatus	7955	compiler/internal/emit/http_peer_operations.go
+exclusive compiler driver emitter checker apparatus	2774	compiler/internal/emit/http_peer_operations_test.go
+exclusive compiler driver emitter checker apparatus	3860	compiler/internal/emit/late_operations.go
+exclusive compiler driver emitter checker apparatus	1009	compiler/internal/emit/late_operations_test.go
+exclusive compiler driver emitter checker apparatus	3916	compiler/internal/emit/native_values_operations.go
+exclusive compiler driver emitter checker apparatus	984	compiler/internal/emit/native_values_operations_test.go
+exclusive compiler driver emitter checker apparatus	3920	compiler/internal/emit/store_operations.go
+exclusive compiler driver emitter checker apparatus	1081	compiler/internal/emit/store_operations_test.go
+exclusive compiler driver emitter checker apparatus	5256	compiler/internal/emit/test_operations.go
+exclusive compiler driver emitter checker apparatus	1718	compiler/internal/emit/test_operations_test.go
+plan ledger checklists prompts validators	20840	docs/implementation/native-can-tests-plan-2026-09-30.md
+plan ledger checklists prompts validators	53635	docs/implementation/native-can-tests-plan-2026-09-30/capabilities-checklist.md
+plan ledger checklists prompts validators	63120	docs/implementation/native-can-tests-plan-2026-09-30/capabilities.json
+plan ledger checklists prompts validators	897158	docs/implementation/native-can-tests-plan-2026-09-30/coverage-map.json
+plan evidence	11091	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-can.json
+plan evidence	1798	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/decision.json
+plan evidence	4126	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/request-1.json
+plan evidence	4142	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/request-2.json
+plan evidence	4024	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/request-3.json
+plan evidence	289	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-1.json
+plan evidence	393	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-1.metadata.json
+plan evidence	291	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-2.json
+plan evidence	393	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-2.metadata.json
+plan evidence	291	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-3.json
+plan evidence	393	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/response-3.metadata.json
+plan evidence	579	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01-jev/wording-audit.json
+plan evidence	10532	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I01.json
+plan evidence	3789	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-can.json
+plan evidence	3339	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/decision.json
+plan evidence	7545	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/request-1.json
+plan evidence	7712	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/request-2.json
+plan evidence	7564	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/request-3.json
+plan evidence	281	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-1.json
+plan evidence	644	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-1.metadata.json
+plan evidence	280	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-2.json
+plan evidence	644	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-2.metadata.json
+plan evidence	281	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-3.json
+plan evidence	644	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/response-3.metadata.json
+plan evidence	650	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02-jev/wording-audit.json
+plan evidence	8912	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I02.json
+plan evidence	3896	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-can.json
+plan evidence	1540	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/decision.json
+plan evidence	234	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/metadata
+plan evidence	4334	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/request-1.json
+plan evidence	4533	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/request-2.json
+plan evidence	4376	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/request-3.json
+plan evidence	282	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/response-1.json
+plan evidence	283	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/response-2.json
+plan evidence	286	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/response-3.json
+plan evidence	960	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03-jev/wording-audit.json
+plan evidence	10158	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I03.json
+plan evidence	12138	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I04-can.json
+plan evidence	10341	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I04.json
+plan evidence	3451	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I05-can.json
+plan evidence	11376	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I05.json
+plan evidence	6548	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I11-can.json
+plan evidence	11208	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I11.json
+plan evidence	5471	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I12-can.json
+plan evidence	12105	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I12.json
+plan evidence	4545	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-can.json
+plan evidence	2749	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/decision.json
+plan evidence	234	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/metadata
+plan evidence	5295	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/request-1.json
+plan evidence	5371	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/request-2.json
+plan evidence	5156	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/request-3.json
+plan evidence	294	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/response-1.json
+plan evidence	291	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/response-2.json
+plan evidence	291	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/response-3.json
+plan evidence	1840	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13-jev/wording-audit.json
+plan evidence	13390	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I13.json
+plan evidence	3350	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I14-can.json
+plan evidence	10559	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I14.json
+plan evidence	3694	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I15-can.json
+plan evidence	10281	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I15.json
+plan evidence	4641	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I16-can.json
+plan evidence	12115	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I16.json
+plan evidence	4899	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-can.json
+plan evidence	4267	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/decision.json
+plan evidence	747	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/metadata
+plan evidence	5779	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-1.json
+plan evidence	5097	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-2.json
+plan evidence	5067	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-3.json
+plan evidence	2490	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-1.json
+plan evidence	2051	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-2.json
+plan evidence	2140	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-3.json
+plan evidence	436	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-1.json
+plan evidence	436	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-2.json
+plan evidence	436	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-3.json
+plan evidence	245	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-1.json
+plan evidence	245	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-2-v1.json
+plan evidence	247	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-2.json
+plan evidence	247	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-3-v1.json
+plan evidence	247	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-3.json
+plan evidence	3518	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/wording-audit.json
+plan evidence	15452	docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17.json
+plan evidence	3985	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K01.json
+plan evidence	3302	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K02.json
+plan evidence	5613	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K03.json
+plan evidence	4454	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K04.json
+plan evidence	24911	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K05.json
+plan evidence	13979	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K06.json
+plan evidence	21892	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K07.json
+plan evidence	3496	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K08.json
+plan evidence	3103	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K09.json
+plan evidence	2569	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K10.json
+plan evidence	2753	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K11.json
+plan evidence	3006	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K13.json
+plan evidence	3054	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K14.json
+plan evidence	2549	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K15.json
+plan evidence	2831	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K16.json
+plan evidence	3065	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K17.json
+plan evidence	4801	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K18.json
+plan evidence	7439	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K19.json
+plan evidence	5329	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K20.json
+plan evidence	7687	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K21.json
+plan evidence	11291	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K22.json
+plan evidence	5300	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K23.json
+plan evidence	9591	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K24.json
+plan evidence	12139	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K25.json
+plan evidence	6664	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K26.json
+plan evidence	8202	docs/implementation/native-can-tests-plan-2026-09-30/evidence/K27.json
+plan evidence	15153	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M01-CORE-002.json
+plan evidence	14547	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M01-CORE-003.json
+plan evidence	14318	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M01-CORE-006.json
+plan evidence	13447	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M01-CORE-007.json
+plan evidence	14766	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M02-CORE-005.json
+plan evidence	14257	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M02-CORE-023.json
+plan evidence	17316	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M02-CORE-024.json
+plan evidence	14659	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M02-CORE-041.json
+plan evidence	17188	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M03-CORE-001.json
+plan evidence	15345	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M03-CORE-004.json
+plan evidence	14652	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M03-CORE-009.json
+plan evidence	18510	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M03-CORE-010.json
+plan evidence	19729	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M04-CORE-012.json
+plan evidence	20571	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M04-CORE-013.json
+plan evidence	23692	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M04-CORE-033.json
+plan evidence	18519	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M05-CORE-017.json
+plan evidence	19453	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M05-CORE-032.json
+plan evidence	20198	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M05-CORE-042.json
+plan evidence	19448	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M05-CORE-045.json
+plan evidence	20003	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M06-CORE-014.json
+plan evidence	23155	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M06-CORE-019.json
+plan evidence	23019	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M06-CORE-040.json
+plan evidence	19370	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-018.json
+plan evidence	16656	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-021.json
+plan evidence	23341	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-022.json
+plan evidence	18765	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-025.json
+plan evidence	22595	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-029.json
+plan evidence	23498	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-035.json
+plan evidence	18344	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M07-CORE-048.json
+plan evidence	22369	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-011.json
+plan evidence	25293	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-026.json
+plan evidence	24530	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-038.json
+plan evidence	21461	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-043.json
+plan evidence	24827	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-044.json
+plan evidence	24540	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M08-CORE-047.json
+plan evidence	26395	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-008.json
+plan evidence	24699	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-020.json
+plan evidence	27163	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-027.json
+plan evidence	27848	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-028.json
+plan evidence	23656	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-030.json
+plan evidence	26353	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-031.json
+plan evidence	25975	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M09-CORE-034.json
+plan evidence	9674	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M10-CORE-015.json
+plan evidence	18114	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M10-CORE-016.json
+plan evidence	25445	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M10-CORE-036.json
+plan evidence	21775	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M10-CORE-037.json
+plan evidence	26561	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M10-CORE-046.json
+plan evidence	11595	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M11-CORE-049.json
+plan evidence	12746	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M11-CORE-050.json
+plan evidence	12948	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M11-CORE-051.json
+plan evidence	24164	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M12-BROWSER-001.json
+plan evidence	24192	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M12-BROWSER-002.json
+plan evidence	24363	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M12-BROWSER-003.json
+plan evidence	28950	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M12-BROWSER-004.json
+plan evidence	25928	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M22-HISTORY-001.json
+plan evidence	24954	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M22-HISTORY-002.json
+plan evidence	23851	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M22-HISTORY-015.json
+plan evidence	21686	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M22-HISTORY-020.json
+plan evidence	27773	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M23-HISTORY-003.json
+plan evidence	25052	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M23-HISTORY-004.json
+plan evidence	23461	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M23-HISTORY-017.json
+plan evidence	20750	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M23-HISTORY-022.json
+plan evidence	28236	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M24-HISTORY-005.json
+plan evidence	27679	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M24-HISTORY-006.json
+plan evidence	26913	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M24-HISTORY-011.json
+plan evidence	21128	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M24-HISTORY-018.json
+plan evidence	29957	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M25-HISTORY-007.json
+plan evidence	33003	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M25-HISTORY-008.json
+plan evidence	31464	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M25-HISTORY-012.json
+plan evidence	30152	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M25-HISTORY-013.json
+plan evidence	33811	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-009.json
+plan evidence	32244	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-010.json
+plan evidence	27469	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-014.json
+plan evidence	23593	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-016.json
+plan evidence	26816	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-019.json
+plan evidence	25721	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M26-HISTORY-021.json
+plan evidence	14878	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M27-HISTORY-023.json
+plan evidence	12560	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M27-HISTORY-024.json
+plan evidence	10745	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M27-HISTORY-025.json
+plan evidence	14232	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M27-HISTORY-026.json
+plan evidence	13758	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M27-HISTORY-027.json
+plan evidence	11531	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-028.json
+plan evidence	10990	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-029.json
+plan evidence	12459	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-030.json
+plan evidence	13125	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-031.json
+plan evidence	13138	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-032.json
+plan evidence	12714	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M28-HISTORY-033.json
+plan evidence	25609	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-034.json
+plan evidence	26050	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-035.json
+plan evidence	23769	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-036.json
+plan evidence	26858	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-037.json
+plan evidence	24584	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-038.json
+plan evidence	29192	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-039.json
+plan evidence	26658	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-040.json
+plan evidence	29778	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-HISTORY-041.json
+plan evidence	24051	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-016.json
+plan evidence	25425	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-017.json
+plan evidence	24157	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-018.json
+plan evidence	26509	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-019.json
+plan evidence	25062	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-020.json
+plan evidence	23484	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-021.json
+plan evidence	21783	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-022.json
+plan evidence	24356	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-023.json
+plan evidence	25026	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M29-LIFE-024.json
+plan evidence	23655	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-042.json
+plan evidence	22807	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-043.json
+plan evidence	24467	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-044.json
+plan evidence	25975	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-045.json
+plan evidence	26771	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-046.json
+plan evidence	23060	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-047.json
+plan evidence	27208	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-048.json
+plan evidence	27380	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-049.json
+plan evidence	32231	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-050.json
+plan evidence	21401	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-051.json
+plan evidence	24409	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-052.json
+plan evidence	21687	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-053.json
+plan evidence	26529	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-054.json
+plan evidence	22320	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-055.json
+plan evidence	23356	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-056.json
+plan evidence	23323	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-057.json
+plan evidence	26627	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-058.json
+plan evidence	24471	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-059.json
+plan evidence	22558	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M30-HISTORY-060.json
+plan evidence	21224	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M31-HISTORY-061.json
+plan evidence	24075	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M31-HISTORY-062.json
+plan evidence	24609	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M31-HISTORY-063.json
+plan evidence	20972	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-064.json
+plan evidence	20616	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-065.json
+plan evidence	20586	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-066.json
+plan evidence	20657	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-067.json
+plan evidence	20566	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-068.json
+plan evidence	20671	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-069.json
+plan evidence	20481	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-070.json
+plan evidence	20587	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-071.json
+plan evidence	20669	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-072.json
+plan evidence	20661	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-073.json
+plan evidence	20528	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-074.json
+plan evidence	20578	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-075.json
+plan evidence	20945	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-076.json
+plan evidence	20885	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-077.json
+plan evidence	21143	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-078.json
+plan evidence	20870	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-079.json
+plan evidence	20902	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-080.json
+plan evidence	21209	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-081.json
+plan evidence	20961	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-082.json
+plan evidence	21028	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-083.json
+plan evidence	20841	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-084.json
+plan evidence	20996	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-085.json
+plan evidence	20965	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-086.json
+plan evidence	20930	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-087.json
+plan evidence	21039	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-088.json
+plan evidence	20978	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-089.json
+plan evidence	21310	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32-HISTORY-090.json
+plan evidence	6488	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M32.json
+plan evidence	28909	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-091.json
+plan evidence	28861	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-092.json
+plan evidence	28984	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-093.json
+plan evidence	28125	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-094.json
+plan evidence	29460	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-095.json
+plan evidence	28362	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-096.json
+plan evidence	28720	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-097.json
+plan evidence	29001	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-098.json
+plan evidence	28587	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-099.json
+plan evidence	28458	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-100.json
+plan evidence	29067	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-101.json
+plan evidence	28878	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-102.json
+plan evidence	28484	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-103.json
+plan evidence	28539	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-104.json
+plan evidence	28536	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-105.json
+plan evidence	28708	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-106.json
+plan evidence	28458	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-107.json
+plan evidence	28622	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-108.json
+plan evidence	28538	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-109.json
+plan evidence	28572	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-110.json
+plan evidence	28592	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-111.json
+plan evidence	28598	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-112.json
+plan evidence	28513	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-113.json
+plan evidence	28429	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-114.json
+plan evidence	28488	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-115.json
+plan evidence	29163	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-116.json
+plan evidence	29988	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33-HISTORY-117.json
+plan evidence	5995	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M33.json
+plan evidence	11622	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-118.json
+plan evidence	11355	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-119.json
+plan evidence	11413	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-120.json
+plan evidence	11553	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-121.json
+plan evidence	11504	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-122.json
+plan evidence	11474	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-123.json
+plan evidence	11579	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-124.json
+plan evidence	11532	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-125.json
+plan evidence	11506	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34-HISTORY-126.json
+plan evidence	4042	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M34.json
+plan evidence	23757	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M35-HISTORY-127.json
+plan evidence	20477	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M35-HISTORY-128.json
+plan evidence	23516	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M35-HISTORY-129.json
+plan evidence	21824	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M35-HISTORY-130.json
+plan evidence	24545	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M35-HISTORY-131.json
+plan evidence	11628	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-132.json
+plan evidence	11446	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-133.json
+plan evidence	11490	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-134.json
+plan evidence	11505	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-135.json
+plan evidence	11506	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-136.json
+plan evidence	11523	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-137.json
+plan evidence	11492	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-138.json
+plan evidence	11503	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-139.json
+plan evidence	11461	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-140.json
+plan evidence	11476	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-141.json
+plan evidence	11500	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36-HISTORY-142.json
+plan evidence	1373	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M36.json
+plan evidence	27992	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M37-HISTORY-143.json
+plan evidence	25606	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M38-LIFE-001.json
+plan evidence	26136	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M38-LIFE-002.json
+plan evidence	30293	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M38-LIFE-003.json
+plan evidence	30798	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M38-LIFE-004.json
+plan evidence	28859	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M39-LIFE-005.json
+plan evidence	33069	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M39-LIFE-006.json
+plan evidence	29672	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M39-LIFE-007.json
+plan evidence	32534	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M39-LIFE-008.json
+plan evidence	35842	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M40-LIFE-009.json
+plan evidence	32881	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M40-LIFE-010.json
+plan evidence	34192	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M40-LIFE-011.json
+plan evidence	31292	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M41-LIFE-012.json
+plan evidence	25822	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M41-LIFE-013.json
+plan evidence	29974	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M41-LIFE-014.json
+plan evidence	24149	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M42-LIFE-025.json
+plan evidence	24735	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M42-LIFE-026.json
+plan evidence	29312	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M43-EDGE-001.json
+plan evidence	31939	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M43-EDGE-002.json
+plan evidence	25832	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M43-EDGE-003.json
+plan evidence	17611	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M43-EDGE-004.json
+plan evidence	26944	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M43-EDGE-005.json
+plan evidence	30568	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-007.json
+plan evidence	27302	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-008.json
+plan evidence	29381	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-009.json
+plan evidence	30217	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-012.json
+plan evidence	32528	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-013.json
+plan evidence	26364	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M45-EDGE-014.json
+plan evidence	28057	docs/implementation/native-can-tests-plan-2026-09-30/evidence/M45-EDGE-015.json
+plan evidence	3971	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P00.json
+plan evidence	3875	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P01.json
+plan evidence	5103	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P02.json
+plan evidence	3375	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P03.json
+plan evidence	750	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P04-disposal.json
+plan evidence	96034	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P04-manifest.json
+plan evidence	3753	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P04.json
+plan evidence	3721	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P05.json
+plan evidence	3480	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P06.json
+plan evidence	3643	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P07.json
+plan evidence	3822	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P08.json
+plan evidence	4532	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P09.json
+plan evidence	8433	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P10.json
+plan evidence	6610	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P11.json
+plan evidence	17477	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P12.json
+plan evidence	9760	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P13-profile.json
+plan evidence	6917	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P13.json
+plan evidence	7411	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P14.json
+plan evidence	5012	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P15.json
+plan evidence	4398	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P16.json
+plan evidence	3326	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P17.json
+plan evidence	7290	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P18.json
+plan evidence	15892	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P19-can.json
+plan evidence	7835	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P19.json
+plan evidence	4944	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P20.json
+plan evidence	5460	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P21.json
+plan evidence	9658	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P22-can.json
+plan evidence	5907	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P22.json
+plan evidence	3704	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P25.json
+plan evidence	1187	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/decision.json
+plan evidence	3790	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/request-1.json
+plan evidence	3844	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/request-2.json
+plan evidence	3922	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/request-3.json
+plan evidence	332	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-1.json
+plan evidence	401	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-1.metadata.json
+plan evidence	329	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-2.json
+plan evidence	401	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-2.metadata.json
+plan evidence	332	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-3.json
+plan evidence	401	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/response-3.metadata.json
+plan evidence	441	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26-jev/wording-audit.json
+plan evidence	11185	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P26.json
+plan evidence	18775	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P27.json
+plan evidence	3347	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/decision.json
+plan evidence	5895	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/request-1.json
+plan evidence	6462	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/request-2.json
+plan evidence	6194	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/request-3.json
+plan evidence	745	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-1.json
+plan evidence	353	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-1.metadata.json
+plan evidence	744	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-2.json
+plan evidence	397	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-2.metadata.json
+plan evidence	747	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-3.json
+plan evidence	397	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/response-3.metadata.json
+plan evidence	438	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev-s1c/wording-audit.json
+plan evidence	1418	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/decision.json
+plan evidence	3373	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/request-1.json
+plan evidence	3443	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/request-2.json
+plan evidence	3074	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/request-3.json
+plan evidence	386	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-1.json
+plan evidence	408	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-1.metadata.json
+plan evidence	388	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-2.json
+plan evidence	408	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-2.metadata.json
+plan evidence	387	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-3.json
+plan evidence	407	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/response-3.metadata.json
+plan evidence	485	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28-jev/wording-audit.json
+plan evidence	15945	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P28.json
+plan evidence	7496	docs/implementation/native-can-tests-plan-2026-09-30/evidence/P29.json
+plan evidence	15676	docs/implementation/native-can-tests-plan-2026-09-30/evidence/Z01.json
+plan evidence	1155	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/decision.json
+plan evidence	2760	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/request-1.json
+plan evidence	2752	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/request-2.json
+plan evidence	2641	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/request-3.json
+plan evidence	246	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-1.json
+plan evidence	259	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-1.metadata.json
+plan evidence	249	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-2.json
+plan evidence	259	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-2.metadata.json
+plan evidence	249	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-3.json
+plan evidence	259	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/response-3.metadata.json
+plan evidence	888	docs/implementation/native-can-tests-plan-2026-09-30/evidence/audit-2026-10-01/jev/wording-audit.json
+plan evidence	2852	docs/implementation/native-can-tests-plan-2026-09-30/evidence/check_json_vectors.txt
+plan evidence	5382	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m01.json
+plan evidence	5478	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m02.json
+plan evidence	5444	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m03.json
+plan evidence	5323	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m04.json
+plan evidence	5437	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m05.json
+plan evidence	5266	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m06.json
+plan evidence	5857	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m07.json
+plan evidence	5649	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m08.json
+plan evidence	5854	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m09.json
+plan evidence	5526	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m10.json
+plan evidence	5248	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m11.json
+plan evidence	5551	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m12.json
+plan evidence	5148	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m13.json
+plan evidence	5052	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m14.json
+plan evidence	5052	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m15.json
+plan evidence	5148	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m16.json
+plan evidence	5292	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m17.json
+plan evidence	5292	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m18.json
+plan evidence	5052	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m19.json
+plan evidence	5148	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m20.json
+plan evidence	4956	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m21.json
+plan evidence	5466	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m22.json
+plan evidence	5492	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m23.json
+plan evidence	5493	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m24.json
+plan evidence	5428	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m25.json
+plan evidence	5819	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m26.json
+plan evidence	5677	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m27.json
+plan evidence	5884	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m28.json
+plan evidence	6322	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m29a.json
+plan evidence	5954	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m29b.json
+plan evidence	6520	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m30a.json
+plan evidence	6362	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m30b.json
+plan evidence	7339	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m31.json
+plan evidence	6640	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m32.json
+plan evidence	8155	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m33chart-a.json
+plan evidence	10189	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m33chart-b.json
+plan evidence	6043	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m33rest.json
+plan evidence	5416	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m34.json
+plan evidence	5781	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m35.json
+plan evidence	5550	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m36.json
+plan evidence	4895	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m37.json
+plan evidence	5459	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m38.json
+plan evidence	5463	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m39.json
+plan evidence	5282	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m40.json
+plan evidence	5368	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m41.json
+plan evidence	5148	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m42.json
+plan evidence	5192	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m43.json
+plan evidence	5204	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m44.json
+plan evidence	4994	docs/implementation/native-can-tests-plan-2026-09-30/evidence/coverage/z01-m45.json
+plan evidence	2535	docs/implementation/native-can-tests-plan-2026-09-30/evidence/n-acceptance.json
+plan evidence	131053	docs/implementation/native-can-tests-plan-2026-09-30/evidence/status-audit-input.json
+plan ledger checklists prompts validators	32992	docs/implementation/native-can-tests-plan-2026-09-30/foundation-checklist.md
+plan ledger checklists prompts validators	36290	docs/implementation/native-can-tests-plan-2026-09-30/foundation.json
+plan ledger checklists prompts validators	56881	docs/implementation/native-can-tests-plan-2026-09-30/integration-checklist.md
+plan ledger checklists prompts validators	61972	docs/implementation/native-can-tests-plan-2026-09-30/integration.json
+plan ledger checklists prompts validators	205447	docs/implementation/native-can-tests-plan-2026-09-30/lane-plan.json
+plan ledger checklists prompts validators	20800	docs/implementation/native-can-tests-plan-2026-09-30/lane-plan.md
+plan ledger checklists prompts validators	298923	docs/implementation/native-can-tests-plan-2026-09-30/migration-checklist.md
+plan ledger checklists prompts validators	315267	docs/implementation/native-can-tests-plan-2026-09-30/migration-tasks.json
+plan ledger checklists prompts validators	17943	docs/implementation/native-can-tests-plan-2026-09-30/muse-implementation-prompt.txt
+plan ledger checklists prompts validators	5588	docs/implementation/native-can-tests-plan-2026-09-30/muse-replan-prompt.txt
+plan ledger checklists prompts validators	117509	docs/implementation/native-can-tests-plan-2026-09-30/muse-resume.md
+plan ledger checklists prompts validators	788	docs/implementation/native-can-tests-plan-2026-09-30/planning-baseline.json
+plan ledger checklists prompts validators	1493	docs/implementation/native-can-tests-plan-2026-09-30/progress-template.json
+plan ledger checklists prompts validators	139218	docs/implementation/native-can-tests-plan-2026-09-30/reference-core.json
+plan ledger checklists prompts validators	2690	docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.json
+plan ledger checklists prompts validators	3976	docs/implementation/native-can-tests-plan-2026-09-30/reference-seed.md
+plan ledger checklists prompts validators	292668	docs/implementation/native-can-tests-plan-2026-09-30/retirement-map.json
+plan ledger checklists prompts validators	15166	docs/implementation/native-can-tests-plan-2026-09-30/review.md
+plan ledger checklists prompts validators	478312	docs/implementation/native-can-tests-plan-2026-09-30/tasks.json
+plan tools	7376	docs/implementation/native-can-tests-plan-2026-09-30/tools/check-implementation.py
+plan tools	3777	docs/implementation/native-can-tests-plan-2026-09-30/tools/check-z01-partition.py
+plan tools	16653	docs/implementation/native-can-tests-plan-2026-09-30/tools/check-z01-slice.py
+plan tools	33793	docs/implementation/native-can-tests-plan-2026-09-30/tools/gen-z01-slice.py
+plan tools	2061	docs/implementation/native-can-tests-plan-2026-09-30/tools/mark-task-status.py
+plan ledger checklists prompts validators	11747	docs/implementation/native-can-tests-plan-2026-09-30/validate_plan.py
+plan ledger checklists prompts validators	2214	docs/implementation/native-can-tests-plan-2026-09-30/validation.json
+plan ledger checklists prompts validators	8508	docs/implementation/native-can-tests-plan-2026-09-30/z01-slices.json
+superseded design ledgers and contracts	27221	docs/syntax-taste/native-can-test-architecture-2026-09-30.md
+superseded design ledgers and contracts	60405	docs/syntax-taste/native-can-test-authoring-2026-09-30.md
+superseded design ledgers and contracts	11556	docs/syntax-taste/native-can-test-backends-2026-09-30.md
+superseded design ledgers and contracts	59326	docs/syntax-taste/native-can-test-capabilities-2026-09-30.md
+superseded design ledgers and contracts	15517	docs/syntax-taste/native-can-test-design-review-2026-09-30.md
+superseded design ledgers and contracts	22103	docs/syntax-taste/native-can-test-hard-cases-2026-09-30.md
+superseded design ledgers and contracts	40395	docs/syntax-taste/native-can-test-lifecycle-2026-09-30.md
+superseded design ledgers and contracts	16933	docs/syntax-taste/native-can-test-preparatory-checks-2026-09-30.md
+superseded design ledgers and contracts	7622	docs/syntax-taste/native-can-test-preparatory-results-2026-09-30.md
+superseded design ledgers and contracts	17127	docs/syntax-taste/native-can-test-prerequisites-2026-09-30.md
+superseded design ledgers and contracts	20824	docs/syntax-taste/native-can-tests-completion-contract-2026-09-30.md
+superseded design ledgers and contracts	30995	docs/syntax-taste/native-can-tests-investigation-2026-09-30.md
+superseded design ledgers and contracts	17589	docs/syntax-taste/native-can-tests-migration-ledger-2026-09-30.md
+superseded preparation evidence and tools	19295	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/consult.py
+superseded preparation evidence and tools	5280	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/findings.md
+superseded preparation evidence and tools	5933	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/request-1.json
+superseded preparation evidence and tools	5716	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/request-2.json
+superseded preparation evidence and tools	5854	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/request-3.json
+superseded preparation evidence and tools	596	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-1.metadata.json
+superseded preparation evidence and tools	595	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-2.metadata.json
+superseded preparation evidence and tools	593	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/response-3.metadata.json
+superseded preparation evidence and tools	2341	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/review.md
+superseded preparation evidence and tools	6026	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/validation.json
+superseded preparation evidence and tools	1104	docs/syntax-taste/preparation/native-can-test-architecture-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	9826	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/audit.md
+superseded preparation evidence and tools	14970	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/consult.py
+superseded preparation evidence and tools	4233	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/request-1.json
+superseded preparation evidence and tools	4165	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/request-2.json
+superseded preparation evidence and tools	4152	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/request-3.json
+superseded preparation evidence and tools	472	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-1.metadata.json
+superseded preparation evidence and tools	471	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-2.metadata.json
+superseded preparation evidence and tools	470	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/response-3.metadata.json
+superseded preparation evidence and tools	1071	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/validation.json
+superseded preparation evidence and tools	925	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/agent-authorship/wording-audit.json
+superseded preparation evidence and tools	12939	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/consult-followup.py
+superseded preparation evidence and tools	21984	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/consult.py
+superseded preparation evidence and tools	6450	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/findings.md
+superseded preparation evidence and tools	3827	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/request-1.json
+superseded preparation evidence and tools	3723	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/request-2.json
+superseded preparation evidence and tools	3643	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/request-3.json
+superseded preparation evidence and tools	458	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-1.metadata.json
+superseded preparation evidence and tools	458	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-2.metadata.json
+superseded preparation evidence and tools	458	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/response-3.metadata.json
+superseded preparation evidence and tools	524	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/mandatory-followup/wording-audit.json
+superseded preparation evidence and tools	6413	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/request-1.json
+superseded preparation evidence and tools	6529	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/request-2.json
+superseded preparation evidence and tools	6360	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/request-3.json
+superseded preparation evidence and tools	717	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-1.json
+superseded preparation evidence and tools	132	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-1.metadata.json
+superseded preparation evidence and tools	717	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-2.json
+superseded preparation evidence and tools	132	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-2.metadata.json
+superseded preparation evidence and tools	717	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-3.json
+superseded preparation evidence and tools	132	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/response-3.metadata.json
+superseded preparation evidence and tools	978	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/jev/wording-audit.json
+superseded preparation evidence and tools	9115	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/observation-review.md
+superseded preparation evidence and tools	6474	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/review.md
+superseded preparation evidence and tools	10238	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/syntax-review.md
+superseded preparation evidence and tools	4376	docs/syntax-taste/preparation/native-can-test-authoring-2026-09-30/validation.json
+superseded preparation evidence and tools	13520	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/browser-review.md
+superseded preparation evidence and tools	17111	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/consult.py
+superseded preparation evidence and tools	6677	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/findings.md
+superseded preparation evidence and tools	12891	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/observation-diagnostics-review.md
+superseded preparation evidence and tools	5478	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/request-1.json
+superseded preparation evidence and tools	5067	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/request-2.json
+superseded preparation evidence and tools	5101	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/request-3.json
+superseded preparation evidence and tools	571	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-1.metadata.json
+superseded preparation evidence and tools	571	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-2.metadata.json
+superseded preparation evidence and tools	568	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/response-3.metadata.json
+superseded preparation evidence and tools	6461	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/review-browser.md
+superseded preparation evidence and tools	4942	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/review-observations.md
+superseded preparation evidence and tools	3789	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/review-resources.md
+superseded preparation evidence and tools	4744	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/review.md
+superseded preparation evidence and tools	6745	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/validation.json
+superseded preparation evidence and tools	915	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	19873	docs/syntax-taste/preparation/native-can-test-capabilities-2026-09-30/workspace-process-review.md
+superseded preparation evidence and tools	751	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/consultation-result.json
+superseded preparation evidence and tools	4743	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/consultation.md
+superseded preparation evidence and tools	5430	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/coverage-review.md
+superseded preparation evidence and tools	11078	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/lifecycle-review.md
+superseded preparation evidence and tools	98	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-1-failure.json
+superseded preparation evidence and tools	4430	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-1.json
+superseded preparation evidence and tools	98	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-2-failure.json
+superseded preparation evidence and tools	4652	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-2.json
+superseded preparation evidence and tools	98	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-3-failure.json
+superseded preparation evidence and tools	4469	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/request-3.json
+superseded preparation evidence and tools	394	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/response-1.json
+superseded preparation evidence and tools	396	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/response-2.json
+superseded preparation evidence and tools	395	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/response-3.json
+superseded preparation evidence and tools	10305	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/trust-review.md
+superseded preparation evidence and tools	4099	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/validation.json
+superseded preparation evidence and tools	1364	docs/syntax-taste/preparation/native-can-test-design-review-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	20345	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/browser-source-challenge.md
+superseded preparation evidence and tools	26559	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/consult.py
+superseded preparation evidence and tools	18786	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/database-source-challenge.md
+superseded preparation evidence and tools	8851	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/descriptor-source-challenge.md
+superseded preparation evidence and tools	29992	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/experiments.md
+superseded preparation evidence and tools	2742	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/findings.md
+superseded preparation evidence and tools	11017	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/native-source-challenge.md
+superseded preparation evidence and tools	7531	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/request-1.json
+superseded preparation evidence and tools	7743	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/request-2.json
+superseded preparation evidence and tools	7885	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/request-3.json
+superseded preparation evidence and tools	602	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-1.metadata.json
+superseded preparation evidence and tools	604	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-2.metadata.json
+superseded preparation evidence and tools	603	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/response-3.metadata.json
+superseded preparation evidence and tools	4160	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/review.md
+superseded preparation evidence and tools	9846	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/validation.json
+superseded preparation evidence and tools	1854	docs/syntax-taste/preparation/native-can-test-hard-cases-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	21379	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/capabilities-draft.md
+superseded preparation evidence and tools	23347	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/capabilities-tasks.json
+superseded preparation evidence and tools	18859	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/foundation-draft.md
+superseded preparation evidence and tools	24501	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/foundation-tasks.json
+superseded preparation evidence and tools	20552	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/migration-draft.md
+superseded preparation evidence and tools	57924	docs/syntax-taste/preparation/native-can-test-implementation-plan-2026-09-30/migration-groups.json
+superseded preparation evidence and tools	14223	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/concurrency-reuse-review.md
+superseded preparation evidence and tools	19564	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/consult.py
+superseded preparation evidence and tools	9832	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/coverage-report-review.md
+superseded preparation evidence and tools	3084	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-coverage-review.md
+superseded preparation evidence and tools	3716	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-resource-review.md
+superseded preparation evidence and tools	5036	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/final-reuse-review.md
+superseded preparation evidence and tools	6648	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/findings.md
+superseded preparation evidence and tools	5904	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/request-1.json
+superseded preparation evidence and tools	5732	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/request-2.json
+superseded preparation evidence and tools	5909	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/request-3.json
+superseded preparation evidence and tools	10466	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/resource-failure-review.md
+superseded preparation evidence and tools	560	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-1.metadata.json
+superseded preparation evidence and tools	563	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-2.metadata.json
+superseded preparation evidence and tools	560	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/response-3.metadata.json
+superseded preparation evidence and tools	5774	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/review.md
+superseded preparation evidence and tools	6363	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/validation.json
+superseded preparation evidence and tools	1050	docs/syntax-taste/preparation/native-can-test-lifecycle-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	10756	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/browser-scope.md
+superseded preparation evidence and tools	8393	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/checks.json
+superseded preparation evidence and tools	13372	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/consult.py
+superseded preparation evidence and tools	2989	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/decisions.md
+superseded preparation evidence and tools	7159	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/descriptor-scope.md
+superseded preparation evidence and tools	3539	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/execution-summary.json
+superseded preparation evidence and tools	528	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/execution-validation.json
+superseded preparation evidence and tools	3603	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/inputs.json
+superseded preparation evidence and tools	9736	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/native-scope.md
+superseded preparation evidence and tools	3800	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/request-1.json
+superseded preparation evidence and tools	4009	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/request-2.json
+superseded preparation evidence and tools	3955	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/request-3.json
+superseded preparation evidence and tools	386	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-1.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-1.metadata.json
+superseded preparation evidence and tools	387	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-2.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-2.metadata.json
+superseded preparation evidence and tools	383	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-3.json
+superseded preparation evidence and tools	78	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/response-3.metadata.json
+superseded preparation evidence and tools	2611	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T161737-8cab0b-bootstrap.txt
+superseded preparation evidence and tools	498	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T161737-8cab0b-intent.json
+superseded preparation evidence and tools	1079	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-admission.json
+superseded preparation evidence and tools	2852	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-bootstrap.txt
+superseded preparation evidence and tools	955	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-finalization.json
+superseded preparation evidence and tools	53544	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-instruments.json
+superseded preparation evidence and tools	5770	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-intent.json
+superseded preparation evidence and tools	51232	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T162840-599df6-results.json
+superseded preparation evidence and tools	891	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-admission.json
+superseded preparation evidence and tools	2972	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-bootstrap.txt
+superseded preparation evidence and tools	562	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-finalization.json
+superseded preparation evidence and tools	53405	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-instruments.json
+superseded preparation evidence and tools	2215	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-intent.json
+superseded preparation evidence and tools	4020	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-repair.diff
+superseded preparation evidence and tools	26917	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/run-20260930T163537-e5ff9c-results.json
+superseded preparation evidence and tools	1130	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/validation.json
+superseded preparation evidence and tools	682	docs/syntax-taste/preparation/native-can-test-preparatory-checks-2026-09-30/wording-audit.json
+superseded preparation evidence and tools	56190	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/candidate-assets.json
+superseded preparation evidence and tools	9802	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/cleanup-audit.md
+superseded preparation evidence and tools	12114	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/prerequisites.json
+superseded preparation evidence and tools	8224	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/reference-audit.md
+superseded preparation evidence and tools	3122	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/review.md
+superseded preparation evidence and tools	4086	docs/syntax-taste/preparation/native-can-test-prerequisites-2026-09-30/validation.json
+superseded preparation evidence and tools	3028	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/findings.md
+superseded preparation evidence and tools	5883	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/request-1.json
+superseded preparation evidence and tools	6267	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/request-2.json
+superseded preparation evidence and tools	6239	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/request-3.json
+superseded preparation evidence and tools	260	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-1.json
+superseded preparation evidence and tools	217	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-1.metadata.json
+superseded preparation evidence and tools	260	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-2.json
+superseded preparation evidence and tools	217	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-2.metadata.json
+superseded preparation evidence and tools	263	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-3.json
+superseded preparation evidence and tools	217	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/response-3.metadata.json
+superseded preparation evidence and tools	2019	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/validation.json
+superseded preparation evidence and tools	902	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/backend-followup/wording-audit.json
+superseded preparation evidence and tools	3337	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/findings.md
+superseded preparation evidence and tools	6539	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/request-1.json
+superseded preparation evidence and tools	6589	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/request-2.json
+superseded preparation evidence and tools	6552	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/request-3.json
+superseded preparation evidence and tools	555	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-1.json
+superseded preparation evidence and tools	286	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-1.metadata.json
+superseded preparation evidence and tools	553	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-2.json
+superseded preparation evidence and tools	286	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-2.metadata.json
+superseded preparation evidence and tools	555	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-3.json
+superseded preparation evidence and tools	286	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/response-3.metadata.json
+superseded preparation evidence and tools	242	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/transport-attempt-1-1.json
+superseded preparation evidence and tools	242	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/transport-attempt-1-2.json
+superseded preparation evidence and tools	242	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/transport-attempt-1-3.json
+superseded preparation evidence and tools	2182	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/jev/wording-audit.json
+superseded preparation evidence and tools	2459	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/review.md
+superseded preparation evidence and tools	57419	docs/syntax-taste/preparation/native-can-tests-investigation-2026-09-30/source-inventory.json
+superseded preparation evidence and tools	5036	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/assignments.json
+superseded preparation evidence and tools	115847	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/browser.json
+superseded preparation evidence and tools	118069	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/browser.md
+superseded preparation evidence and tools	100433	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/core.json
+superseded preparation evidence and tools	99053	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/core.md
+superseded preparation evidence and tools	70997	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/delegated-oracles.json
+superseded preparation evidence and tools	60574	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/delegated-oracles.md
+superseded preparation evidence and tools	19038	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/external-callers.json
+superseded preparation evidence and tools	21519	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/external-callers.md
+superseded preparation evidence and tools	142621	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/file-map.json
+superseded preparation evidence and tools	80687	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/file-map.md
+superseded preparation evidence and tools	42998	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/lifecycle.json
+superseded preparation evidence and tools	42986	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/lifecycle.md
+superseded preparation evidence and tools	14651	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/render-ledger.py
+superseded preparation evidence and tools	4252	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/schema.json
+superseded preparation evidence and tools	109578	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/source-index.json
+superseded preparation evidence and tools	205048	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/sql-history.json
+superseded preparation evidence and tools	211340	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/sql-history.md
+superseded preparation evidence and tools	1721	docs/syntax-taste/preparation/native-can-tests-migration-ledger-2026-09-30/validation.json
+runtime/test-support	6727	runtime/test-support/evidence.ts
+runtime/test-support	4178	runtime/test-support/owner.ts
+runtime/test-support	30109	runtime/test-support/slices/i01/native.ts
+runtime/test-support	13966	runtime/test-support/slices/i02/c-service.ts
+runtime/test-support	8359	runtime/test-support/slices/i02/c.ts
+runtime/test-support	23128	runtime/test-support/slices/i03/late-service.ts
+runtime/test-support	3259	runtime/test-support/slices/i03/late-support.ts
+runtime/test-support	13907	runtime/test-support/slices/i03/late.ts
+runtime/test-support	28549	runtime/test-support/slices/i04/http-service.ts
+runtime/test-support	13724	runtime/test-support/slices/i04/http.ts
+runtime/test-support	29059	runtime/test-support/slices/i04/peer-service.ts
+runtime/test-support	16101	runtime/test-support/slices/i04/peer.ts
+runtime/test-support	5798	runtime/test-support/slices/i04/support.ts
+runtime/test-support	19740	runtime/test-support/slices/i05/websocket-service.ts
+runtime/test-support	11258	runtime/test-support/slices/i05/websocket.ts
+runtime/test-support	17021	runtime/test-support/slices/i11/descriptor.ts
+runtime/test-support	7092	runtime/test-support/slices/i12/lease.ts
+runtime/test-support	24608	runtime/test-support/slices/i13/db-core-service.ts
+runtime/test-support	18343	runtime/test-support/slices/i13/db-returning-service.ts
+runtime/test-support	22065	runtime/test-support/slices/i13/db.ts
+runtime/test-support	17187	runtime/test-support/slices/i14/db-transaction-service.ts
+runtime/test-support	12187	runtime/test-support/slices/i14/db_transaction.ts
+runtime/test-support	26654	runtime/test-support/slices/i15/db-poison-service.ts
+runtime/test-support	18937	runtime/test-support/slices/i15/db_poison.ts
+runtime/test-support	23291	runtime/test-support/slices/i16/db-deadline-service.ts
+runtime/test-support	14997	runtime/test-support/slices/i16/db_deadline.ts
+runtime/test-support	29752	runtime/test-support/slices/i17/object-store-service.ts
+runtime/test-support	17398	runtime/test-support/slices/i17/store.ts
+runtime/test-support	3059	runtime/test-support/tools.ts
+runtime/test-support	9066	runtime/test-support/transport.ts
+runtime/test-support	8285	runtime/test-support/workspace.ts
+legacy runtime adapter tests	12710	runtime/test/test-c-ingress-adapter.test.ts
+legacy runtime adapter tests	15340	runtime/test/test-db-adapter.test.ts
+legacy runtime adapter tests	16274	runtime/test/test-db-deadline-adapter.test.ts
+legacy runtime adapter tests	15879	runtime/test/test-db-poison-adapter.test.ts
+legacy runtime adapter tests	11466	runtime/test/test-db-transaction-adapter.test.ts
+legacy runtime adapter tests	12656	runtime/test/test-descriptor-adapter.test.ts
+legacy runtime adapter tests	3373	runtime/test/test-descriptor-delivery.test.ts
+legacy runtime adapter tests	13658	runtime/test/test-http-peer-ws-adapter.test.ts
+legacy runtime adapter tests	12788	runtime/test/test-http-peer.test.ts
+legacy runtime adapter tests	11656	runtime/test/test-late-adapter.test.ts
+legacy runtime adapter tests	8261	runtime/test/test-lease-probe-adapter.test.ts
+legacy runtime adapter tests	15382	runtime/test/test-native-values-adapter.test.ts
+legacy runtime adapter tests	2551	runtime/test/test-native-values.test.ts
+legacy runtime adapter tests	18227	runtime/test/test-object-store-adapter.test.ts
+legacy runtime adapter tests	16870	runtime/test/test-owner.test.ts
+legacy runtime adapter tests	17311	runtime/test/test-workspace-tools-evidence.test.ts
+schemas/native-test	5604	schemas/native-test/README.md
+schemas/native-test	1435	schemas/native-test/completeness.schema.json
+schemas/native-test	2774	schemas/native-test/correction.schema.json
+schemas/native-test	4272	schemas/native-test/descriptors/README.md
+schemas/native-test	2641	schemas/native-test/descriptors/descriptor-map.schema.json
+schemas/native-test	1761	schemas/native-test/descriptors/environment.schema.json
+schemas/native-test	1323	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-accepted-overflow.json
+schemas/native-test	1319	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-foreign-owner.json
+schemas/native-test	1316	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-missing-fd3.json
+schemas/native-test	1323	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-open-exhausted.json
+schemas/native-test	1319	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-private-fd.json
+schemas/native-test	1320	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-reused-snapshot.json
+schemas/native-test	1318	schemas/native-test/descriptors/fixtures/invalid/descriptor-map-wrong-direction.json
+schemas/native-test	210	schemas/native-test/descriptors/fixtures/invalid/environment-bad-env-type.json
+schemas/native-test	261	schemas/native-test/descriptors/fixtures/invalid/environment-c-cli-no-argv.json
+schemas/native-test	272	schemas/native-test/descriptors/fixtures/invalid/environment-direct-entry-argv.json
+schemas/native-test	278	schemas/native-test/descriptors/fixtures/invalid/environment-dup-env.json
+schemas/native-test	282	schemas/native-test/descriptors/fixtures/invalid/environment-log-path.json
+schemas/native-test	308	schemas/native-test/descriptors/fixtures/invalid/environment-secret-value.json
+schemas/native-test	284	schemas/native-test/descriptors/fixtures/invalid/environment-unsorted-env.json
+schemas/native-test	1531	schemas/native-test/descriptors/fixtures/invalid/manifest.json
+schemas/native-test	1353	schemas/native-test/descriptors/fixtures/valid/descriptor-map-drained.json
+schemas/native-test	1330	schemas/native-test/descriptors/fixtures/valid/descriptor-map-fresh.json
+schemas/native-test	313	schemas/native-test/descriptors/fixtures/valid/environment-c-cli.json
+schemas/native-test	263	schemas/native-test/descriptors/fixtures/valid/environment-direct-entry.json
+schemas/native-test	12426	schemas/native-test/descriptors/validate.py
+schemas/native-test	239	schemas/native-test/fixtures/invalid/completeness-false-seal.json
+schemas/native-test	567	schemas/native-test/fixtures/invalid/correction-missing-digests.json
+schemas/native-test	131	schemas/native-test/fixtures/invalid/identity-bad-role.json
+schemas/native-test	46	schemas/native-test/fixtures/invalid/identity-missing-digest.json
+schemas/native-test	733	schemas/native-test/fixtures/invalid/limit-missing-temp.json
+schemas/native-test	768	schemas/native-test/fixtures/invalid/limit-unlimited-string.json
+schemas/native-test	765	schemas/native-test/fixtures/invalid/limit-zero-processes.json
+schemas/native-test	1558	schemas/native-test/fixtures/invalid/manifest.json
+schemas/native-test	138	schemas/native-test/fixtures/invalid/operation-completed-bad-kind.json
+schemas/native-test	293	schemas/native-test/fixtures/invalid/operation-missing-id.json
+schemas/native-test	322	schemas/native-test/fixtures/invalid/operation-unknown-version.json
+schemas/native-test	738	schemas/native-test/fixtures/invalid/receipt-clean-remaining.json
+schemas/native-test	355	schemas/native-test/fixtures/invalid/report-execute-zero-units.json
+schemas/native-test	767	schemas/native-test/fixtures/invalid/report-matched-missing-check.json
+schemas/native-test	225	schemas/native-test/fixtures/invalid/scope-missing-run-id.json
+schemas/native-test	239	schemas/native-test/fixtures/valid/completeness-partial.json
+schemas/native-test	133	schemas/native-test/fixtures/valid/completeness-sealed.json
+schemas/native-test	795	schemas/native-test/fixtures/valid/correction-invalidation.json
+schemas/native-test	136	schemas/native-test/fixtures/valid/identity-n.json
+schemas/native-test	133	schemas/native-test/fixtures/valid/identity-r.json
+schemas/native-test	766	schemas/native-test/fixtures/valid/limit-quick.json
+schemas/native-test	207	schemas/native-test/fixtures/valid/operation-failed.json
+schemas/native-test	322	schemas/native-test/fixtures/valid/operation-request.json
+schemas/native-test	189	schemas/native-test/fixtures/valid/operation-result.json
+schemas/native-test	804	schemas/native-test/fixtures/valid/receipt-clean.json
+schemas/native-test	1096	schemas/native-test/fixtures/valid/report-subset.json
+schemas/native-test	297	schemas/native-test/fixtures/valid/scope-execute.json
+schemas/native-test	762	schemas/native-test/identity.schema.json
+schemas/native-test	2992	schemas/native-test/limit.schema.json
+schemas/native-test	2946	schemas/native-test/operation.schema.json
+schemas/native-test	3345	schemas/native-test/receipt.schema.json
+schemas/native-test	3128	schemas/native-test/report.schema.json
+schemas/native-test	1228	schemas/native-test/scope.schema.json
+schemas/native-test	12130	schemas/native-test/validate.py
+old suite configs bootstrap subjects examples	15700	tests/native-can/bootstrap/reference/accept.go
+old suite configs bootstrap subjects examples	13621	tests/native-can/bootstrap/reference/accept_test.go
+old suite configs bootstrap subjects examples	1139	tests/native-can/bootstrap/reference/doc.go
+old suite configs bootstrap subjects examples	26	tests/native-can/bootstrap/reference/fixtures/fail/can.errors.json
+old suite configs bootstrap subjects examples	56	tests/native-can/bootstrap/reference/fixtures/fail/can.project.json
+old suite configs bootstrap subjects examples	122	tests/native-can/bootstrap/reference/fixtures/fail/src/probe.can
+old suite configs bootstrap subjects examples	26	tests/native-can/bootstrap/reference/fixtures/pass/can.errors.json
+old suite configs bootstrap subjects examples	56	tests/native-can/bootstrap/reference/fixtures/pass/can.project.json
+old suite configs bootstrap subjects examples	122	tests/native-can/bootstrap/reference/fixtures/pass/src/probe.can
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/fail.parse.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/fail.parse.stderr.txt
+old suite configs bootstrap subjects examples	52	tests/native-can/bootstrap/reference/observations/fail.parse.stdout.txt
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/fail.render.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/fail.render.stderr.txt
+old suite configs bootstrap subjects examples	123	tests/native-can/bootstrap/reference/observations/fail.render.stdout.txt
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/pass.parse.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/pass.parse.stderr.txt
+old suite configs bootstrap subjects examples	52	tests/native-can/bootstrap/reference/observations/pass.parse.stdout.txt
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/pass.project.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/pass.project.stderr.txt
+old suite configs bootstrap subjects examples	1066	tests/native-can/bootstrap/reference/observations/pass.project.stdout.txt
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/pass.render.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/pass.render.stderr.txt
+old suite configs bootstrap subjects examples	123	tests/native-can/bootstrap/reference/observations/pass.render.stdout.txt
+old suite configs bootstrap subjects examples	7	tests/native-can/bootstrap/reference/observations/pass.types.exit.txt
+old suite configs bootstrap subjects examples	0	tests/native-can/bootstrap/reference/observations/pass.types.stderr.txt
+old suite configs bootstrap subjects examples	254	tests/native-can/bootstrap/reference/observations/pass.types.stdout.txt
+old suite configs bootstrap subjects examples	55	tests/native-can/can.errors.json
+old suite configs bootstrap subjects examples	56	tests/native-can/can.project.json
+old suite configs bootstrap subjects examples	4568	tests/native-can/examples/capabilities/i01/roundtrip.can
+old suite configs bootstrap subjects examples	1830	tests/native-can/examples/capabilities/i02/validate.can
+old suite configs bootstrap subjects examples	5224	tests/native-can/examples/capabilities/i03/roundtrip.can
+old suite configs bootstrap subjects examples	7270	tests/native-can/examples/capabilities/i04/roundtrip.can
+old suite configs bootstrap subjects examples	4172	tests/native-can/examples/capabilities/i05/roundtrip.can
+old suite configs bootstrap subjects examples	2898	tests/native-can/examples/capabilities/i11/validate.can
+old suite configs bootstrap subjects examples	2293	tests/native-can/examples/capabilities/i12/validate.can
+old suite configs bootstrap subjects examples	9002	tests/native-can/examples/capabilities/i13/roundtrip.can
+old suite configs bootstrap subjects examples	4182	tests/native-can/examples/capabilities/i14/roundtrip.can
+old suite configs bootstrap subjects examples	7288	tests/native-can/examples/capabilities/i15/roundtrip.can
+old suite configs bootstrap subjects examples	7546	tests/native-can/examples/capabilities/i16/roundtrip.can
+old suite configs bootstrap subjects examples	6820	tests/native-can/examples/capabilities/i17/roundtrip.can
+staged migration corpus	18013	tests/native-can/migration/m01-assertion-and-check-evidence/core-002-mechanics.can
+staged migration corpus	15992	tests/native-can/migration/m01-assertion-and-check-evidence/core-002-report-shape.can
+staged migration corpus	14988	tests/native-can/migration/m01-assertion-and-check-evidence/core-002-selection.can
+staged migration corpus	16084	tests/native-can/migration/m01-assertion-and-check-evidence/core-003-locations.can
+staged migration corpus	11061	tests/native-can/migration/m01-assertion-and-check-evidence/core-003-redaction.can
+staged migration corpus	19391	tests/native-can/migration/m01-assertion-and-check-evidence/core-003-status-shape.can
+staged migration corpus	14640	tests/native-can/migration/m01-assertion-and-check-evidence/core-006-check-shape.can
+staged migration corpus	12966	tests/native-can/migration/m01-assertion-and-check-evidence/core-006-hostile-reasons.can
+staged migration corpus	16993	tests/native-can/migration/m01-assertion-and-check-evidence/core-006-main-fixture.can
+staged migration corpus	7120	tests/native-can/migration/m01-assertion-and-check-evidence/core-007-redaction.can
+staged migration corpus	14109	tests/native-can/migration/m01-assertion-and-check-evidence/core-007-report-shape.can
+staged migration corpus	12723	tests/native-can/migration/m01-assertion-and-check-evidence/core-007-span.can
+staged migration corpus	14206	tests/native-can/migration/m02-callables-generics-and-templat/core-005-capture-semantics.can
+staged migration corpus	11767	tests/native-can/migration/m02-callables-generics-and-templat/core-005-io-boundary.can
+staged migration corpus	19924	tests/native-can/migration/m02-callables-generics-and-templat/core-005-roots-green.can
+staged migration corpus	14389	tests/native-can/migration/m02-callables-generics-and-templat/core-023-roots-green.can
+staged migration corpus	14028	tests/native-can/migration/m02-callables-generics-and-templat/core-023-source-variants.can
+staged migration corpus	12072	tests/native-can/migration/m02-callables-generics-and-templat/core-023-wrong-type-rejection.can
+staged migration corpus	18991	tests/native-can/migration/m02-callables-generics-and-templat/core-024-artifact-shape.can
+staged migration corpus	16131	tests/native-can/migration/m02-callables-generics-and-templat/core-024-chain-green.can
+staged migration corpus	23427	tests/native-can/migration/m02-callables-generics-and-templat/core-024-negative-legs.can
+staged migration corpus	10698	tests/native-can/migration/m02-callables-generics-and-templat/core-041-production-shape.can
+staged migration corpus	17258	tests/native-can/migration/m02-callables-generics-and-templat/core-041-roots-green.can
+staged migration corpus	12310	tests/native-can/migration/m02-callables-generics-and-templat/core-041-wrong-target.can
+staged migration corpus	17387	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-001-array-semantics.can
+staged migration corpus	18588	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-001-hostile-production.can
+staged migration corpus	28110	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-001-roots-green.can
+staged migration corpus	16840	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-004-byte-preservation.can
+staged migration corpus	19132	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-004-roots-green.can
+staged migration corpus	11710	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-004-run-shape.can
+staged migration corpus	18790	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-009-codec-preservation.can
+staged migration corpus	14886	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-009-roots-green.can
+staged migration corpus	10421	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-009-run-shape.can
+staged migration corpus	16685	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-010-collections-semantics.can
+staged migration corpus	21405	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-010-roots-green.can
+staged migration corpus	12079	tests/native-can/migration/m03-arrays-bytes-codecs-and-collec/core-010-run-shape.can
+staged migration corpus	24979	tests/native-can/migration/m04-coordination-occurrence-identi/core-012-coordination-selection.can
+staged migration corpus	21561	tests/native-can/migration/m04-coordination-occurrence-identi/core-012-roots-green.can
+staged migration corpus	12202	tests/native-can/migration/m04-coordination-occurrence-identi/core-012-run-shape.can
+staged migration corpus	12415	tests/native-can/migration/m04-coordination-occurrence-identi/core-013-roots-green.can
+staged migration corpus	13640	tests/native-can/migration/m04-coordination-occurrence-identi/core-013-run-shape.can
+staged migration corpus	18012	tests/native-can/migration/m04-coordination-occurrence-identi/core-013-snapshot-identity.can
+staged migration corpus	19008	tests/native-can/migration/m04-coordination-occurrence-identi/core-033-cleanup-shape.can
+staged migration corpus	21979	tests/native-can/migration/m04-coordination-occurrence-identi/core-033-ownership-scopes.can
+staged migration corpus	17170	tests/native-can/migration/m04-coordination-occurrence-identi/core-033-roots-green.can
+staged migration corpus	24037	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-017-exact-amounts.can
+staged migration corpus	18183	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-017-roots-green.can
+staged migration corpus	13325	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-017-run-shape.can
+staged migration corpus	25293	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-032-numbers-semantics.can
+staged migration corpus	32386	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-032-roots-green.can
+staged migration corpus	12085	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-032-run-shape.can
+staged migration corpus	45477	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-042-roots-green.can
+staged migration corpus	11995	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-042-run-shape.can
+staged migration corpus	20484	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-042-text-semantics.can
+staged migration corpus	17162	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-045-roots-green.can
+staged migration corpus	16895	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-045-run-shape.can
+staged migration corpus	16966	tests/native-can/migration/m05-exact-amounts-numbers-text-and/core-045-utilities-semantics.can
+staged migration corpus	26410	tests/native-can/migration/m06-crypto-files-and-streams/core-014-crypto-commands.can
+staged migration corpus	14141	tests/native-can/migration/m06-crypto-files-and-streams/core-014-roots-green.can
+staged migration corpus	14643	tests/native-can/migration/m06-crypto-files-and-streams/core-014-run-shape.can
+staged migration corpus	79275	tests/native-can/migration/m06-crypto-files-and-streams/core-019-files-semantics.can
+staged migration corpus	10422	tests/native-can/migration/m06-crypto-files-and-streams/core-019-roots-green.can
+staged migration corpus	13619	tests/native-can/migration/m06-crypto-files-and-streams/core-019-run-shape.can
+staged migration corpus	11332	tests/native-can/migration/m06-crypto-files-and-streams/core-040-roots-green.can
+staged migration corpus	11580	tests/native-can/migration/m06-crypto-files-and-streams/core-040-run-shape.can
+staged migration corpus	45102	tests/native-can/migration/m06-crypto-files-and-streams/core-040-streams-semantics.can
+staged migration corpus	30268	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-018-fetch-semantics.can
+staged migration corpus	21564	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-018-roots-green.can
+staged migration corpus	14767	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-018-run-shape.can
+staged migration corpus	23760	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-021-formats-semantics.can
+staged migration corpus	16162	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-021-roots-green.can
+staged migration corpus	14850	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-021-run-shape.can
+staged migration corpus	54679	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-022-generation-semantics.can
+staged migration corpus	15685	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-022-roots-green.can
+staged migration corpus	21508	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-022-run-shape.can
+staged migration corpus	21523	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-025-html-semantics.can
+staged migration corpus	12099	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-025-roots-green.can
+staged migration corpus	20860	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-025-run-shape.can
+staged migration corpus	44288	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-029-judge-semantics.can
+staged migration corpus	13459	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-029-roots-green.can
+staged migration corpus	28219	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-029-run-shape.can
+staged migration corpus	117041	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-035-questions-semantics.can
+staged migration corpus	17225	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-035-roots-green.can
+staged migration corpus	16179	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-035-run-shape.can
+staged migration corpus	18274	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-048-roots-green.can
+staged migration corpus	13541	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-048-run-shape.can
+staged migration corpus	35085	tests/native-can/migration/m07-fetch-formats-generation-and-c/core-048-wrappers-semantics.can
+staged migration corpus	26616	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-011-cookies-semantics.can
+staged migration corpus	23689	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-011-roots-green.can
+staged migration corpus	25025	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-011-run-shape.can
+staged migration corpus	74607	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-026-http-semantics.can
+staged migration corpus	26787	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-026-roots-green.can
+staged migration corpus	21884	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-026-run-shape.can
+staged migration corpus	18098	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-038-roots-green.can
+staged migration corpus	21960	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-038-run-shape.can
+staged migration corpus	23354	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-038-server-semantics.can
+staged migration corpus	15825	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-043-roots-green.can
+staged migration corpus	22064	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-043-run-shape.can
+staged migration corpus	26182	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-043-tls-semantics.can
+staged migration corpus	22908	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-roots-green.can
+staged migration corpus	38059	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-run-shape.can
+staged migration corpus	40889	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-044-transport-semantics.can
+staged migration corpus	24118	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-047-roots-green.can
+staged migration corpus	37813	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-047-run-shape.can
+staged migration corpus	29741	tests/native-can/migration/m08-http-servers-tls-websocket-and/core-047-websocket-semantics.can
+staged migration corpus	66674	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-008-cli-semantics.can
+staged migration corpus	12952	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-008-roots-green.can
+staged migration corpus	37351	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-008-run-shape.can
+staged migration corpus	18847	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-020-format-semantics.can
+staged migration corpus	10720	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-020-roots-green.can
+staged migration corpus	14663	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-020-run-shape.can
+staged migration corpus	38140	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-capture-semantics.can
+staged migration corpus	14114	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-roots-green.can
+staged migration corpus	27061	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-027-run-shape.can
+staged migration corpus	55221	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-env-semantics.can
+staged migration corpus	21884	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-roots-green.can
+staged migration corpus	29870	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-028-run-shape.can
+staged migration corpus	21525	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-030-markdown-semantics.can
+staged migration corpus	14292	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-030-roots-green.can
+staged migration corpus	19126	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-030-run-shape.can
+staged migration corpus	67995	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-031-native-semantics.can
+staged migration corpus	20093	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-031-roots-green.can
+staged migration corpus	24025	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-031-run-shape.can
+staged migration corpus	106677	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-034-process-semantics.can
+staged migration corpus	14242	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-034-roots-green.can
+staged migration corpus	21584	tests/native-can/migration/m09-cli-formatter-input-and-proces/core-034-run-shape.can
+staged migration corpus	24817	tests/native-can/migration/m10-distribution-verified-builds-a/core-015-roots-green.can
+staged migration corpus	213158	tests/native-can/migration/m10-distribution-verified-builds-a/core-015-run-shape.can
+staged migration corpus	84110	tests/native-can/migration/m10-distribution-verified-builds-a/core-015-sidecar-semantics.can
+staged migration corpus	22310	tests/native-can/migration/m10-distribution-verified-builds-a/core-016-bundle-semantics.can
+staged migration corpus	24261	tests/native-can/migration/m10-distribution-verified-builds-a/core-016-roots-green.can
+staged migration corpus	14066	tests/native-can/migration/m10-distribution-verified-builds-a/core-016-run-shape.can
+staged migration corpus	56347	tests/native-can/migration/m10-distribution-verified-builds-a/core-036-release-semantics.can
+staged migration corpus	19211	tests/native-can/migration/m10-distribution-verified-builds-a/core-036-roots-green.can
+staged migration corpus	21397	tests/native-can/migration/m10-distribution-verified-builds-a/core-036-run-shape.can
+staged migration corpus	17039	tests/native-can/migration/m10-distribution-verified-builds-a/core-037-root-semantics.can
+staged migration corpus	17748	tests/native-can/migration/m10-distribution-verified-builds-a/core-037-roots-green.can
+staged migration corpus	19806	tests/native-can/migration/m10-distribution-verified-builds-a/core-037-run-shape.can
+staged migration corpus	52294	tests/native-can/migration/m10-distribution-verified-builds-a/core-046-build-semantics.can
+staged migration corpus	23389	tests/native-can/migration/m10-distribution-verified-builds-a/core-046-roots-green.can
+staged migration corpus	39652	tests/native-can/migration/m10-distribution-verified-builds-a/core-046-run-shape.can
+staged migration corpus	8404	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-049-layout.can
+staged migration corpus	9050	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-049-rewrite.can
+staged migration corpus	8600	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-049-selection.can
+staged migration corpus	8567	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-050-layout.can
+staged migration corpus	9705	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-050-rewrite.can
+staged migration corpus	8773	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-050-selection.can
+staged migration corpus	8568	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-051-layout.can
+staged migration corpus	9797	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-051-rewrite.can
+staged migration corpus	8877	tests/native-can/migration/m11-raw-fixture-staging-mechanics/core-051-selection.can
+staged migration corpus	39428	tests/native-can/migration/m12-application-server-and-browser/browser-001-apps-semantics.can
+staged migration corpus	18358	tests/native-can/migration/m12-application-server-and-browser/browser-001-roots-green.can
+staged migration corpus	24428	tests/native-can/migration/m12-application-server-and-browser/browser-001-run-shape.can
+staged migration corpus	48867	tests/native-can/migration/m12-application-server-and-browser/browser-002-forms-semantics.can
+staged migration corpus	25469	tests/native-can/migration/m12-application-server-and-browser/browser-002-roots-green.can
+staged migration corpus	20619	tests/native-can/migration/m12-application-server-and-browser/browser-002-run-shape.can
+staged migration corpus	29662	tests/native-can/migration/m12-application-server-and-browser/browser-003-nativeai-semantics.can
+staged migration corpus	23504	tests/native-can/migration/m12-application-server-and-browser/browser-003-roots-green.can
+staged migration corpus	26115	tests/native-can/migration/m12-application-server-and-browser/browser-003-run-shape.can
+staged migration corpus	102756	tests/native-can/migration/m12-application-server-and-browser/browser-004-live-semantics.can
+staged migration corpus	56388	tests/native-can/migration/m12-application-server-and-browser/browser-004-roots-green.can
+staged migration corpus	30395	tests/native-can/migration/m12-application-server-and-browser/browser-004-run-shape.can
+staged migration corpus	43212	tests/native-can/migration/m22-postgresql-query-semantics/history-001-queries-semantics.can
+staged migration corpus	24993	tests/native-can/migration/m22-postgresql-query-semantics/history-001-roots-green.can
+staged migration corpus	56171	tests/native-can/migration/m22-postgresql-query-semantics/history-001-run-shape.can
+staged migration corpus	50001	tests/native-can/migration/m22-postgresql-query-semantics/history-002-live-semantics.can
+staged migration corpus	29326	tests/native-can/migration/m22-postgresql-query-semantics/history-002-roots-green.can
+staged migration corpus	32985	tests/native-can/migration/m22-postgresql-query-semantics/history-002-run-shape.can
+staged migration corpus	25663	tests/native-can/migration/m22-postgresql-query-semantics/history-015-roots-green.can
+staged migration corpus	34181	tests/native-can/migration/m22-postgresql-query-semantics/history-015-run-shape.can
+staged migration corpus	30567	tests/native-can/migration/m22-postgresql-query-semantics/history-015-seed-semantics.can
+staged migration corpus	36122	tests/native-can/migration/m22-postgresql-query-semantics/history-020-roots-green.can
+staged migration corpus	28904	tests/native-can/migration/m22-postgresql-query-semantics/history-020-run-shape.can
+staged migration corpus	31172	tests/native-can/migration/m22-postgresql-query-semantics/history-020-seed-semantics.can
+staged migration corpus	23194	tests/native-can/migration/m23-transactions-and-persistence/history-003-roots-green.can
+staged migration corpus	65878	tests/native-can/migration/m23-transactions-and-persistence/history-003-run-shape.can
+staged migration corpus	81320	tests/native-can/migration/m23-transactions-and-persistence/history-003-tx-semantics.can
+staged migration corpus	20479	tests/native-can/migration/m23-transactions-and-persistence/history-004-live-semantics.can
+staged migration corpus	26632	tests/native-can/migration/m23-transactions-and-persistence/history-004-roots-green.can
+staged migration corpus	33143	tests/native-can/migration/m23-transactions-and-persistence/history-004-run-shape.can
+staged migration corpus	18572	tests/native-can/migration/m23-transactions-and-persistence/history-017-roots-green.can
+staged migration corpus	32552	tests/native-can/migration/m23-transactions-and-persistence/history-017-run-shape.can
+staged migration corpus	21638	tests/native-can/migration/m23-transactions-and-persistence/history-017-seed-semantics.can
+staged migration corpus	19358	tests/native-can/migration/m23-transactions-and-persistence/history-022-roots-green.can
+staged migration corpus	19475	tests/native-can/migration/m23-transactions-and-persistence/history-022-run-shape.can
+staged migration corpus	19277	tests/native-can/migration/m23-transactions-and-persistence/history-022-seed-semantics.can
+staged migration corpus	47725	tests/native-can/migration/m24-descriptor-sql-wiring/history-005-desc-semantics.can
+staged migration corpus	26013	tests/native-can/migration/m24-descriptor-sql-wiring/history-005-roots-green.can
+staged migration corpus	52501	tests/native-can/migration/m24-descriptor-sql-wiring/history-005-run-shape.can
+staged migration corpus	27452	tests/native-can/migration/m24-descriptor-sql-wiring/history-006-live-semantics.can
+staged migration corpus	35560	tests/native-can/migration/m24-descriptor-sql-wiring/history-006-roots-green.can
+staged migration corpus	41026	tests/native-can/migration/m24-descriptor-sql-wiring/history-006-run-shape.can
+staged migration corpus	37189	tests/native-can/migration/m24-descriptor-sql-wiring/history-011-roots-green.can
+staged migration corpus	59171	tests/native-can/migration/m24-descriptor-sql-wiring/history-011-run-shape.can
+staged migration corpus	26939	tests/native-can/migration/m24-descriptor-sql-wiring/history-011-seed-semantics.can
+staged migration corpus	19149	tests/native-can/migration/m24-descriptor-sql-wiring/history-018-roots-green.can
+staged migration corpus	17377	tests/native-can/migration/m24-descriptor-sql-wiring/history-018-run-shape.can
+staged migration corpus	17263	tests/native-can/migration/m24-descriptor-sql-wiring/history-018-seed-semantics.can
+staged migration corpus	72481	tests/native-can/migration/m25-f02-locking-f03-slice/history-007-lock-semantics.can
+staged migration corpus	38973	tests/native-can/migration/m25-f02-locking-f03-slice/history-007-roots-green.can
+staged migration corpus	110905	tests/native-can/migration/m25-f02-locking-f03-slice/history-007-run-shape.can
+staged migration corpus	80873	tests/native-can/migration/m25-f02-locking-f03-slice/history-008-rel-semantics.can
+staged migration corpus	72467	tests/native-can/migration/m25-f02-locking-f03-slice/history-008-roots-green.can
+staged migration corpus	147566	tests/native-can/migration/m25-f02-locking-f03-slice/history-008-run-shape.can
+staged migration corpus	87711	tests/native-can/migration/m25-f02-locking-f03-slice/history-012-roots-green.can
+staged migration corpus	94676	tests/native-can/migration/m25-f02-locking-f03-slice/history-012-run-shape.can
+staged migration corpus	80830	tests/native-can/migration/m25-f02-locking-f03-slice/history-012-seed-semantics.can
+staged migration corpus	58993	tests/native-can/migration/m25-f02-locking-f03-slice/history-013-roots-green.can
+staged migration corpus	83899	tests/native-can/migration/m25-f02-locking-f03-slice/history-013-run-shape.can
+staged migration corpus	29383	tests/native-can/migration/m25-f02-locking-f03-slice/history-013-seed-semantics.can
+staged migration corpus	76456	tests/native-can/migration/m26-mysql-sqlite-persistence/history-009-mysql-semantics.can
+staged migration corpus	140450	tests/native-can/migration/m26-mysql-sqlite-persistence/history-009-roots-green.can
+staged migration corpus	78148	tests/native-can/migration/m26-mysql-sqlite-persistence/history-009-run-shape.can
+staged migration corpus	166749	tests/native-can/migration/m26-mysql-sqlite-persistence/history-010-roots-green.can
+staged migration corpus	144192	tests/native-can/migration/m26-mysql-sqlite-persistence/history-010-run-shape.can
+staged migration corpus	29238	tests/native-can/migration/m26-mysql-sqlite-persistence/history-010-sqlite-semantics.can
+staged migration corpus	28892	tests/native-can/migration/m26-mysql-sqlite-persistence/history-014-roots-green.can
+staged migration corpus	28012	tests/native-can/migration/m26-mysql-sqlite-persistence/history-014-run-shape.can
+staged migration corpus	30871	tests/native-can/migration/m26-mysql-sqlite-persistence/history-014-seed-semantics.can
+staged migration corpus	19974	tests/native-can/migration/m26-mysql-sqlite-persistence/history-016-roots-green.can
+staged migration corpus	19005	tests/native-can/migration/m26-mysql-sqlite-persistence/history-016-run-shape.can
+staged migration corpus	24089	tests/native-can/migration/m26-mysql-sqlite-persistence/history-016-seed-semantics.can
+staged migration corpus	26110	tests/native-can/migration/m26-mysql-sqlite-persistence/history-019-roots-green.can
+staged migration corpus	26771	tests/native-can/migration/m26-mysql-sqlite-persistence/history-019-run-shape.can
+staged migration corpus	28096	tests/native-can/migration/m26-mysql-sqlite-persistence/history-019-seed-semantics.can
+staged migration corpus	19827	tests/native-can/migration/m26-mysql-sqlite-persistence/history-021-roots-green.can
+staged migration corpus	17653	tests/native-can/migration/m26-mysql-sqlite-persistence/history-021-run-shape.can
+staged migration corpus	17265	tests/native-can/migration/m26-mysql-sqlite-persistence/history-021-seed-semantics.can
+staged migration corpus	11331	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-023-factory-boundary.can
+staged migration corpus	7537	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-023-report-provenance.can
+staged migration corpus	14241	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-023-roots-green.can
+staged migration corpus	10503	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-024-fault-frames.can
+staged migration corpus	7621	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-024-report-provenance.can
+staged migration corpus	15205	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-024-roots-fails-closed.can
+staged migration corpus	8785	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-025-diagnostic-confinement.can
+staged migration corpus	7270	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-025-rejection-outcome.can
+staged migration corpus	8069	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-026-check-rejection.can
+staged migration corpus	8811	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-026-diagnostic-text.can
+staged migration corpus	10002	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-026-sneak-shape.can
+staged migration corpus	11336	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-027-guided-miss.can
+staged migration corpus	10164	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-027-helper-stable.can
+staged migration corpus	9643	tests/native-can/migration/m27-owner-factory-and-isolation-co/history-027-repair-green.can
+staged migration corpus	7454	tests/native-can/migration/m28-retry-convention-and-mutation-/history-028-report-provenance.can
+staged migration corpus	12828	tests/native-can/migration/m28-retry-convention-and-mutation-/history-028-retry-mechanism.can
+staged migration corpus	16984	tests/native-can/migration/m28-retry-convention-and-mutation-/history-028-roots-green.can
+staged migration corpus	7632	tests/native-can/migration/m28-retry-convention-and-mutation-/history-029-report-provenance.can
+staged migration corpus	11814	tests/native-can/migration/m28-retry-convention-and-mutation-/history-029-retry-mechanism.can
+staged migration corpus	10606	tests/native-can/migration/m28-retry-convention-and-mutation-/history-029-roots-green.can
+staged migration corpus	11602	tests/native-can/migration/m28-retry-convention-and-mutation-/history-030-failing-eleven.can
+staged migration corpus	11488	tests/native-can/migration/m28-retry-convention-and-mutation-/history-030-mutant-mechanism.can
+staged migration corpus	8664	tests/native-can/migration/m28-retry-convention-and-mutation-/history-030-report-provenance.can
+staged migration corpus	12133	tests/native-can/migration/m28-retry-convention-and-mutation-/history-031-exhausted-roots.can
+staged migration corpus	10163	tests/native-can/migration/m28-retry-convention-and-mutation-/history-031-over-attempt-mechanism.can
+staged migration corpus	8817	tests/native-can/migration/m28-retry-convention-and-mutation-/history-031-report-provenance.can
+staged migration corpus	14426	tests/native-can/migration/m28-retry-convention-and-mutation-/history-032-isolation-mechanism.can
+staged migration corpus	8898	tests/native-can/migration/m28-retry-convention-and-mutation-/history-032-report-provenance.can
+staged migration corpus	18951	tests/native-can/migration/m28-retry-convention-and-mutation-/history-032-roots-green.can
+staged migration corpus	13573	tests/native-can/migration/m28-retry-convention-and-mutation-/history-033-isolation-mechanism.can
+staged migration corpus	9014	tests/native-can/migration/m28-retry-convention-and-mutation-/history-033-report-provenance.can
+staged migration corpus	12276	tests/native-can/migration/m28-retry-convention-and-mutation-/history-033-roots-green.can
+staged migration corpus	25997	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-cache-semantics.can
+staged migration corpus	33435	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-roots-green.can
+staged migration corpus	39940	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-034-run-shape.can
+staged migration corpus	25147	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-035-cache-semantics.can
+staged migration corpus	40897	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-035-roots-green.can
+staged migration corpus	54059	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-035-run-shape.can
+staged migration corpus	20691	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-036-cache-semantics.can
+staged migration corpus	26099	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-036-roots-green.can
+staged migration corpus	24828	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-036-run-shape.can
+staged migration corpus	25355	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-037-cache-semantics.can
+staged migration corpus	41577	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-037-roots-green.can
+staged migration corpus	60899	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-037-run-shape.can
+staged migration corpus	25449	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-038-cache-semantics.can
+staged migration corpus	33457	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-038-roots-green.can
+staged migration corpus	43332	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-038-run-shape.can
+staged migration corpus	27937	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-039-cache-semantics.can
+staged migration corpus	62880	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-039-roots-green.can
+staged migration corpus	87516	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-039-run-shape.can
+staged migration corpus	32839	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-040-cache-semantics.can
+staged migration corpus	40302	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-040-roots-green.can
+staged migration corpus	84947	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-040-run-shape.can
+staged migration corpus	39938	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-041-cache-semantics.can
+staged migration corpus	47196	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-041-roots-green.can
+staged migration corpus	111029	tests/native-can/migration/m29-cache-ownership-reuse-recovery/history-041-run-shape.can
+staged migration corpus	21663	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-016-cache-semantics.can
+staged migration corpus	26503	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-016-roots-green.can
+staged migration corpus	31436	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-016-run-shape.can
+staged migration corpus	18256	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-017-cache-semantics.can
+staged migration corpus	49866	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-017-roots-green.can
+staged migration corpus	28278	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-017-run-shape.can
+staged migration corpus	22381	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-018-cache-semantics.can
+staged migration corpus	28552	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-018-roots-green.can
+staged migration corpus	40997	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-018-run-shape.can
+staged migration corpus	23206	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-019-cache-semantics.can
+staged migration corpus	58409	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-019-roots-green.can
+staged migration corpus	26365	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-019-run-shape.can
+staged migration corpus	22292	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-020-cache-semantics.can
+staged migration corpus	28502	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-020-roots-green.can
+staged migration corpus	33503	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-020-run-shape.can
+staged migration corpus	25201	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-021-cache-semantics.can
+staged migration corpus	30495	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-021-roots-green.can
+staged migration corpus	29694	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-021-run-shape.can
+staged migration corpus	23811	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-022-cache-semantics.can
+staged migration corpus	22866	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-022-roots-green.can
+staged migration corpus	29621	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-022-run-shape.can
+staged migration corpus	34332	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-023-cache-semantics.can
+staged migration corpus	53401	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-023-roots-green.can
+staged migration corpus	28134	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-023-run-shape.can
+staged migration corpus	30646	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-024-cache-semantics.can
+staged migration corpus	30214	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-024-roots-green.can
+staged migration corpus	34181	tests/native-can/migration/m29-cache-ownership-reuse-recovery/life-024-run-shape.can
+staged migration corpus	45520	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-042-base-semantics.can
+staged migration corpus	42041	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-042-roots-green.can
+staged migration corpus	36078	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-042-run-shape.can
+staged migration corpus	38504	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-043-base-semantics.can
+staged migration corpus	50364	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-043-roots-green.can
+staged migration corpus	50116	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-043-run-shape.can
+staged migration corpus	33768	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-044-base-semantics.can
+staged migration corpus	28881	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-044-roots-green.can
+staged migration corpus	30646	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-044-run-shape.can
+staged migration corpus	81200	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-045-base-semantics.can
+staged migration corpus	64131	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-045-roots-green.can
+staged migration corpus	30637	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-045-run-shape.can
+staged migration corpus	64781	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-046-base-semantics.can
+staged migration corpus	66313	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-046-roots-green.can
+staged migration corpus	50168	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-046-run-shape.can
+staged migration corpus	16382	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-047-base-semantics.can
+staged migration corpus	25776	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-047-roots-green.can
+staged migration corpus	17778	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-047-run-shape.can
+staged migration corpus	127485	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-048-base-semantics.can
+staged migration corpus	30445	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-048-roots-green.can
+staged migration corpus	31019	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-048-run-shape.can
+staged migration corpus	67141	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-049-base-semantics.can
+staged migration corpus	73248	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-049-roots-green.can
+staged migration corpus	34901	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-049-run-shape.can
+staged migration corpus	92903	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-050-base-semantics.can
+staged migration corpus	33522	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-050-roots-green.can
+staged migration corpus	130062	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-050-run-shape.can
+staged migration corpus	32404	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-051-base-semantics.can
+staged migration corpus	18348	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-051-roots-green.can
+staged migration corpus	30444	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-051-run-shape.can
+staged migration corpus	17212	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-052-base-semantics.can
+staged migration corpus	33167	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-052-roots-green.can
+staged migration corpus	19322	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-052-run-shape.can
+staged migration corpus	17755	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-053-base-semantics.can
+staged migration corpus	14182	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-053-roots-green.can
+staged migration corpus	29663	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-053-run-shape.can
+staged migration corpus	37278	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-054-base-semantics.can
+staged migration corpus	26407	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-054-roots-green.can
+staged migration corpus	42808	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-054-run-shape.can
+staged migration corpus	25446	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-055-base-semantics.can
+staged migration corpus	22661	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-055-roots-green.can
+staged migration corpus	17770	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-055-run-shape.can
+staged migration corpus	29092	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-056-base-semantics.can
+staged migration corpus	29385	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-056-roots-green.can
+staged migration corpus	20200	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-056-run-shape.can
+staged migration corpus	30514	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-057-base-semantics.can
+staged migration corpus	31482	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-057-roots-green.can
+staged migration corpus	18455	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-057-run-shape.can
+staged migration corpus	126626	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-058-base-semantics.can
+staged migration corpus	67822	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-058-roots-green.can
+staged migration corpus	23663	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-058-run-shape.can
+staged migration corpus	54042	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-059-base-semantics.can
+staged migration corpus	29864	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-059-roots-green.can
+staged migration corpus	20982	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-059-run-shape.can
+staged migration corpus	37722	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-060-base-semantics.can
+staged migration corpus	22091	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-060-roots-green.can
+staged migration corpus	17541	tests/native-can/migration/m30-baseline-t26-t27-relevance/history-060-run-shape.can
+staged migration corpus	19719	tests/native-can/migration/m31-prototype-admission-guards/history-061-base-semantics.can
+staged migration corpus	21220	tests/native-can/migration/m31-prototype-admission-guards/history-061-roots-green.can
+staged migration corpus	33490	tests/native-can/migration/m31-prototype-admission-guards/history-061-run-shape.can
+staged migration corpus	22732	tests/native-can/migration/m31-prototype-admission-guards/history-062-base-semantics.can
+staged migration corpus	18708	tests/native-can/migration/m31-prototype-admission-guards/history-062-roots-green.can
+staged migration corpus	28589	tests/native-can/migration/m31-prototype-admission-guards/history-062-run-shape.can
+staged migration corpus	26264	tests/native-can/migration/m31-prototype-admission-guards/history-063-base-semantics.can
+staged migration corpus	24423	tests/native-can/migration/m31-prototype-admission-guards/history-063-roots-green.can
+staged migration corpus	57941	tests/native-can/migration/m31-prototype-admission-guards/history-063-run-shape.can
+staged migration corpus	1602	tests/native-can/migration/m32-prototype-local-adapters/history-064-chart-roundtrip.can
+staged migration corpus	1729	tests/native-can/migration/m32-prototype-local-adapters/history-065-chart-invalid-spec.can
+staged migration corpus	1839	tests/native-can/migration/m32-prototype-local-adapters/history-066-chart-unavailable.can
+staged migration corpus	1721	tests/native-can/migration/m32-prototype-local-adapters/history-067-chart-sdk-mapping.can
+staged migration corpus	1709	tests/native-can/migration/m32-prototype-local-adapters/history-068-chart-deep-copies.can
+staged migration corpus	1726	tests/native-can/migration/m32-prototype-local-adapters/history-069-chart-callback-seal.can
+staged migration corpus	1557	tests/native-can/migration/m32-prototype-local-adapters/history-070-chart-nested-events.can
+staged migration corpus	1603	tests/native-can/migration/m32-prototype-local-adapters/history-071-chart-reentrant-update.can
+staged migration corpus	1783	tests/native-can/migration/m32-prototype-local-adapters/history-072-chart-dispose-poison.can
+staged migration corpus	1719	tests/native-can/migration/m32-prototype-local-adapters/history-073-chart-dispose-callback.can
+staged migration corpus	1629	tests/native-can/migration/m32-prototype-local-adapters/history-074-chart-opaque-tokens.can
+staged migration corpus	1794	tests/native-can/migration/m32-prototype-local-adapters/history-075-chart-census.can
+staged migration corpus	6767	tests/native-can/migration/m32-prototype-local-adapters/history-076-clipboard-roundtrip.can
+staged migration corpus	6392	tests/native-can/migration/m32-prototype-local-adapters/history-077-clipboard-empty-leaf.can
+staged migration corpus	7438	tests/native-can/migration/m32-prototype-local-adapters/history-078-clipboard-invalid-writes.can
+staged migration corpus	7722	tests/native-can/migration/m32-prototype-local-adapters/history-079-clipboard-denied.can
+staged migration corpus	7810	tests/native-can/migration/m32-prototype-local-adapters/history-080-clipboard-unavailable.can
+staged migration corpus	8655	tests/native-can/migration/m32-prototype-local-adapters/history-081-clipboard-native-mapping.can
+staged migration corpus	5658	tests/native-can/migration/m32-prototype-local-adapters/history-082-clipboard-reentrancy.can
+staged migration corpus	7987	tests/native-can/migration/m32-prototype-local-adapters/history-083-clipboard-census.can
+staged migration corpus	8392	tests/native-can/migration/m32-prototype-local-adapters/history-084-storage-roundtrip.can
+staged migration corpus	7629	tests/native-can/migration/m32-prototype-local-adapters/history-085-storage-invalid-keys.can
+staged migration corpus	7797	tests/native-can/migration/m32-prototype-local-adapters/history-086-storage-quota.can
+staged migration corpus	8844	tests/native-can/migration/m32-prototype-local-adapters/history-087-storage-unavailable.can
+staged migration corpus	6715	tests/native-can/migration/m32-prototype-local-adapters/history-088-storage-security-mapping.can
+staged migration corpus	6826	tests/native-can/migration/m32-prototype-local-adapters/history-089-storage-immutable-copies.can
+staged migration corpus	7943	tests/native-can/migration/m32-prototype-local-adapters/history-090-storage-census.can
+staged migration corpus	9452	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-091-chart-roundtrip.can
+staged migration corpus	7834	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-092-chart-invalid-spec.can
+staged migration corpus	8519	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-093-chart-release-expiry.can
+staged migration corpus	7220	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-094-chart-out-of-range.can
+staged migration corpus	10796	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-095-chart-fail-closed.can
+staged migration corpus	8036	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-096-chart-version-mismatch.can
+staged migration corpus	8359	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-097-chart-auth-parity.can
+staged migration corpus	9215	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-098-chart-envelope-bytes.can
+staged migration corpus	1682	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-099-clipboard-roundtrip.can
+staged migration corpus	1692	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-100-clipboard-empty-leaf.can
+staged migration corpus	1881	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-101-clipboard-fail-closed.can
+staged migration corpus	1899	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-102-clipboard-version-transport.can
+staged migration corpus	1793	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-103-clipboard-auth-parity.can
+staged migration corpus	1833	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-104-clipboard-semantic-gap.can
+staged migration corpus	1759	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-105-clipboard-envelope-bytes.can
+staged migration corpus	1671	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-106-storage-roundtrip.can
+staged migration corpus	1736	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-107-storage-invalid-keys.can
+staged migration corpus	1829	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-108-storage-denied-destination.can
+staged migration corpus	1788	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-109-storage-bad-credential.can
+staged migration corpus	1764	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-110-storage-version-mismatch.can
+staged migration corpus	1807	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-111-storage-transport-failure.can
+staged migration corpus	1744	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-112-storage-malformed-response.can
+staged migration corpus	1666	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-113-storage-quota-passthrough.can
+staged migration corpus	1792	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-114-storage-auth-parity.can
+staged migration corpus	1739	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-115-storage-envelope-bytes.can
+staged migration corpus	1920	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-116-packaging-reproducible.can
+staged migration corpus	1822	tests/native-can/migration/m33-prototype-companion-surfaces-a/history-117-packaging-sizes-pinned.can
+staged migration corpus	1907	tests/native-can/migration/m34-prototype-source-and-review-re/history-118-review-manifest.can
+staged migration corpus	1825	tests/native-can/migration/m34-prototype-source-and-review-re/history-119-x-r01-1.can
+staged migration corpus	1922	tests/native-can/migration/m34-prototype-source-and-review-re/history-120-t1-sketches.can
+staged migration corpus	2034	tests/native-can/migration/m34-prototype-source-and-review-re/history-121-adapter-chart-widget.can
+staged migration corpus	2130	tests/native-can/migration/m34-prototype-source-and-review-re/history-122-adapter-clipboard.can
+staged migration corpus	2121	tests/native-can/migration/m34-prototype-source-and-review-re/history-123-adapter-storage.can
+staged migration corpus	2228	tests/native-can/migration/m34-prototype-source-and-review-re/history-124-companion-chart-widget.can
+staged migration corpus	2069	tests/native-can/migration/m34-prototype-source-and-review-re/history-125-companion-clipboard.can
+staged migration corpus	2012	tests/native-can/migration/m34-prototype-source-and-review-re/history-126-companion-storage.can
+staged migration corpus	26562	tests/native-can/migration/m35-native-runtime-qualification/history-127-base-semantics.can
+staged migration corpus	20802	tests/native-can/migration/m35-native-runtime-qualification/history-127-roots-green.can
+staged migration corpus	26792	tests/native-can/migration/m35-native-runtime-qualification/history-127-run-shape.can
+staged migration corpus	17927	tests/native-can/migration/m35-native-runtime-qualification/history-128-base-semantics.can
+staged migration corpus	20338	tests/native-can/migration/m35-native-runtime-qualification/history-128-roots-green.can
+staged migration corpus	21697	tests/native-can/migration/m35-native-runtime-qualification/history-128-run-shape.can
+staged migration corpus	14687	tests/native-can/migration/m35-native-runtime-qualification/history-129-base-semantics.can
+staged migration corpus	15826	tests/native-can/migration/m35-native-runtime-qualification/history-129-roots-green.can
+staged migration corpus	33520	tests/native-can/migration/m35-native-runtime-qualification/history-129-run-shape.can
+staged migration corpus	23074	tests/native-can/migration/m35-native-runtime-qualification/history-130-base-semantics.can
+staged migration corpus	20071	tests/native-can/migration/m35-native-runtime-qualification/history-130-roots-green.can
+staged migration corpus	17126	tests/native-can/migration/m35-native-runtime-qualification/history-130-run-shape.can
+staged migration corpus	25785	tests/native-can/migration/m35-native-runtime-qualification/history-131-base-semantics.can
+staged migration corpus	24106	tests/native-can/migration/m35-native-runtime-qualification/history-131-roots-green.can
+staged migration corpus	38310	tests/native-can/migration/m35-native-runtime-qualification/history-131-run-shape.can
+staged migration corpus	1980	tests/native-can/migration/m36-authoring-policy-comparison-re/history-132-registry-readme.can
+staged migration corpus	1908	tests/native-can/migration/m36-authoring-policy-comparison-re/history-133-registry-json.can
+staged migration corpus	2026	tests/native-can/migration/m36-authoring-policy-comparison-re/history-134-x-r08-comparison.can
+staged migration corpus	1879	tests/native-can/migration/m36-authoring-policy-comparison-re/history-135-candidates-readme.can
+staged migration corpus	2080	tests/native-can/migration/m36-authoring-policy-comparison-re/history-136-boolean-baseline.can
+staged migration corpus	2074	tests/native-can/migration/m36-authoring-policy-comparison-re/history-137-boolean-reference.can
+staged migration corpus	2111	tests/native-can/migration/m36-authoring-policy-comparison-re/history-138-locals-baseline.can
+staged migration corpus	2038	tests/native-can/migration/m36-authoring-policy-comparison-re/history-139-locals-reference.can
+staged migration corpus	2085	tests/native-can/migration/m36-authoring-policy-comparison-re/history-140-near-baseline.can
+staged migration corpus	2100	tests/native-can/migration/m36-authoring-policy-comparison-re/history-141-near-reference.can
+staged migration corpus	1995	tests/native-can/migration/m36-authoring-policy-comparison-re/history-142-x-r02-1.can
+staged migration corpus	34902	tests/native-can/migration/m37-native-qualification-caller-br/history-143-base-semantics.can
+staged migration corpus	24577	tests/native-can/migration/m37-native-qualification-caller-br/history-143-roots-green.can
+staged migration corpus	31987	tests/native-can/migration/m37-native-qualification-caller-br/history-143-run-shape.can
+staged migration corpus	54922	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-001-base-semantics.can
+staged migration corpus	28669	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-001-roots-green.can
+staged migration corpus	46378	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-001-run-shape.can
+staged migration corpus	31101	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-002-base-semantics.can
+staged migration corpus	28302	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-002-roots-green.can
+staged migration corpus	38348	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-002-run-shape.can
+staged migration corpus	38479	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-003-base-semantics.can
+staged migration corpus	57581	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-003-roots-green.can
+staged migration corpus	112006	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-003-run-shape.can
+staged migration corpus	45325	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-004-base-semantics.can
+staged migration corpus	69412	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-004-roots-green.can
+staged migration corpus	54382	tests/native-can/migration/m38-gate3-route-and-server-matrix/life-004-run-shape.can
+staged migration corpus	43871	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-005-base-semantics.can
+staged migration corpus	77740	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-005-roots-green.can
+staged migration corpus	96048	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-005-run-shape.can
+staged migration corpus	63874	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-006-base-semantics.can
+staged migration corpus	60525	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-006-roots-green.can
+staged migration corpus	82371	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-006-run-shape.can
+staged migration corpus	45737	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-007-base-semantics.can
+staged migration corpus	94228	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-007-roots-green.can
+staged migration corpus	85990	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-007-run-shape.can
+staged migration corpus	57269	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-008-base-semantics.can
+staged migration corpus	157049	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-008-roots-green.can
+staged migration corpus	106746	tests/native-can/migration/m39-gate3-concurrency-replay-and-f/life-008-run-shape.can
+staged migration corpus	79203	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-009-base-semantics.can
+staged migration corpus	68321	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-009-roots-green.can
+staged migration corpus	173092	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-009-run-shape.can
+staged migration corpus	108181	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-010-base-semantics.can
+staged migration corpus	62345	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-010-roots-green.can
+staged migration corpus	81186	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-010-run-shape.can
+staged migration corpus	65580	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-011-base-semantics.can
+staged migration corpus	105081	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-011-roots-green.can
+staged migration corpus	92164	tests/native-can/migration/m40-gate4-installed-artifact-webho/life-011-run-shape.can
+staged migration corpus	52778	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-012-base-semantics.can
+staged migration corpus	71047	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-012-roots-green.can
+staged migration corpus	88119	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-012-run-shape.can
+staged migration corpus	23842	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-013-base-semantics.can
+staged migration corpus	31218	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-013-roots-green.can
+staged migration corpus	31016	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-013-run-shape.can
+staged migration corpus	37365	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-014-base-semantics.can
+staged migration corpus	56185	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-014-roots-green.can
+staged migration corpus	98909	tests/native-can/migration/m41-linux-s3-and-up23-verdict/life-014-run-shape.can
+staged migration corpus	24056	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-025-base-semantics.can
+staged migration corpus	42113	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-025-roots-green.can
+staged migration corpus	31180	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-025-run-shape.can
+staged migration corpus	19881	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-026-base-semantics.can
+staged migration corpus	21014	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-026-roots-green.can
+staged migration corpus	31786	tests/native-can/migration/m42-webhook-and-s3-independent-set/life-026-run-shape.can
+staged migration corpus	46961	tests/native-can/migration/m43-native-and-linux-external-cons/edge-001-base-semantics.can
+staged migration corpus	39309	tests/native-can/migration/m43-native-and-linux-external-cons/edge-001-roots-green.can
+staged migration corpus	44770	tests/native-can/migration/m43-native-and-linux-external-cons/edge-001-run-shape.can
+staged migration corpus	49001	tests/native-can/migration/m43-native-and-linux-external-cons/edge-002-base-semantics.can
+staged migration corpus	35442	tests/native-can/migration/m43-native-and-linux-external-cons/edge-002-roots-green.can
+staged migration corpus	64792	tests/native-can/migration/m43-native-and-linux-external-cons/edge-002-run-shape.can
+staged migration corpus	24513	tests/native-can/migration/m43-native-and-linux-external-cons/edge-003-base-semantics.can
+staged migration corpus	21569	tests/native-can/migration/m43-native-and-linux-external-cons/edge-003-roots-green.can
+staged migration corpus	22323	tests/native-can/migration/m43-native-and-linux-external-cons/edge-003-run-shape.can
+staged migration corpus	31231	tests/native-can/migration/m43-native-and-linux-external-cons/edge-004-base-semantics.can
+staged migration corpus	38855	tests/native-can/migration/m43-native-and-linux-external-cons/edge-004-roots-green.can
+staged migration corpus	26439	tests/native-can/migration/m43-native-and-linux-external-cons/edge-004-run-shape.can
+staged migration corpus	21396	tests/native-can/migration/m43-native-and-linux-external-cons/edge-005-base-semantics.can
+staged migration corpus	24695	tests/native-can/migration/m43-native-and-linux-external-cons/edge-005-roots-green.can
+staged migration corpus	22126	tests/native-can/migration/m43-native-and-linux-external-cons/edge-005-run-shape.can
+staged migration corpus	45065	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-007-base-semantics.can
+staged migration corpus	46142	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-007-roots-green.can
+staged migration corpus	39726	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-007-run-shape.can
+staged migration corpus	35775	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-008-base-semantics.can
+staged migration corpus	45729	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-008-roots-green.can
+staged migration corpus	32055	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-008-run-shape.can
+staged migration corpus	45048	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-009-base-semantics.can
+staged migration corpus	47167	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-009-roots-green.can
+staged migration corpus	42595	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-009-run-shape.can
+staged migration corpus	43962	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-012-base-semantics.can
+staged migration corpus	43914	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-012-roots-green.can
+staged migration corpus	52528	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-012-run-shape.can
+staged migration corpus	48715	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-013-base-semantics.can
+staged migration corpus	51140	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-013-roots-green.can
+staged migration corpus	38573	tests/native-can/migration/m44-ci-and-host-conformance-consum/edge-013-run-shape.can
+staged migration corpus	33256	tests/native-can/migration/m45-operator-documentation-callers/edge-014-base-semantics.can
+staged migration corpus	20739	tests/native-can/migration/m45-operator-documentation-callers/edge-014-roots-green.can
+staged migration corpus	26610	tests/native-can/migration/m45-operator-documentation-callers/edge-014-run-shape.can
+staged migration corpus	35892	tests/native-can/migration/m45-operator-documentation-callers/edge-015-base-semantics.can
+staged migration corpus	32690	tests/native-can/migration/m45-operator-documentation-callers/edge-015-roots-green.can
+staged migration corpus	44182	tests/native-can/migration/m45-operator-documentation-callers/edge-015-run-shape.can
+remaining old suite source	7647	tests/native-can/src/builds/controls/evict_waiter.can
+remaining old suite source	14501	tests/native-can/src/builds/controls/key_flow.can
+remaining old suite source	19549	tests/native-can/src/builds/controls/reuse_flow.can
+remaining old suite source	21308	tests/native-can/src/builds/keys.can
+remaining old suite source	20066	tests/native-can/src/builds/reuse.can
+remaining old suite source	5165	tests/native-can/src/capabilities/i01/control.can
+remaining old suite source	19710	tests/native-can/src/capabilities/i01/observe.can
+remaining old suite source	7465	tests/native-can/src/capabilities/i01/values.can
+remaining old suite source	3570	tests/native-can/src/capabilities/i02/validate.can
+remaining old suite source	5588	tests/native-can/src/capabilities/i02/values.can
+remaining old suite source	18345	tests/native-can/src/capabilities/i03/control.can
+remaining old suite source	3678	tests/native-can/src/capabilities/i03/values.can
+remaining old suite source	26523	tests/native-can/src/capabilities/i04/http.can
+remaining old suite source	23447	tests/native-can/src/capabilities/i04/peer.can
+remaining old suite source	14409	tests/native-can/src/capabilities/i05/control.can
+remaining old suite source	2011	tests/native-can/src/capabilities/i05/values.can
+remaining old suite source	11855	tests/native-can/src/capabilities/i11/env.can
+remaining old suite source	18905	tests/native-can/src/capabilities/i11/validate.can
+remaining old suite source	8216	tests/native-can/src/capabilities/i11/values.can
+remaining old suite source	1628	tests/native-can/src/capabilities/i12/validate.can
+remaining old suite source	3341	tests/native-can/src/capabilities/i12/values.can
+remaining old suite source	14699	tests/native-can/src/capabilities/i13/control.can
+remaining old suite source	3503	tests/native-can/src/capabilities/i13/values.can
+remaining old suite source	13354	tests/native-can/src/capabilities/i14/control.can
+remaining old suite source	2813	tests/native-can/src/capabilities/i14/values.can
+remaining old suite source	14583	tests/native-can/src/capabilities/i15/control.can
+remaining old suite source	2905	tests/native-can/src/capabilities/i15/values.can
+remaining old suite source	17500	tests/native-can/src/capabilities/i16/control.can
+remaining old suite source	3376	tests/native-can/src/capabilities/i16/values.can
+remaining old suite source	11068	tests/native-can/src/capabilities/i17/control.can
+remaining old suite source	4839	tests/native-can/src/capabilities/i17/values.can
+remaining old suite source	31917	tests/native-can/src/controller/controller.can
+remaining old suite source	18922	tests/native-can/src/coverage/coverage.can
+coverage campaign source	30934	tests/native-can/src/coverage/migration/m01.can
+coverage campaign source	32329	tests/native-can/src/coverage/migration/m02.can
+coverage campaign source	29467	tests/native-can/src/coverage/migration/m03.can
+coverage campaign source	27278	tests/native-can/src/coverage/migration/m04.can
+coverage campaign source	31499	tests/native-can/src/coverage/migration/m05.can
+coverage campaign source	26645	tests/native-can/src/coverage/migration/m06.can
+coverage campaign source	49438	tests/native-can/src/coverage/migration/m07.can
+coverage campaign source	47572	tests/native-can/src/coverage/migration/m08.can
+coverage campaign source	54306	tests/native-can/src/coverage/migration/m09.can
+coverage campaign source	44302	tests/native-can/src/coverage/migration/m10.can
+coverage campaign source	21084	tests/native-can/src/coverage/migration/m11.can
+coverage campaign source	37017	tests/native-can/src/coverage/migration/m12.can
+coverage campaign source	13142	tests/native-can/src/coverage/migration/m13.can
+coverage campaign source	11313	tests/native-can/src/coverage/migration/m14.can
+coverage campaign source	12221	tests/native-can/src/coverage/migration/m15.can
+coverage campaign source	12896	tests/native-can/src/coverage/migration/m16.can
+coverage campaign source	14372	tests/native-can/src/coverage/migration/m17.can
+coverage campaign source	15630	tests/native-can/src/coverage/migration/m18.can
+coverage campaign source	11936	tests/native-can/src/coverage/migration/m19.can
+coverage campaign source	16813	tests/native-can/src/coverage/migration/m20.can
+coverage campaign source	10162	tests/native-can/src/coverage/migration/m21.can
+coverage campaign source	33611	tests/native-can/src/coverage/migration/m22.can
+coverage campaign source	31098	tests/native-can/src/coverage/migration/m23.can
+coverage campaign source	34651	tests/native-can/src/coverage/migration/m24.can
+coverage campaign source	43275	tests/native-can/src/coverage/migration/m25.can
+coverage campaign source	43395	tests/native-can/src/coverage/migration/m26.can
+coverage campaign source	26612	tests/native-can/src/coverage/migration/m27.can
+coverage campaign source	32961	tests/native-can/src/coverage/migration/m28.can
+coverage campaign source	53373	tests/native-can/src/coverage/migration/m29a.can
+coverage campaign source	42073	tests/native-can/src/coverage/migration/m29b.can
+coverage campaign source	61621	tests/native-can/src/coverage/migration/m30a.can
+coverage campaign source	50899	tests/native-can/src/coverage/migration/m30b.can
+coverage campaign source	24060	tests/native-can/src/coverage/migration/m31.can
+coverage campaign source	43222	tests/native-can/src/coverage/migration/m32.can
+coverage campaign source	62251	tests/native-can/src/coverage/migration/m33chart.can
+coverage campaign source	28966	tests/native-can/src/coverage/migration/m33rest.can
+coverage campaign source	16201	tests/native-can/src/coverage/migration/m34.can
+coverage campaign source	34576	tests/native-can/src/coverage/migration/m35.can
+coverage campaign source	17992	tests/native-can/src/coverage/migration/m36.can
+coverage campaign source	8256	tests/native-can/src/coverage/migration/m37.can
+coverage campaign source	44661	tests/native-can/src/coverage/migration/m38.can
+coverage campaign source	48245	tests/native-can/src/coverage/migration/m39.can
+coverage campaign source	48079	tests/native-can/src/coverage/migration/m40.can
+coverage campaign source	35182	tests/native-can/src/coverage/migration/m41.can
+coverage campaign source	19303	tests/native-can/src/coverage/migration/m42.can
+coverage campaign source	18651	tests/native-can/src/coverage/migration/m43.can
+coverage campaign source	12741	tests/native-can/src/coverage/migration/m44.can
+coverage campaign source	9008	tests/native-can/src/coverage/migration/m45.can
+coverage campaign source	3162	tests/native-can/src/coverage/migration/machinery.can
+remaining old suite source	3839	tests/native-can/src/main.can
+remaining old suite source	87777	tests/native-can/src/protocol/codec.can
+remaining old suite source	45044	tests/native-can/src/registry/registry.can
+remaining old suite source	35730	tests/native-can/src/report/authority/authority.can
+remaining old suite source	49087	tests/native-can/src/report/reducer/reducer.can
+remaining old suite source	24910	tests/native-can/src/spec/spec.can
+remaining old suite source	34450	tests/native-can/src/worker/worker.can
+old suite configs bootstrap subjects examples	31509	tests/native-can/subjects/descriptors/f1/controls_test.go
+old suite configs bootstrap subjects examples	1578	tests/native-can/subjects/descriptors/f1/doc.go
+old suite configs bootstrap subjects examples	7512	tests/native-can/subjects/descriptors/f1/fixtures.go
+old suite configs bootstrap subjects examples	4112	tests/native-can/subjects/descriptors/f1/fixtures_test.go
+old suite configs bootstrap subjects examples	26947	tests/native-can/subjects/descriptors/f2/controls_test.go
+old suite configs bootstrap subjects examples	1518	tests/native-can/subjects/descriptors/f2/doc.go
+old suite configs bootstrap subjects examples	3270	tests/native-can/subjects/descriptors/f2/fixtures.go
+old suite configs bootstrap subjects examples	3278	tests/native-can/subjects/descriptors/f2/fixtures_test.go
+tools/native-test-bootstrap	986	tools/native-test-bootstrap/doc.go
+tools/native-test-bootstrap	21643	tools/native-test-bootstrap/witness.go
+tools/native-test-bootstrap	12364	tools/native-test-bootstrap/witness_test.go
+tools/native-test-owner	18857	tools/native-test-owner/acceptance/accept.go
+tools/native-test-owner	22878	tools/native-test-owner/acceptance/acceptance_test.go
+tools/native-test-owner	1223	tools/native-test-owner/acceptance/doc.go
+tools/native-test-owner	2555	tools/native-test-owner/acceptance/helper_test.go
+tools/native-test-owner	4115	tools/native-test-owner/acceptance/host.go
+tools/native-test-owner	2691	tools/native-test-owner/acceptance/identity.go
+tools/native-test-owner	3414	tools/native-test-owner/acceptance/witness.go
+tools/native-test-owner	17147	tools/native-test-owner/admission/admission.go
+tools/native-test-owner	27850	tools/native-test-owner/admission/admission_test.go
+tools/native-test-owner	3766	tools/native-test-owner/admission/doc.go
+tools/native-test-owner	1559	tools/native-test-owner/admission/errors.go
+tools/native-test-owner	33242	tools/native-test-owner/external/browser_local.go
+tools/native-test-owner	11502	tools/native-test-owner/external/browser_local_test.go
+tools/native-test-owner	35546	tools/native-test-owner/external/browser_remote.go
+tools/native-test-owner	10103	tools/native-test-owner/external/browser_remote_test.go
+tools/native-test-owner	14451	tools/native-test-owner/external/db_observer.go
+tools/native-test-owner	1946	tools/native-test-owner/external/db_observer_test.go
+tools/native-test-owner	28573	tools/native-test-owner/external/db_settlement.go
+tools/native-test-owner	12073	tools/native-test-owner/external/db_settlement_test.go
+tools/native-test-owner	15939	tools/native-test-owner/external/db_transaction.go
+tools/native-test-owner	9772	tools/native-test-owner/external/db_transaction_test.go
+tools/native-test-owner	4378	tools/native-test-owner/external/dispatch.go
+tools/native-test-owner	1643	tools/native-test-owner/external/doc.go
+tools/native-test-owner	1919	tools/native-test-owner/external/errors.go
+tools/native-test-owner	20901	tools/native-test-owner/external/external.go
+tools/native-test-owner	25290	tools/native-test-owner/external/external_test.go
+tools/native-test-owner	25011	tools/native-test-owner/external/object_store.go
+tools/native-test-owner	13506	tools/native-test-owner/external/object_store_test.go
+tools/native-test-owner	5097	tools/native-test-owner/external/recovery.go
+tools/native-test-owner	6814	tools/native-test-owner/host/adapter.go
+tools/native-test-owner	5710	tools/native-test-owner/host/backstop.go
+tools/native-test-owner	2119	tools/native-test-owner/host/backstop_test.go
+tools/native-test-owner	6693	tools/native-test-owner/host/browser_observer/channel.go
+tools/native-test-owner	3835	tools/native-test-owner/host/browser_observer/channel_test.go
+tools/native-test-owner	6988	tools/native-test-owner/host/browser_observer/child.go
+tools/native-test-owner	967	tools/native-test-owner/host/browser_observer/child_test.go
+tools/native-test-owner	7597	tools/native-test-owner/host/browser_observer/journal.go
+tools/native-test-owner	6345	tools/native-test-owner/host/browser_observer/journal_test.go
+tools/native-test-owner	48210	tools/native-test-owner/host/browser_observer/observer.go
+tools/native-test-owner	22073	tools/native-test-owner/host/browser_observer/observer_test.go
+tools/native-test-owner	11805	tools/native-test-owner/host/browser_observer/process.go
+tools/native-test-owner	16762	tools/native-test-owner/host/browser_observer/process_test.go
+tools/native-test-owner	11588	tools/native-test-owner/host/darwin.go
+tools/native-test-owner	2340	tools/native-test-owner/host/doc.go
+tools/native-test-owner	4011	tools/native-test-owner/host/envelope.go
+tools/native-test-owner	15640	tools/native-test-owner/host/host_test.go
+tools/native-test-owner	12111	tools/native-test-owner/host/negative_test.go
+tools/native-test-owner	3967	tools/native-test-owner/host/profile.go
+tools/native-test-owner	2048	tools/native-test-owner/host/profile_test.go
+tools/native-test-owner	22309	tools/native-test-owner/host/qualify.go
+tools/native-test-owner	927	tools/native-test-owner/host/unavailable.go
+tools/native-test-owner	1380	tools/native-test-owner/journal/doc.go
+tools/native-test-owner	17848	tools/native-test-owner/journal/journal.go
+tools/native-test-owner	11646	tools/native-test-owner/journal/journal_test.go
+tools/native-test-owner	4623	tools/native-test-owner/process/channel.go
+tools/native-test-owner	1655	tools/native-test-owner/process/doc.go
+tools/native-test-owner	2869	tools/native-test-owner/process/lease.go
+tools/native-test-owner	27791	tools/native-test-owner/process/process.go
+tools/native-test-owner	31125	tools/native-test-owner/process/process_test.go
+tools/native-test-owner	6408	tools/native-test-owner/protocol/codec/codec_test.go
+tools/native-test-owner	1330	tools/native-test-owner/protocol/codec/doc.go
+tools/native-test-owner	5358	tools/native-test-owner/protocol/codec/envelope.go
+tools/native-test-owner	6067	tools/native-test-owner/protocol/codec/frame.go
+tools/native-test-owner	3337	tools/native-test-owner/protocol/codec/testdata/envelopes_invalid.json
+tools/native-test-owner	815	tools/native-test-owner/protocol/codec/testdata/envelopes_valid.json
+tools/native-test-owner	4292	tools/native-test-owner/protocol/codec/testdata/frames_invalid.json
+tools/native-test-owner	2757	tools/native-test-owner/protocol/codec/testdata/frames_valid.json
+tools/native-test-owner	5649	tools/native-test-owner/protocol/dispatch/channel.go
+tools/native-test-owner	8273	tools/native-test-owner/protocol/dispatch/channel_test.go
+tools/native-test-owner	9814	tools/native-test-owner/protocol/dispatch/dispatcher.go
+tools/native-test-owner	11495	tools/native-test-owner/protocol/dispatch/dispatcher_test.go
+tools/native-test-owner	1604	tools/native-test-owner/protocol/dispatch/doc.go
+tools/native-test-owner	1082	tools/native-test-owner/protocol/dispatch/errors.go
+tools/native-test-owner	6395	tools/native-test-owner/protocol/dispatch/grant.go
+tools/native-test-owner	5619	tools/native-test-owner/protocol/dispatch/grant_test.go
+tools/native-test-owner	3377	tools/native-test-owner/protocol/dispatch/handle.go
+tools/native-test-owner	3411	tools/native-test-owner/protocol/dispatch/handle_test.go
+tools/native-test-owner	850	tools/native-test-owner/protocol/dispatch/validate.go
+tools/native-test-owner	5283	tools/native-test-owner/receipt/cleanup/cleanup.go
+tools/native-test-owner	18517	tools/native-test-owner/receipt/cleanup/cleanup_test.go
+tools/native-test-owner	1053	tools/native-test-owner/receipt/cleanup/doc.go
+tools/native-test-owner	998	tools/native-test-owner/receipt/cleanup/errors.go
+tools/native-test-owner	4149	tools/native-test-owner/receipt/cleanup/receipt.go
+tools/native-test-owner	3899	tools/native-test-owner/receipt/cleanup/receipt_test.go
+tools/native-test-owner	1486	tools/native-test-owner/receipt/corrections/doc.go
+tools/native-test-owner	299	tools/native-test-owner/receipt/corrections/errors.go
+tools/native-test-owner	9813	tools/native-test-owner/receipt/corrections/registry.go
+tools/native-test-owner	13334	tools/native-test-owner/receipt/corrections/registry_test.go
+tools/native-test-owner	1192	tools/native-test-owner/recovery/doc.go
+tools/native-test-owner	3822	tools/native-test-owner/recovery/drain.go
+tools/native-test-owner	5468	tools/native-test-owner/recovery/drain_test.go
+tools/native-test-owner	1753	tools/native-test-owner/recovery/errors.go
+tools/native-test-owner	976	tools/native-test-owner/recovery/gate.go
+tools/native-test-owner	1113	tools/native-test-owner/recovery/gate_test.go
+tools/native-test-owner	3837	tools/native-test-owner/recovery/helper_test.go
+tools/native-test-owner	2654	tools/native-test-owner/recovery/proof.go
+tools/native-test-owner	3283	tools/native-test-owner/recovery/proof_test.go
+tools/native-test-owner	6287	tools/native-test-owner/recovery/scan.go
+tools/native-test-owner	10952	tools/native-test-owner/recovery/scan_test.go
+tools/native-test-owner	1143	tools/native-test-owner/service/doc.go
+tools/native-test-owner	18369	tools/native-test-owner/service/service.go
+tools/native-test-owner	23268	tools/native-test-owner/service/service_test.go
+tools/native-test-owner	16369	tools/native-test-owner/workspace/dispose.go
+tools/native-test-owner	1195	tools/native-test-owner/workspace/doc.go
+tools/native-test-owner	29950	tools/native-test-owner/workspace/ops.go
+tools/native-test-owner	9064	tools/native-test-owner/workspace/seal.go
+tools/native-test-owner	19181	tools/native-test-owner/workspace/workspace.go
+tools/native-test-owner	22028	tools/native-test-owner/workspace/workspace_test.go
+tools/native-test-reference	1843	tools/native-test-reference/build.go
+tools/native-test-reference	2166	tools/native-test-reference/dispose.go
+tools/native-test-reference	1002	tools/native-test-reference/doc.go
+tools/native-test-reference	8350	tools/native-test-reference/reference_test.go
+tools/native-test-reference	21895	tools/native-test-reference/refresh.go
+tools/native-test-reference	23138	tools/native-test-reference/refresh_test.go
+tools/native-test-reference	3288	tools/native-test-reference/seal.go
+tools/native-test-reference	7305	tools/native-test-reference/select.go
+tools/native-test-reference	26	tools/native-test-reference/testdata/rcore/basic/can.errors.json
+tools/native-test-reference	56	tools/native-test-reference/testdata/rcore/basic/can.project.json
+tools/native-test-reference	407	tools/native-test-reference/testdata/rcore/basic/src/arithmetic/basic.can
+tools/native-test-reference	983	tools/native-test-reference/testdata/rcore/corpus.json
+tools/native-test-reference	26	tools/native-test-reference/testdata/rcore/httppeer/can.errors.json
+tools/native-test-reference	56	tools/native-test-reference/testdata/rcore/httppeer/can.project.json
+tools/native-test-reference	2138	tools/native-test-reference/testdata/rcore/httppeer/src/test_http_peer/peer.can
+tools/native-test-reference	26	tools/native-test-reference/testdata/rcore/lint/can.errors.json
+tools/native-test-reference	56	tools/native-test-reference/testdata/rcore/lint/can.project.json
+tools/native-test-reference	792	tools/native-test-reference/testdata/rcore/lint/src/latch/latch.can
+tools/native-test-reference	2491	tools/native-test-reference/testdata/rcore/observe.py
+tools/native-test-reference	26	tools/native-test-reference/testdata/rcore/testbind/can.errors.json
+tools/native-test-reference	56	tools/native-test-reference/testdata/rcore/testbind/can.project.json
+tools/native-test-reference	1902	tools/native-test-reference/testdata/rcore/testbind/src/test_owner/owner.can
+tools/runtime/test-services	38161	tools/runtime/test-services/browser-driver/admission-check.ts
+tools/runtime/test-services	43629	tools/runtime/test-services/browser-driver/admission.ts
+tools/runtime/test-services	28084	tools/runtime/test-services/browser-driver/artifact-check.ts
+tools/runtime/test-services	34277	tools/runtime/test-services/browser-driver/artifact.ts
+tools/runtime/test-services	32203	tools/runtime/test-services/browser-driver/dom-check.ts
+tools/runtime/test-services	60303	tools/runtime/test-services/browser-driver/dom.ts
+tools/runtime/test-services	40650	tools/runtime/test-services/browser-driver/events-check.ts
+tools/runtime/test-services	44950	tools/runtime/test-services/browser-driver/events.ts
+tools/runtime/test-services	34858	tools/runtime/test-services/browser-driver/fetch-check.ts
+tools/runtime/test-services	39013	tools/runtime/test-services/browser-driver/fetch.ts
+tools/runtime/test-services	35355	tools/runtime/test-services/browser-driver/input-check.ts
+tools/runtime/test-services	46201	tools/runtime/test-services/browser-driver/input.ts
+tools/runtime/test-services	30261	tools/runtime/test-services/browser-driver/launch-check.ts
+tools/runtime/test-services	33750	tools/runtime/test-services/browser-driver/launch.ts
+tools/runtime/test-services	25535	tools/runtime/test-services/browser-driver/remote-check.ts
+tools/runtime/test-services	30964	tools/runtime/test-services/browser-driver/remote.ts
+tools/runtime/test-services	27314	tools/runtime/test-services/browser-driver/route-check.ts
+tools/runtime/test-services	31431	tools/runtime/test-services/browser-driver/route.ts
+tools/runtime/test-services	19443	tools/runtime/test-services/db-observer/core-check.ts
+tools/runtime/test-services	24302	tools/runtime/test-services/db-observer/core.ts
+tools/runtime/test-services	21426	tools/runtime/test-services/db-observer/deadline-check.ts
+tools/runtime/test-services	22884	tools/runtime/test-services/db-observer/deadline.ts
+tools/runtime/test-services	28070	tools/runtime/test-services/db-observer/poison-check.ts
+tools/runtime/test-services	26251	tools/runtime/test-services/db-observer/poison.ts
+tools/runtime/test-services	18239	tools/runtime/test-services/db-observer/returning-check.ts
+tools/runtime/test-services	17946	tools/runtime/test-services/db-observer/returning.ts
+tools/runtime/test-services	17102	tools/runtime/test-services/db-observer/transactions-check.ts
+tools/runtime/test-services	16773	tools/runtime/test-services/db-observer/transactions.ts
+tools/runtime/test-services	18578	tools/runtime/test-services/http-peer/http-check.ts
+tools/runtime/test-services	28167	tools/runtime/test-services/http-peer/http.ts
+tools/runtime/test-services	17147	tools/runtime/test-services/http-peer/peer-check.ts
+tools/runtime/test-services	28685	tools/runtime/test-services/http-peer/peer.ts
+tools/runtime/test-services	17928	tools/runtime/test-services/http-peer/websocket-check.ts
+tools/runtime/test-services	19325	tools/runtime/test-services/http-peer/websocket.ts
+tools/runtime/test-services	7715	tools/runtime/test-services/native-values/c-ingress-check.ts
+tools/runtime/test-services	4649	tools/runtime/test-services/native-values/c-ingress.manifest.json
+tools/runtime/test-services	13443	tools/runtime/test-services/native-values/c-ingress.ts
+tools/runtime/test-services	32007	tools/runtime/test-services/native-values/c-witness-check.ts
+tools/runtime/test-services	35121	tools/runtime/test-services/native-values/c-witness.ts
+tools/runtime/test-services	34232	tools/runtime/test-services/native-values/late-check.ts
+tools/runtime/test-services	22713	tools/runtime/test-services/native-values/late.ts
+tools/runtime/test-services	32903	tools/runtime/test-services/native-values/observe-check.ts
+tools/runtime/test-services	38586	tools/runtime/test-services/native-values/observe.ts
+tools/runtime/test-services	14502	tools/runtime/test-services/native-values/schema-catalogue.proposed.json
+tools/runtime/test-services	14445	tools/runtime/test-services/native-values/schema-check.ts
+tools/runtime/test-services	6487	tools/runtime/test-services/native-values/schema-handles.ts
+tools/runtime/test-services	29066	tools/runtime/test-services/native-values/schema.ts
+tools/runtime/test-services	13801	tools/runtime/test-services/native-values/session-check.ts
+tools/runtime/test-services	16778	tools/runtime/test-services/native-values/session.ts
+tools/runtime/test-services	26387	tools/runtime/test-services/object-store/service-check.ts
+tools/runtime/test-services	29318	tools/runtime/test-services/object-store/service.ts

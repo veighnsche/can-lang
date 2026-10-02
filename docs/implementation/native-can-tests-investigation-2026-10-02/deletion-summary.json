@@ -1,0 +1,87 @@
+{
+  "pre_deletion_head": "1c56acd5e29cbaa1bb0bf707b8cacd6e634639d6",
+  "candidate_count": 1787,
+  "candidate_bytes": 36155161,
+  "groups": {
+    "exclusive compiler driver emitter checker apparatus": {
+      "files": 63,
+      "bytes": 323166
+    },
+    "plan ledger checklists prompts validators": {
+      "files": 26,
+      "bytes": 3161145
+    },
+    "plan evidence": {
+      "files": 475,
+      "bytes": 6667202
+    },
+    "plan tools": {
+      "files": 5,
+      "bytes": 63660
+    },
+    "superseded design ledgers and contracts": {
+      "files": 13,
+      "bytes": 347613
+    },
+    "superseded preparation evidence and tools": {
+      "files": 223,
+      "bytes": 2760122
+    },
+    "runtime/test-support": {
+      "files": 31,
+      "bytes": 497804
+    },
+    "legacy runtime adapter tests": {
+      "files": 16,
+      "bytes": 204402
+    },
+    "schemas/native-test": {
+      "files": 60,
+      "bytes": 86129
+    },
+    "old suite configs bootstrap subjects examples": {
+      "files": 49,
+      "bytes": 175508
+    },
+    "staged migration corpus": {
+      "files": 553,
+      "bytes": 17202896
+    },
+    "remaining old suite source": {
+      "files": 40,
+      "bytes": 677243
+    },
+    "coverage campaign source": {
+      "files": 49,
+      "bytes": 1478481
+    },
+    "tools/native-test-bootstrap": {
+      "files": 3,
+      "bytes": 34993
+    },
+    "tools/native-test-owner": {
+      "files": 108,
+      "bytes": 1025411
+    },
+    "tools/native-test-reference": {
+      "files": 22,
+      "bytes": 78028
+    },
+    "tools/runtime/test-services": {
+      "files": 51,
+      "bytes": 1371358
+    }
+  },
+  "paths_sha256": "82c4d0b2de53ce9a4a990a77ffb0d9e18a97d7ab894847fb7c0e1fed00c3a8ce",
+  "scope": "Proposed removal set, including 63 exclusive compiler paths. Shared catalogue/emitter/checker fixes and generated mirror regeneration must accompany removal. No deletion performed.",
+  "untracked_source_before_plan": false,
+  "ignored_reference_seed_candidates": {
+    "files": 742,
+    "bytes": 211806914,
+    "paths": [
+      "run/acceptance/can-r-core-8d93710c-bun-1.4.2-darwin-arm64-v1",
+      "run/acceptance/can-r-seed-626bf037-bun-1.4.2-darwin-arm64-v1"
+    ],
+    "approval_and_ownership_check_required": true
+  }
+}
