@@ -1,0 +1,89 @@
+package migration
+    provides [m15_slice, claim_m15_identity_problems, validate_m15_claim, campaign_m15_manifest]
+    uses [coverage, reducer, registry, spec, text]
+
+/// Z01 migration-coverage reconciliation, slice m15 (BROWSER-011..BROWSER-044).
+/// Per-row facet, variant, environment and delegated-declaration mappings
+/// for 4 Native DOM and emitted controls rows. No retained rows (missing only): claims report unknown-row or unretained-row; the shared credit, campaign
+/// and obligation machinery is reused unchanged from the pilot. Source
+/// hashes are the reviewed sha256 bindings of the bound files; a bound-file
+/// edit invalidates its binding until re-reviewed. Delegates are checked
+/// both directions. Provisional until P23: no execution credit is claimed.
+
+// (Row data lines are long by construction: each row_map carries the full
+// reviewed binding for BROWSER-011..BROWSER-044. Generated from the row evidence
+// case_check_ids plus sha256 of the bound files.)
+fn row_map[] m15_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m15: "m15" => ok [row_map("BROWSER-011", "missing", "", "", "", [], ["Qualify static browser control facts independently of Can: checkbox IDL, dirty values, reset, selects, files, modifiers, composition and caret.", "Require 11 checks, no limitations, only index.html requests, screenshots on Chromium/WebKit/Firefox."], ["Chromium", "WebKit", "Firefox"], ["node/Playwright installed", "CAN_FIREFOX_WS optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-012", "missing", "", "", "", [], ["Qualify emitted Can controls against native facts: browser/paired rebuild identity, no stray imports or API traffic, control snapshots and live calls.", "Require 17 checks and no limitations on three engines; independently verify seeded invoice rows unchanged and no replay rows."], ["Chromium", "WebKit", "Firefox", "control/action variants"], ["CAN_BUN_ARCHIVE", "node/Playwright installed", "CAN_FIREFOX_WS optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-043", "missing", "", "", "", [], ["Independent native DOM facts: checkbox IDL vs value, dirty live value vs attribute, form reset, multi/single selection, file metadata.", "Real and synthetic modifiers, autofill-simulated input, composing flag, selection/caret; network and page errors clean.", "Named old checks/legs to account for: checkbox-idl, dirty-divergence, form-reset, multiselect, single-last-wins, files, modifiers, autofill-simulated, composing, selection, network-ledger-clean."], ["Chromium/WebKit/Firefox", "real/synthetic input", "file/select/reset"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-044", "missing", "", "", "", [], ["Emitted Can control fixture identity/boot; text/key/check/multi/files echoes; setvalue/setchecked/setselected/setcaret/readall/reset/reject operations.", "Synthetic composition and autofill, dirty reset, engine-specific caret direction; no API calls or foreign traffic.", "Named old checks/legs to account for: client-identity, boot, text-echo, key-echo, check-echo, multi-echo, files-echo, setvalue, setchecked, setselected, setcaret, composing-synthetic, autofill-simulated, dirty-reset, readall, reject, network-ledger-clean."], ["Chromium/WebKit/Firefox", "14 named control legs", "engine caret direction"], ["Playwright/browser engines", "paired server"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m15"
+        false => ok []
+        true => ok [row_map("BROWSER-011", "missing", "", "", "", [], ["Qualify static browser control facts independently of Can: checkbox IDL, dirty values, reset, selects, files, modifiers, composition and caret.", "Require 11 checks, no limitations, only index.html requests, screenshots on Chromium/WebKit/Firefox."], ["Chromium", "WebKit", "Firefox"], ["node/Playwright installed", "CAN_FIREFOX_WS optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-012", "missing", "", "", "", [], ["Qualify emitted Can controls against native facts: browser/paired rebuild identity, no stray imports or API traffic, control snapshots and live calls.", "Require 17 checks and no limitations on three engines; independently verify seeded invoice rows unchanged and no replay rows."], ["Chromium", "WebKit", "Firefox", "control/action variants"], ["CAN_BUN_ARCHIVE", "node/Playwright installed", "CAN_FIREFOX_WS optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-043", "missing", "", "", "", [], ["Independent native DOM facts: checkbox IDL vs value, dirty live value vs attribute, form reset, multi/single selection, file metadata.", "Real and synthetic modifiers, autofill-simulated input, composing flag, selection/caret; network and page errors clean.", "Named old checks/legs to account for: checkbox-idl, dirty-divergence, form-reset, multiselect, single-last-wins, files, modifiers, autofill-simulated, composing, selection, network-ledger-clean."], ["Chromium/WebKit/Firefox", "real/synthetic input", "file/select/reset"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-044", "missing", "", "", "", [], ["Emitted Can control fixture identity/boot; text/key/check/multi/files echoes; setvalue/setchecked/setselected/setcaret/readall/reset/reject operations.", "Synthetic composition and autofill, dirty reset, engine-specific caret direction; no API calls or foreign traffic.", "Named old checks/legs to account for: client-identity, boot, text-echo, key-echo, check-echo, multi-echo, files-echo, setvalue, setchecked, setselected, setcaret, composing-synthetic, autofill-simulated, dirty-reset, readall, reject, network-ledger-clean."], ["Chromium/WebKit/Firefox", "14 named control legs", "engine caret direction"], ["Playwright/browser engines", "paired server"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// Identity side of a complete-coverage claim against the m15 manifest:
+/// same first-only contract as the pilot claim_identity_problems, resolved
+/// by (row, case) through row_case_index. claims against blocked, missing or obsolete rows report unretained-row, and delegates are checked both directions.
+fn spec::diagnostic[] claim_m15_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m15_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-011", "", "default", "r1", ["node/Playwright installed", "CAN_FIREFOX_WS optional"], [], false, false) => ok [spec::diagnostic("migration::claim_m15_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-011")]
+    match call m15_slice("m15")
+        ok row_map[] rows => match call row_case_index(rows, c.row_id, c.case_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call row_retained(rows, at)
+                    ok bool kept => match kept
+                        false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unretained-row", c.row_id)]
+                        true => match call job_registered(entries, c.job_id, 0)
+                            ok bool reg => match reg
+                                false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                                true => match call identity_compatible(entries, c, 0)
+                                    ok bool same => match same
+                                        false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                        true => match call str_subset(rows[at].environments, c.engines, 0)
+                                            ok bool engined => match engined
+                                                false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                                true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                    ok bool delegated => match delegated
+                                                        false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                        true => match call str_subset(c.delegates, rows[at].delegates, 0)
+                                                            ok bool declared => match declared
+                                                                false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "extra-delegate", c.row_id)]
+                                                                true => match call references_accepted(entries, c, 0)
+                                                                    ok bool cited => match cited
+                                                                        false => ok [spec::diagnostic("migration::claim_m15_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                                        true => ok []
+/// Validate one complete-coverage claim against m15: identity first,
+/// then the shared credit side. Mirrors validate_claim resolved
+/// against m15_slice.
+fn spec::diagnostic[] validate_m15_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m15_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-011", "", "default", "r1", ["node/Playwright installed", "CAN_FIREFOX_WS optional"], [], false, false) => ok [spec::diagnostic("migration::claim_m15_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-011")]
+    match call claim_m15_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
+/// Reviewed campaign manifest for the slice: fixed IDs plus every
+/// declared row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_m15_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m15: "m15" => ok campaign("z01-manifest/m15/2026-10-02", "z01-campaign/m15/attempt-1", ["BROWSER-011", "BROWSER-012", "BROWSER-043", "BROWSER-044"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m15"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m15/2026-10-02", "z01-campaign/m15/attempt-1", ["BROWSER-011", "BROWSER-012", "BROWSER-043", "BROWSER-044"])

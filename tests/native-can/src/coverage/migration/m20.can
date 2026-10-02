@@ -1,0 +1,89 @@
+package migration
+    provides [m20_slice, claim_m20_identity_problems, validate_m20_claim, campaign_m20_manifest]
+    uses [coverage, reducer, registry, spec, text]
+
+/// Z01 migration-coverage reconciliation, slice m20 (BROWSER-041..BROWSER-054).
+/// Per-row facet, variant, environment and delegated-declaration mappings
+/// for 6 Grid, compare, drift and conformance UI rows. No retained rows (missing only): claims report unknown-row or unretained-row; the shared credit, campaign
+/// and obligation machinery is reused unchanged from the pilot. Source
+/// hashes are the reviewed sha256 bindings of the bound files; a bound-file
+/// edit invalidates its binding until re-reviewed. Delegates are checked
+/// both directions. Provisional until P23: no execution credit is claimed.
+
+// (Row data lines are long by construction: each row_map carries the full
+// reviewed binding for BROWSER-041..BROWSER-054. Generated from the row evidence
+// case_check_ids plus sha256 of the bound files.)
+fn row_map[] m20_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m20: "m20" => ok [row_map("BROWSER-041", "missing", "", "", "", [], ["Can compare client: boot panels, paired identity and generation slot, left/right edit and mirror/drop lifecycles, invalid review block.", "Real keystrokes, caret and composing input keep intended values; network, console and page faults stay clean.", "Named old checks/legs to account for: boot-panels, client-identity, generation-slot, edit-left-keeps-right, review-blocks-on-invalid, real-keystrokes, caret-preserved-across-folds, composing-input-folds, mirror-folds-left-into-right, drop-left-right-works, mirror-after-drop-silent, network-ledger-clean, no-page-faults."], ["Chromium/WebKit/Firefox", "edit/mirror/drop/composition"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-042", "missing", "", "", "", [], ["Compiler-built browser fixture: client identity; equality/codec vectors and query plain/missing/duplicate/alias/oversized/malformed/no/unknown cases.", "Timer order/disposal silence, view release, cancel/Enter and post-attach focus; no foreign request or page fault.", "Named old checks/legs to account for: client-identity, equality, codecs, query-plain, query-missing-probe, query-duplicate, query-encoded-alias, query-huge-value, query-huge-search, query-malformed, no-scenario, unknown-scenario, timers, dispose, cancel, focus, network-ledger-clean."], ["Chromium/WebKit/Firefox", "query variants", "timer/dispose/cancel/focus"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-046", "missing", "", "", "", [], ["Boot V1 page, signal readiness, wait for server restart to V2; old page POST must get exact 409 generation mismatch and prompt, without committing.", "Refresh must show V2 and unchanged invoice revision; run both rollout and rollback with no unexpected page faults.", "Named old checks/legs to account for: boot-v1, old-page-refused, refused-save-never-ran, no-page-faults."], ["Chromium/WebKit/Firefox", "rollout", "rollback"], ["Playwright/browser engines", "two paired server generations"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-047", "missing", "", "", "", [], ["Minimal generated browser program served through paired shell: exact selected script, clean startup, untouched DOM.", "Serve source map and sealed diagnostic table with correct shape; loopback-only requests and clean page console.", "Named old checks/legs to account for: served-shell, paired-startup-clean, served-map-table, network-ledger-clean."], ["Chromium/WebKit/Firefox"], ["Playwright/browser engines", "paired empty app"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-050", "missing", "", "", "", [], ["Live grid: boot/client identity/query edges, money exactness, row add/move/remove and focus, blocked/rejected saves and Enter/real-keystroke behavior.", "Slow/midflight/single-flight saves, offline and busy replay, truncated/garbage after-commit replay, stale conflict keep/adopt.", "Detached/disposed silence, denied/unavailable loads, reload/no durability, navigation, duplicate IDs/node bound and network cleanliness.", "Named old checks/legs to account for: boot-loads, client-identity, query-edges, edit-totals, money-exact, add-line-focus, move-row-focus, remove-row-focus, blocked-save, rejected-422, enter-saves, real-keystrokes, slow-save-pending, midflight-press-single-grid, single-flight, offline-replay, busy-replay, busy-replay-commit, truncate-replay, garbage-replay, stale-conflict, conflict-keep-adopt, detached-click-silent, disposed-response-silent, ghost-denied, unavailable-load, denied-load, reload-no-durability, navigation-stable, no-duplicate-ids, node-count-bounded, network-ledger-clean."], ["Chromium/WebKit/Firefox", "normal/slow/offline/busy/corrupt responses", "DOM disposal/reload"], ["Playwright/browser engines", "paired invoice server and SQLite"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-054", "missing", "", "", "", [], ["Grid contract: boot/client/generation identity, action headers, missing-id/foreign page denials and unknown 404.", "Caret preservation through edits; stale generation save/load prompt and refresh resolution; clean page fault record.", "Named old checks/legs to account for: boot-loads, client-identity, generation-slot, header-on-actions, missing-id-denied, page-denied, unknown-path-404, grid-caret, mismatch-save-prompt, mismatch-load-prompt, refresh-resolves, no-page-faults."], ["Chromium/WebKit/Firefox", "denied IDs", "generation mismatch"], ["Playwright/browser engines", "paired invoice server"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m20"
+        false => ok []
+        true => ok [row_map("BROWSER-041", "missing", "", "", "", [], ["Can compare client: boot panels, paired identity and generation slot, left/right edit and mirror/drop lifecycles, invalid review block.", "Real keystrokes, caret and composing input keep intended values; network, console and page faults stay clean.", "Named old checks/legs to account for: boot-panels, client-identity, generation-slot, edit-left-keeps-right, review-blocks-on-invalid, real-keystrokes, caret-preserved-across-folds, composing-input-folds, mirror-folds-left-into-right, drop-left-right-works, mirror-after-drop-silent, network-ledger-clean, no-page-faults."], ["Chromium/WebKit/Firefox", "edit/mirror/drop/composition"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-042", "missing", "", "", "", [], ["Compiler-built browser fixture: client identity; equality/codec vectors and query plain/missing/duplicate/alias/oversized/malformed/no/unknown cases.", "Timer order/disposal silence, view release, cancel/Enter and post-attach focus; no foreign request or page fault.", "Named old checks/legs to account for: client-identity, equality, codecs, query-plain, query-missing-probe, query-duplicate, query-encoded-alias, query-huge-value, query-huge-search, query-malformed, no-scenario, unknown-scenario, timers, dispose, cancel, focus, network-ledger-clean."], ["Chromium/WebKit/Firefox", "query variants", "timer/dispose/cancel/focus"], ["Playwright/browser engines"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-046", "missing", "", "", "", [], ["Boot V1 page, signal readiness, wait for server restart to V2; old page POST must get exact 409 generation mismatch and prompt, without committing.", "Refresh must show V2 and unchanged invoice revision; run both rollout and rollback with no unexpected page faults.", "Named old checks/legs to account for: boot-v1, old-page-refused, refused-save-never-ran, no-page-faults."], ["Chromium/WebKit/Firefox", "rollout", "rollback"], ["Playwright/browser engines", "two paired server generations"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-047", "missing", "", "", "", [], ["Minimal generated browser program served through paired shell: exact selected script, clean startup, untouched DOM.", "Serve source map and sealed diagnostic table with correct shape; loopback-only requests and clean page console.", "Named old checks/legs to account for: served-shell, paired-startup-clean, served-map-table, network-ledger-clean."], ["Chromium/WebKit/Firefox"], ["Playwright/browser engines", "paired empty app"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-050", "missing", "", "", "", [], ["Live grid: boot/client identity/query edges, money exactness, row add/move/remove and focus, blocked/rejected saves and Enter/real-keystroke behavior.", "Slow/midflight/single-flight saves, offline and busy replay, truncated/garbage after-commit replay, stale conflict keep/adopt.", "Detached/disposed silence, denied/unavailable loads, reload/no durability, navigation, duplicate IDs/node bound and network cleanliness.", "Named old checks/legs to account for: boot-loads, client-identity, query-edges, edit-totals, money-exact, add-line-focus, move-row-focus, remove-row-focus, blocked-save, rejected-422, enter-saves, real-keystrokes, slow-save-pending, midflight-press-single-grid, single-flight, offline-replay, busy-replay, busy-replay-commit, truncate-replay, garbage-replay, stale-conflict, conflict-keep-adopt, detached-click-silent, disposed-response-silent, ghost-denied, unavailable-load, denied-load, reload-no-durability, navigation-stable, no-duplicate-ids, node-count-bounded, network-ledger-clean."], ["Chromium/WebKit/Firefox", "normal/slow/offline/busy/corrupt responses", "DOM disposal/reload"], ["Playwright/browser engines", "paired invoice server and SQLite"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-054", "missing", "", "", "", [], ["Grid contract: boot/client/generation identity, action headers, missing-id/foreign page denials and unknown 404.", "Caret preservation through edits; stale generation save/load prompt and refresh resolution; clean page fault record.", "Named old checks/legs to account for: boot-loads, client-identity, generation-slot, header-on-actions, missing-id-denied, page-denied, unknown-path-404, grid-caret, mismatch-save-prompt, mismatch-load-prompt, refresh-resolves, no-page-faults."], ["Chromium/WebKit/Firefox", "denied IDs", "generation mismatch"], ["Playwright/browser engines", "paired invoice server"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// Identity side of a complete-coverage claim against the m20 manifest:
+/// same first-only contract as the pilot claim_identity_problems, resolved
+/// by (row, case) through row_case_index. claims against blocked, missing or obsolete rows report unretained-row, and delegates are checked both directions.
+fn spec::diagnostic[] claim_m20_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m20_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-041", "", "default", "r1", ["Playwright/browser engines"], [], false, false) => ok [spec::diagnostic("migration::claim_m20_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-041")]
+    match call m20_slice("m20")
+        ok row_map[] rows => match call row_case_index(rows, c.row_id, c.case_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call row_retained(rows, at)
+                    ok bool kept => match kept
+                        false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unretained-row", c.row_id)]
+                        true => match call job_registered(entries, c.job_id, 0)
+                            ok bool reg => match reg
+                                false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                                true => match call identity_compatible(entries, c, 0)
+                                    ok bool same => match same
+                                        false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                        true => match call str_subset(rows[at].environments, c.engines, 0)
+                                            ok bool engined => match engined
+                                                false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                                true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                    ok bool delegated => match delegated
+                                                        false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                        true => match call str_subset(c.delegates, rows[at].delegates, 0)
+                                                            ok bool declared => match declared
+                                                                false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "extra-delegate", c.row_id)]
+                                                                true => match call references_accepted(entries, c, 0)
+                                                                    ok bool cited => match cited
+                                                                        false => ok [spec::diagnostic("migration::claim_m20_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                                        true => ok []
+/// Validate one complete-coverage claim against m20: identity first,
+/// then the shared credit side. Mirrors validate_claim resolved
+/// against m20_slice.
+fn spec::diagnostic[] validate_m20_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m20_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-041", "", "default", "r1", ["Playwright/browser engines"], [], false, false) => ok [spec::diagnostic("migration::claim_m20_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-041")]
+    match call claim_m20_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
+/// Reviewed campaign manifest for the slice: fixed IDs plus every
+/// declared row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_m20_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m20: "m20" => ok campaign("z01-manifest/m20/2026-10-02", "z01-campaign/m20/attempt-1", ["BROWSER-041", "BROWSER-042", "BROWSER-046", "BROWSER-047", "BROWSER-050", "BROWSER-054"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m20"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m20/2026-10-02", "z01-campaign/m20/attempt-1", ["BROWSER-041", "BROWSER-042", "BROWSER-046", "BROWSER-047", "BROWSER-050", "BROWSER-054"])

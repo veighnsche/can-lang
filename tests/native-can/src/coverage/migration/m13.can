@@ -1,0 +1,89 @@
+package migration
+    provides [m13_slice, claim_m13_identity_problems, validate_m13_claim, campaign_m13_manifest]
+    uses [coverage, reducer, registry, spec, text]
+
+/// Z01 migration-coverage reconciliation, slice m13 (BROWSER-006..BROWSER-053).
+/// Per-row facet, variant, environment and delegated-declaration mappings
+/// for 6 Assets and browser target builds rows. No retained rows (missing only): claims report unknown-row or unretained-row; the shared credit, campaign
+/// and obligation machinery is reused unchanged from the pilot. Source
+/// hashes are the reviewed sha256 bindings of the bound files; a bound-file
+/// edit invalidates its binding until re-reviewed. Delegates are checked
+/// both directions. Provisional until P23: no execution credit is claimed.
+
+// (Row data lines are long by construction: each row_map carries the full
+// reviewed binding for BROWSER-006..BROWSER-053. Generated from the row evidence
+// case_check_ids plus sha256 of the bound files.)
+fn row_map[] m13_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m13: "m13" => ok [row_map("BROWSER-006", "missing", "", "", "", [], ["Run asset Can roots and production program; compare repeated and relocated build IDs and staged bytes to declared/pinned assets.", "Inspect asset manifest, generated boot/import wiring, optional strict TS, loopback service, and negative path/digest/asset cases."], ["normal/rebuild/relocated", "invalid asset declarations and paths"], ["CAN_BUN_ARCHIVE", "CAN_TSC optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-007", "missing", "", "", "", [], ["Build and serve browser-target asset app; inspect generated boot/runtime and run real browser checks for local styles/scripts, CSP, form swaps and no external requests."], ["browser engine in assets.mjs"], ["CAN_BUN_ARCHIVE", "node/Playwright installed"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-008", "missing", "", "", "", [], ["Pair browser assets into server selection; verify report/pairing record, byte integrity, rebuild identity and changed-browser or repaired-server identity.", "Reject tampered/stale/mismatched shared snapshots without moving production current; verify bounded collection leaves no durable bytes."], ["browser variant", "server repair", "vendor mutation", "stale/matched snapshot", "collection"], ["CAN_BUN_ARCHIVE"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-009", "missing", "", "", "", [], ["Browser build emits isolated root/asset/manifest with no Bun supervisor, server-only import, test edge or node host token; Bun target still builds.", "Reject worker target, server-only/browser-unavailable capabilities and combined invalid flags; verify empty app, clean deterministic builds, sealed diagnostics and production output.", "Wrong assertion, tampered script or missing map must block publication and preserve current selection."], ["12 named subtests: pure, bun, flags, worker, capability, empty, verified, deterministic, assertion failure, tamper, missing map, profile unavailable"], ["CAN_BUN_ARCHIVE"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-037", "missing", "", "", "", [], ["Historical test bundler authored a three-line grid bootstrap plus four Node shims and diagnostic source index; verify whether any current claimed path still depends on these semantics before retiring."], ["browser.ts grid entry", "four shim modules"], ["Bun bundler"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-053", "missing", "", "", "", [], ["Historical test bundler synchronous SHA-256 createHash subset; independent digest-vector fidelity was required for the old grid bundle.", "Audit any remaining active use before retiring this test-only semantic shim."], ["sha256 string input", "hex output"], ["Bun bundler"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m13"
+        false => ok []
+        true => ok [row_map("BROWSER-006", "missing", "", "", "", [], ["Run asset Can roots and production program; compare repeated and relocated build IDs and staged bytes to declared/pinned assets.", "Inspect asset manifest, generated boot/import wiring, optional strict TS, loopback service, and negative path/digest/asset cases."], ["normal/rebuild/relocated", "invalid asset declarations and paths"], ["CAN_BUN_ARCHIVE", "CAN_TSC optional"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-007", "missing", "", "", "", [], ["Build and serve browser-target asset app; inspect generated boot/runtime and run real browser checks for local styles/scripts, CSP, form swaps and no external requests."], ["browser engine in assets.mjs"], ["CAN_BUN_ARCHIVE", "node/Playwright installed"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-008", "missing", "", "", "", [], ["Pair browser assets into server selection; verify report/pairing record, byte integrity, rebuild identity and changed-browser or repaired-server identity.", "Reject tampered/stale/mismatched shared snapshots without moving production current; verify bounded collection leaves no durable bytes."], ["browser variant", "server repair", "vendor mutation", "stale/matched snapshot", "collection"], ["CAN_BUN_ARCHIVE"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-009", "missing", "", "", "", [], ["Browser build emits isolated root/asset/manifest with no Bun supervisor, server-only import, test edge or node host token; Bun target still builds.", "Reject worker target, server-only/browser-unavailable capabilities and combined invalid flags; verify empty app, clean deterministic builds, sealed diagnostics and production output.", "Wrong assertion, tampered script or missing map must block publication and preserve current selection."], ["12 named subtests: pure, bun, flags, worker, capability, empty, verified, deterministic, assertion failure, tamper, missing map, profile unavailable"], ["CAN_BUN_ARCHIVE"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-037", "missing", "", "", "", [], ["Historical test bundler authored a three-line grid bootstrap plus four Node shims and diagnostic source index; verify whether any current claimed path still depends on these semantics before retiring."], ["browser.ts grid entry", "four shim modules"], ["Bun bundler"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("BROWSER-053", "missing", "", "", "", [], ["Historical test bundler synchronous SHA-256 createHash subset; independent digest-vector fidelity was required for the old grid bundle.", "Audit any remaining active use before retiring this test-only semantic shim."], ["sha256 string input", "hex output"], ["Bun bundler"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// Identity side of a complete-coverage claim against the m13 manifest:
+/// same first-only contract as the pilot claim_identity_problems, resolved
+/// by (row, case) through row_case_index. claims against blocked, missing or obsolete rows report unretained-row, and delegates are checked both directions.
+fn spec::diagnostic[] claim_m13_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m13_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-006", "", "default", "r1", ["CAN_BUN_ARCHIVE", "CAN_TSC optional"], [], false, false) => ok [spec::diagnostic("migration::claim_m13_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-006")]
+    match call m13_slice("m13")
+        ok row_map[] rows => match call row_case_index(rows, c.row_id, c.case_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call row_retained(rows, at)
+                    ok bool kept => match kept
+                        false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unretained-row", c.row_id)]
+                        true => match call job_registered(entries, c.job_id, 0)
+                            ok bool reg => match reg
+                                false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                                true => match call identity_compatible(entries, c, 0)
+                                    ok bool same => match same
+                                        false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                        true => match call str_subset(rows[at].environments, c.engines, 0)
+                                            ok bool engined => match engined
+                                                false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                                true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                    ok bool delegated => match delegated
+                                                        false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                        true => match call str_subset(c.delegates, rows[at].delegates, 0)
+                                                            ok bool declared => match declared
+                                                                false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "extra-delegate", c.row_id)]
+                                                                true => match call references_accepted(entries, c, 0)
+                                                                    ok bool cited => match cited
+                                                                        false => ok [spec::diagnostic("migration::claim_m13_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                                        true => ok []
+/// Validate one complete-coverage claim against m13: identity first,
+/// then the shared credit side. Mirrors validate_claim resolved
+/// against m13_slice.
+fn spec::diagnostic[] validate_m13_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m13_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "BROWSER-006", "", "default", "r1", ["CAN_BUN_ARCHIVE", "CAN_TSC optional"], [], false, false) => ok [spec::diagnostic("migration::claim_m13_identity_problems", "case  variant default root coverage run r1", "unretained-row", "BROWSER-006")]
+    match call claim_m13_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
+/// Reviewed campaign manifest for the slice: fixed IDs plus every
+/// declared row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_m13_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m13: "m13" => ok campaign("z01-manifest/m13/2026-10-02", "z01-campaign/m13/attempt-1", ["BROWSER-006", "BROWSER-007", "BROWSER-008", "BROWSER-009", "BROWSER-037", "BROWSER-053"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m13"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m13/2026-10-02", "z01-campaign/m13/attempt-1", ["BROWSER-006", "BROWSER-007", "BROWSER-008", "BROWSER-009", "BROWSER-037", "BROWSER-053"])
