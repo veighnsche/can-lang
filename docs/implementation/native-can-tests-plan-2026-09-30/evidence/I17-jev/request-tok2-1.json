@@ -1,0 +1,14 @@
+{
+ "model": "jev-latest",
+ "state": "Corrected re-consult on the I17 session-token question only (the package verdict, new store::, stands and is not re-asked). K27 service.ts (844 lines): openSession returns SessionFacts WITHOUT the token; the ONLY readout is the test-only-named sessionTokenForTest. Every effectful verb (put, settleWrite, pending, get, delete, list, closeSession) requires the pinned sess- hex token, verified by table lookup. The directly identical precedent is I13: K22's pinConnection likewise withholds the token, and I13 merged K22's connectionTokenForTest VERBATIM as its own owner-first catalogue op (db::connection_token_for_test returning str; db::pin_connection returns bare db::connection_facts). The I14/I16 fact-plus-token wrappers (db::callback_entry, db::dispatched_work, db::cancel_grant) are a different situation: those services return tokens natively, so the wrappers pair what the service already yields. An earlier consult round recommended composing the readout into open_session, but its state wrongly implied the wrapper lineage covered this case and omitted the controlling I13 expose precedent; treat that recommendation as superseded by this corrected evidence. Judge only on the corrected record below.",
+ "questions": {
+  "i17_session_token_shape_v2": {
+   "type": "choice",
+   "instructions": "Given the corrected record \u2014 I13 exposed the identical ForTest readout verbatim while I14/I16 pair only natively-returned tokens \u2014 should the I17 adapter compose sessionTokenForTest into open_session (one wrapper, no token verb) or expose it as its own owner-first op (store::session_token_for_test, verbatim like db::connection_token_for_test)? Favor the shape that treats identical service structures identically.",
+   "criteria": {
+    "compose_token_in_adapter": "Adapter open_session internally sequences openSession + sessionTokenForTest and returns one facts-with-token wrapper. Diverges from the I13 expose precedent for the identical withhold-plus-ForTest structure; keeps the stable surface one verb smaller and the test-only name out of the catalogue.",
+    "expose_token_op": "Merge sessionTokenForTest verbatim as owner-first store::session_token_for_test returning str, exactly as I13 merged db::connection_token_for_test: open_session returns bare SessionFacts, rows read the token through the explicit verb. Identical service structures get identical catalogue shapes; the test-only marking stays visible."
+   }
+  }
+ }
+}

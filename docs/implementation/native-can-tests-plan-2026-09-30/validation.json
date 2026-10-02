@@ -1,7 +1,7 @@
 {
-  "validated_utc": "2026-10-02T00:06:58.161573+00:00",
+  "validated_utc": "2026-10-02T00:25:53.972530+00:00",
   "scope": "static plan/ledger validation during implementation; no qualification",
-  "audited_head": "34f1e33bcd7a97c488dc2b428458d50fcf0570ae",
+  "audited_head": "d9daeae1b3cba8278f61a00a342f6cf65dbfd9ad",
   "task_count": 143,
   "task_counts": {
     "P": 30,
@@ -14,8 +14,8 @@
   "status_counts": {
     "complete": 45,
     "blocked": 10,
-    "planned": 58,
-    "active": 30
+    "planned": 57,
+    "active": 31
   },
   "unique_ids": true,
   "master_equals_source_views": true,
@@ -36,14 +36,14 @@
       "command": "python3 tools/check-implementation.py",
       "exit_code": 0,
       "summary": {
-        "checked_utc": "2026-10-02T00:06:58.148093+00:00",
+        "checked_utc": "2026-10-02T00:25:53.959492+00:00",
         "scope": "implementation-mode structural checks only; no qualification",
         "task_count": 143,
         "status_counts": {
           "complete": 45,
           "blocked": 10,
-          "planned": 58,
-          "active": 30
+          "planned": 57,
+          "active": 31
         },
         "ledger_rows_exactly_once": 292,
         "tracked_test_files_unchanged": 224,

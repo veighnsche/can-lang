@@ -1,0 +1,27 @@
+{
+ "model": "jev-1.13.0",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requests": 3,
+ "http": [
+  200,
+  200,
+  200
+ ],
+ "auth": "TYPESAFE_API_KEY env (not stored)",
+ "total_input_tokens": 4772,
+ "total_output_tokens": 285,
+ "api_note": "2026-10-02: questions now require a type discriminator (422 union_tag_not_found without it); added type=choice per the live Choice primitive doc. No prose changed by the fix.",
+ "round2": {
+  "requests": 5,
+  "http": [
+   200,
+   200,
+   200,
+   200,
+   200
+  ],
+  "note": "T2/T3 sent twice: v1 against pre-parity prose (verdict identical), then resent after the identifier-parity patch. Totals below cover the 3 authoritative sends.",
+  "total_input_tokens": 2300,
+  "total_output_tokens": 141
+ }
+}

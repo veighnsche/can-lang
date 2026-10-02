@@ -1,0 +1,14 @@
+{
+ "model": "jev-latest",
+ "state": "Third framing of the corrected I17 token re-consult. Standing decision (not re-asked): new store:: package. Re-asked: how rows get the sess- token. Service truth (service.ts, 844 lines): openSession -> SessionFacts (session, prefix, owner, handleDigest, pinned; no token); sessionTokenForTest -> str (sole, test-only-named readout); all seven effectful verbs (put, settleWrite, pending, get, delete, list, closeSession) take the token and verify by lookup, failing forged-token otherwise. Catalogue truth: db::pin_connection -> db::connection_facts and db::connection_token_for_test -> str (I13 exposed the K22 ForTest readout verbatim); db::callback_entry/db::dispatched_work/db::cancel_grant bundle tokens their services natively return (I14/I16, no composition involved). The earlier compose advice came from state that cited the I14/I16 bundle shape as if it covered withheld tokens; it does not, and this correction supersedes that advice. Choose on this record.",
+ "questions": {
+  "i17_session_token_shape_v2": {
+   "type": "choice",
+   "instructions": "Two candidate shapes for the withheld K27 token: fuse the ForTest readout into open_session, or expose it verbatim as store::session_token_for_test per the I13 db::connection_token_for_test precedent. Which better serves a generation-minded reader who will meet both the db:: and store:: families \u2014 uniform handling of withheld tokens, or a smaller store:: surface that fuses what db:: exposes?",
+   "criteria": {
+    "compose_token_in_adapter": "open_session fuses openSession + sessionTokenForTest into a single facts-with-token result; no token verb exists. store:: rows learn one verb, but the two families handle the same withheld-token structure differently, so readers cannot transfer the db:: pattern.",
+    "expose_token_op": "store::session_token_for_test joins the catalogue as the explicit token verb beside a facts-only open_session, replicating the db::pin_connection + db::connection_token_for_test pair. Uniform cross-family handling of withheld tokens at the cost of one more verb carrying a ForTest name."
+   }
+  }
+ }
+}

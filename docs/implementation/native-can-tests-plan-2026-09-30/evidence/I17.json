@@ -1,0 +1,206 @@
+{
+ "acceptance_prerequisite_receipts": {
+  "P06": "complete (tasks.json)",
+  "P14": "blocked: N transport unbound; no execution credit claimed",
+  "P26": "complete (R-core accepted)"
+ },
+ "campaign": {
+  "append_only_index": null,
+  "attempt_id": null,
+  "id": null,
+  "job_registered_before_execution": null,
+  "manifest": null
+ },
+ "changed_paths": [
+  "compiler/internal/catalogue/catalogue.json",
+  "compiler/internal/catalogue/catalogue_test.go",
+  "compiler/internal/catalogue/generated.go",
+  "compiler/internal/catalogue/store_operations_test.go",
+  "runtime/catalogue.ts",
+  "std/catalogue/README.md",
+  "std/catalogue/errors.json",
+  "compiler/internal/check/store_test.go",
+  "compiler/internal/check/program.go",
+  "runtime/test-support/slices/i17/object-store-service.ts",
+  "runtime/test-support/slices/i17/store.ts",
+  "runtime/test/test-object-store-adapter.test.ts",
+  "runtime/test/catalogue-checks.ts",
+  "compiler/internal/emit/store_operations.go",
+  "compiler/internal/emit/store_operations_test.go",
+  "compiler/internal/emit/runtime_bindings.go",
+  "compiler/internal/emit/program_state.go",
+  "compiler/testdata/current/object-store/main.can",
+  "tests/native-can/src/capabilities/i17/values.can",
+  "tests/native-can/src/capabilities/i17/control.can",
+  "tests/native-can/examples/capabilities/i17/roundtrip.can",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-can.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-2.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-2.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-3.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-3.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-2.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-2.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-2-v1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/request-tok2-3.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-3.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/response-tok2-3-v1.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/decision.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/wording-audit.json",
+  "docs/implementation/native-can-tests-plan-2026-09-30/evidence/I17-jev/metadata"
+ ],
+ "commands_with_deadlines_and_results": [
+  {
+   "command": "I17 scope + precedent review (K27 surface vs I13 decision; Jev-need assessment)",
+   "deadline": "120s",
+   "result": "Jev REQUIRED (new decision class): package home for the observer (new store:: vs new objects:: vs s3:: extension) and the withheld-token shape had no settled answer. Held-service vocabulary, bytes/option/void crossings, and the no-checker-vocab call follow settled precedent directly."
+  },
+  {
+   "command": "Jev round 1: 3 fresh consultations, 2 questions each (package + token), all prose rewritten, 71-anchor audit, 0 shared sentences",
+   "deadline": "180s",
+   "result": "Unanimous new_store_package (p 0.91/0.96/0.96, extend_s3 at 0.00 x3) + compose_token_in_adapter (p 0.96/0.87/0.91). API drift found: questions now need a type discriminator (422 union_tag_not_found); fixed per the live Choice doc with no prose change. Record: evidence/I17-jev/request-{1,2,3}.json + response-{1,2,3}.json."
+  },
+  {
+   "command": "Framing correction: I13 db::connection_token_for_test (the identical withheld-token precedent) was omitted from round-1 state; corrected round 2 (3 fresh token-only consults, parity-patched + resent T2/T3)",
+   "deadline": "180s",
+   "result": "Round-1 token advice SUPERSEDED as a framing artifact: the I14/I16 wrappers pair natively-returned tokens (no composition exists there). Corrected round 2 unanimous expose_token_op at p 1.0/0.99/0.99. Final: new_store_package + expose_token_op (store::session_token_for_test verbatim). Record: evidence/I17-jev/request-tok2-*.json + decision.json + wording-audit.json + metadata."
+  },
+  {
+   "command": "python3 /tmp/i17-catalogue-delta.py (md5 29bdb1dd4288850e8617e63b2e9af57c) + cataloguegen --root .",
+   "deadline": "180s",
+   "result": "+1 package, +8 types, +1 error, +15 operations (46/259/129/455); patience-diff 962+/2- (pure insertion plus a cosmetic null_cell fields collapse). One recipe fix: compare_bytes names Uint8Array.prototype.length (cataloguegen rejects empty recipes). Contract test green; errors.json gains store_fault via regen; TestCatalogueInclusionInventory transiently red until the runtime slice (I03/I13 precedent), green after."
+  },
+  {
+   "command": "CAN_BUN=$HOME/.bun/bin/bun go test -count=1 -run 'TestStore' ./compiler/internal/check/",
+   "deadline": "280s",
+   "result": "7/7 pass: dynamic admission, missing-fault-arm + mistyped-input refusals with exact messages, bytes put via in-chain bytes::empty(), option list continuation, void close chain, stale-only pure ops. Full check package green. One wiring fix: NT-I17 joins the program.go admission list. Asserts cannot construct opaque buffers (bytes::empty()/bytes::buffer() both ineligible there); in-chain minting is the proven pattern."
+  },
+  {
+   "command": "diff K27 service.ts vs slices/i17/object-store-service.ts",
+   "deadline": "60s",
+   "result": "PORT-IDENTICAL body; only the NT-I17 header differs (K27 imports node:crypto alone and defines its own error, so no import repoint exists)."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun /tmp/i17-differential.ts (61-call differential: tools/service.ts vs port; md5 40eef84fd64ce74095135b82a62ce373)",
+   "deadline": "120s",
+   "result": "DIFFERENTIAL-OK 61/61: prefix admission incl. idempotent reopen, session/token lifecycle, put/settle/pending/get/delete incl. busy/unknown/settled/escapes/malformed/forged, compare incl. untyped refusal, pagination incl. consumed/invented/stale continuations and bad limits, seal ladder (live/writes/keys/scan), shared stability, close/receipt-after-close."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun test ./runtime/test/test-object-store-adapter.test.ts",
+   "deadline": "180s",
+   "result": "11 pass, 0 fail, 205 expects: exact-grant admission, session/token lookup, explicit settle + byte-exact reads, key scope, compare predicate, single-use continuations, stale-on-mutation, seal ladder, shared stability, owner revocation, malformed inputs. bun test catalogue.test.ts 1/1 after the 440->455 pin refresh."
+  },
+  {
+   "command": "bun run lint:fix:runtime && bun run format:runtime && bun run lint:runtime",
+   "deadline": "280s",
+   "result": "0 warnings, 0 errors, first run, no fixes needed in new code. typecheck:runtime reports 0 errors in i17 files; the 13 remaining errors sit in untouched i02/i11/test files (pre-existing, left alone)."
+  },
+  {
+   "command": "CAN_BUN=$HOME/.bun/bin/bun go test -count=1 -run 'TestStoreEmissionUsesSharedContribution' ./compiler/internal/emit/ + full emit package",
+   "deadline": "280s",
+   "result": "PASS: factory, slice import, all 15 methods, shared test owner fragments present. Full emit package: only TestW4MeasuredLegs fails (proven load-flaky in I16 via interleaved A/B; owned outside migration)."
+  },
+  {
+   "command": "go run ./compiler check --json /tmp/i17cancheck (staged i17 + example probe)",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, diagnostics:0, first run (registry active [] since i17 declares no errors)."
+  },
+  {
+   "command": "negative control: int->str mutation x1 asserts site in /tmp/i17canneg copy only",
+   "deadline": "280s",
+   "result": "exit 1, accepted:false, exactly 1 error (CAN-CHECK type fit) naming src/i17/control.can; live file verified untouched."
+  },
+  {
+   "command": "$HOME/.bun/bin/bun /tmp/i17-regex-probe.ts (31 name-shape cases)",
+   "deadline": "60s",
+   "result": "REGEX-TRUTH-OK 31/31 for the owner/prefix/key patterns against live service behavior (code/message split for prefixes, malformed-key for keys, wrong-owner for owners), incl. the 129-char owner and 513-char key length-split cases and the ... segment split (prefix-refused, key-legal)."
+  },
+  {
+   "command": "go run ./compiler check --json tests/native-can",
+   "deadline": "280s",
+   "result": "exit 0, accepted:true, 2 diagnostics (0 errors): the pre-existing CAN-CHECK-STRING-MATCH-LADDER warnings."
+  }
+ ],
+ "commit_note": "Jev record first (design input, uncommitted until this flip); ops, checker, runtime slice, emitter, Can landing, ops-pin fix committed separately in dependency order; this merge evidence + Can evidence last; task flips planned->active with evidence.",
+ "commits": [
+  "6ebb2c9b8a98b4b04d6b9de9aeb726ca15670dac",
+  "21e63b77d62c8619ea9e1845738ed5c117ba351e",
+  "b9a488bdf67d75cd8fc6cb6436959e547be66c10",
+  "c6a25e4566fbe124d6c5443311b1e9ed5cbc16e6",
+  "445acc2b5d6c0c1e1e3e651904338723591a1ada",
+  "d9daeae1b3cba8278f61a00a342f6cf65dbfd9ad"
+ ],
+ "correction_registry_head": null,
+ "coverage": {
+  "case_check_ids": [],
+  "helper_closure_hashes": {},
+  "retained_facets": [
+   "store catalogue namespace created: +8 fact records (prefix/session/object/write/page/pending/stored/cleanup), +15 owner-first operations, new store::store_fault{layer, code}; s3:: untouched as the live-client lane",
+   "NT-I17 checker admission with no static vocabulary (K27 inputs all dynamic); bytes::buffer via in-chain bytes::empty(), option continuations, void closes, stale-only pure ops pinned",
+   "K27 engine ported byte-identical to runtime (61-call differential proof); $canStore adapter owns one service with verbatim store_fault mapping",
+   "$canStore emission contribution with shared-state wiring; fixture chain exercises all 15 ops",
+   "pure-Can name shapes (6 decls) + 15 wrappers 1:1 + 2-flow example; stubs are check-time-only"
+  ]
+ },
+ "delta_scope": {
+  "adapter": "owner-first $canStore over one ObjectStoreService; no service-level owner (admission is adapter-side only); held service runs under the K27 accepted control vocabulary (both grants + sharedBucket seed + roomyLimits); facts to nominal snake_case records; ObjectStoreError->{layer, code} verbatim",
+  "catalogue_growth": "new store package + store_fault{layer, code} error + 8 types + 15 operations; 13 fallible ops emit stale_handle + store_fault; compare_bytes/shared_digest emit stale_handle only (I13 pure-op precedent); session_token_for_test verbatim like db::connection_token_for_test",
+  "catalogue_sha256": "4f5f568745af0ebd333b2cc47b8750c469a71b38e55fe1aa55d995ad19aaee65",
+  "checker": "+NT-I17 allowlist task tag only; K27 carries no closed input vocabulary (all inputs dynamic; adapter re-validates)",
+  "emitter": "+1 object-store binding contribution ($canStore.* x15) with declare/initialize/import/value wiring",
+  "runtime": "+i17 slice (object-store-service port + store adapter) + 11 contract tests + ops pin 440->455"
+ },
+ "executor": "integrator (scope review, Jev consults, catalogue package/error/types/ops, checker, runtime slice, emitter, Can wrappers/example/evidence; no workers active during this slice)",
+ "expected_vector_review": "Can asserts pin real computed answers (31 name-shape cases incl. length-split and dot-segment edges; bytes::empty() stubs pin the only constructible buffer shape); adapter tests pin verbatim K27 layer+code pairs; when-stubs are check-time-only.",
+ "identities": {
+  "artifact": "N/A: no R/N artifact promoted (accept_after P14 unmet); adapters + generated mirrors committed as source only",
+  "candidate": "N/A: no candidate executed",
+  "host_profile": "darwin arm64, system bun",
+  "new_n": "none: adapter computes locally against the held service by design (no transport)",
+  "new_r": "none: no reference build in this slice",
+  "owner": "test::owner grant admission in-adapter; revoked grants fail stale_handle before any compute (contract-tested)"
+ },
+ "independent_assertion_controls": [
+  "refusals assert exact checker messages, not mere rejection",
+  "port fidelity proved by byte-diff AND a 61-call differential run against K27, not by re-reading",
+  "negative control fires exactly 1 error naming only the mutated copy",
+  "regex pins verified against live service behavior (incl. length-split and dot-segment edges), not trusted from prose",
+  "single-use guards proved by consumption: second continuation use refuses forged-continuation, mutation stales edges",
+  "seal ladder proved in order: session-live, pending-writes, keys-remain, scan-incomplete, then the sealed receipt",
+  "Jev advice audited, not followed blindly: the round-1 token verdict was caught as a framing artifact and superseded by a corrected round 2"
+ ],
+ "limitations": [
+  "Static-only verification: catalogue/check/emit unit tests + 0-error cancheck (live tree + standalone probe) + port diff + differential proof + regex truth + 11 adapter contract tests over local compute. No live execution exists (P14 blocked), so no execution credit is claimed.",
+  "Settlement/scan/seal are facts only (K27 boundary): QD4 holds the D4 verdict; accepted writes are invisible until settled; continuations never survive mutation; seal needs live sessions, writes, keys, and a terminal scan in that order."
+ ],
+ "local_control_slice_status": "accepted",
+ "missing_evidence": [],
+ "parent_task_id": "I17",
+ "path_reservation": "integrator-owned shared compiler/catalogue/runtime/emitter/testdata paths; no worker touched them during this slice",
+ "promotion_status": "provisional source only; reference/owner promotion waits for accept_after P14",
+ "resource_and_cleanup_receipts": [
+  "No live runs, no R-seed use, no bundles built, no network except the 8 Jev API calls (3 round-1 + 5 round-2 incl. the T2/T3 parity resend).",
+  "All /tmp probes removed after gates (/tmp/i17cancheck, /tmp/i17canneg, captures); one-off scripts (/tmp/i17-*.py, /tmp/i17-*.ts) removed after evidence recorded their hashes.",
+  "No docker, no DB contacted, no documented operator command executed."
+ ],
+ "retirement_commit": null,
+ "retirement_eligible": false,
+ "reviewer_disposition": null,
+ "row_or_file_slice": "I17",
+ "slice_id": null,
+ "source_slice_status": "accepted",
+ "start_prerequisite_receipts": {
+  "I13": "active with accepted source slice (db family precedent incl. connection_token_for_test)",
+  "I17-jev": "evidence/I17-jev: new_store_package + expose_token_op (round-1 unanimous package; corrected round-2 unanimous token after a framing fix)",
+  "K27": "ledger-complete; engine accepted (bounded local controls only; D4 verdict waits for QD4). NOTE: K27.json status field still reads a stale pre-revalidation blocked; the ledger + validators are authoritative.",
+  "P28": "complete (tasks.json)",
+  "P29": "complete (tasks.json)"
+ },
+ "status": "active",
+ "task_id": "I17",
+ "writing_owner": "integration-reference"
+}
