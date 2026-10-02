@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "d836ef810620c5d882c6d41ba5b4378b21fdcf4a3d0ae908399395897dc20be4";
+export const catalogueSHA256 = "66df57e7a62d3c4258acb48c5ae551428022de3e2a469f8a60ad971960805d07";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -25125,6 +25125,43 @@ export const catalogue = freeze({
    "assertion": "supplied",
    "refs": [
     "NT-I05"
+   ]
+  },
+  {
+   "name": "descriptor::probe_lease",
+   "identity": "can.std.descriptor@1::probe_lease",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::lease_report",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Probe one inherited generation-lease path through the N owner: relay the exclusive K19 flock verdict (held by us, held by other, released) into a lease_report whose path echoes the probe target. Invalid paths and owner rejections are descriptor_fault verdicts, not handle staleness.",
+    "task": "NT-I12"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I12"
    ]
   }
  ],

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "d836ef810620c5d882c6d41ba5b4378b21fdcf4a3d0ae908399395897dc20be4"
+const GeneratedSourceSHA256 = "66df57e7a62d3c4258acb48c5ae551428022de3e2a469f8a60ad971960805d07"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -991,3 +991,4 @@ const OpHttpPeerWsPollEvent = "http_peer::ws_poll_event"
 const OpHttpPeerWsClose = "http_peer::ws_close"
 const OpHttpPeerWsDeliverRemoteClose = "http_peer::ws_deliver_remote_close"
 const OpHttpPeerWsReadConnectionFacts = "http_peer::ws_read_connection_facts"
+const OpDescriptorProbeLease = "descriptor::probe_lease"

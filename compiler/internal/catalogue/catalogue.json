@@ -25116,6 +25116,43 @@
    "refs": [
     "NT-I05"
    ]
+  },
+  {
+   "name": "descriptor::probe_lease",
+   "identity": "can.std.descriptor@1::probe_lease",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "owner",
+     "type": "test::owner"
+    },
+    {
+     "name": "path",
+     "type": "str"
+    }
+   ],
+   "staticInputs": [],
+   "result": "descriptor::lease_report",
+   "callbacks": [],
+   "emits": [
+    "test::stale_handle",
+    "descriptor::descriptor_fault"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "JSON.stringify",
+     "JSON.parse"
+    ],
+    "adapter": "Probe one inherited generation-lease path through the N owner: relay the exclusive K19 flock verdict (held by us, held by other, released) into a lease_report whose path echoes the probe target. Invalid paths and owner rejections are descriptor_fault verdicts, not handle staleness.",
+    "task": "NT-I12"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "NT-I12"
+   ]
   }
  ],
  "nativeDeclarations": [

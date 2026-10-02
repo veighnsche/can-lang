@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d836ef810620c5d882c6d41ba5b4378b21fdcf4a3d0ae908399395897dc20be4.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 66df57e7a62d3c4258acb48c5ae551428022de3e2a469f8a60ad971960805d07.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -938,6 +938,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http_peer::ws_close | test::owner owner, str connection, int close_code, str reason → http_peer::ws_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get | Record the local close; the second close completes the handshake and counts drops (K21 close). | supplied | NT-I05 / NT-I05 |
 | http_peer::ws_deliver_remote_close | test::owner owner, str connection, int close_code, str reason → http_peer::ws_close_receipt | {test::stale_handle, test::closed_handle, http_peer::peer_fault} |  | Map.prototype.get | Inject the scripted remote close; second or contradicting deliveries reject (K21 deliverRemoteClose). | supplied | NT-I05 / NT-I05 |
 | http_peer::ws_read_connection_facts | test::owner owner, str connection → http_peer::ws_connection_facts | {test::stale_handle, http_peer::peer_fault} |  | Map.prototype.get | Read connection facts; local and remote closes stay independent (K21 connectionFacts). | supplied | NT-I05 / NT-I05 |
+| descriptor::probe_lease | test::owner owner, str path → descriptor::lease_report | {test::stale_handle, descriptor::descriptor_fault} |  | JSON.stringify, JSON.parse | Probe one inherited generation-lease path through the N owner: relay the exclusive K19 flock verdict (held by us, held by other, released) into a lease_report whose path echoes the probe target. Invalid paths and owner rejections are descriptor_fault verdicts, not handle staleness. | supplied | NT-I12 / NT-I12 |
 
 ## Native declaration profiles
 
