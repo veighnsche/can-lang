@@ -1,0 +1,89 @@
+package migration
+    provides [m44_slice, claim_m44_identity_problems, validate_m44_claim, campaign_m44_manifest]
+    uses [coverage, reducer, registry, spec, text]
+
+/// Z01 migration-coverage reconciliation, slice m44 (EDGE-006..EDGE-013).
+/// Per-row facet, variant, environment and delegated-declaration mappings
+/// for 8 CI and host conformance consumers rows. No retained rows (blocked/missing only): claims report unknown-row or unretained-row; the shared credit, campaign
+/// and obligation machinery is reused unchanged from the pilot. Source
+/// hashes are the reviewed sha256 bindings of the bound files; a bound-file
+/// edit invalidates its binding until re-reviewed. Delegates are checked
+/// both directions. Provisional until P23: no execution credit is claimed.
+
+// (Row data lines are long by construction: each row_map carries the full
+// reviewed binding for EDGE-006..EDGE-013. Generated from the row evidence
+// case_check_ids plus sha256 of the bound files.)
+fn row_map[] m44_slice
+    emits {}
+    given
+        str scope
+    asserts
+        m44: "m44" => ok [row_map("EDGE-006", "missing", "", "", "", [], ["Runs native qualification and browser provision before integration gates", "Creates UP23 candidate-bound verdict for consumers; retains unit/runtime checks independent from migrated integration cases"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-007", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-007.json", "7debc8353d87fffde6172cef2b01ee566c62a4d2352743d10e03389611abc3c0", "", [], ["Build/release/install/runtime-check and in-scope release/install/update cases with offline execution"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-008", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-008.json", "2734bf72e94c535c0629cb5e57cc776ee0e4ca170c285cc3e4a89a83fd6438ac", "", [], ["Every maintained project emits fresh checked output consumed by strict tsc gate"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-009", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-009.json", "4c8f8a7e59e4b44b27dab2df3db4053a80cef80700d9434d3db633e2b792287e", "", [], ["External consumer needs run-owned temporary compiler and cleanup failure propagation"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-010", "missing", "", "", "", [], ["Independent live host suite resolves shared Playwright install and helper"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-011", "missing", "", "", "", [], ["Independent vendor-B live suite resolves shared browser dependency/helper"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-012", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-012.json", "3060362c2e892586f310fce0c1fa5a9b326c70b2b02f9f14f12ca358885b0a9b", "", [], ["Build/provision and launch Linux qualification entrypoint"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-013", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-013.json", "5b52fd166553c302ff00658c86d2dc456dc59e497c93be67b1828bc3fcadb87e", "", [], ["Preflight currently assumes Python qualification and old browser directory; checks selected archive identity and isolation"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+        other: "nope" => ok []
+    match scope is "m44"
+        false => ok []
+        true => ok [row_map("EDGE-006", "missing", "", "", "", [], ["Runs native qualification and browser provision before integration gates", "Creates UP23 candidate-bound verdict for consumers; retains unit/runtime checks independent from migrated integration cases"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-007", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-007.json", "7debc8353d87fffde6172cef2b01ee566c62a4d2352743d10e03389611abc3c0", "", [], ["Build/release/install/runtime-check and in-scope release/install/update cases with offline execution"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-008", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-008.json", "2734bf72e94c535c0629cb5e57cc776ee0e4ca170c285cc3e4a89a83fd6438ac", "", [], ["Every maintained project emits fresh checked output consumed by strict tsc gate"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-009", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-009.json", "4c8f8a7e59e4b44b27dab2df3db4053a80cef80700d9434d3db633e2b792287e", "", [], ["External consumer needs run-owned temporary compiler and cleanup failure propagation"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-010", "missing", "", "", "", [], ["Independent live host suite resolves shared Playwright install and helper"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-011", "missing", "", "", "", [], ["Independent vendor-B live suite resolves shared browser dependency/helper"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-012", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-012.json", "3060362c2e892586f310fce0c1fa5a9b326c70b2b02f9f14f12ca358885b0a9b", "", [], ["Build/provision and launch Linux qualification entrypoint"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], ""), row_map("EDGE-013", "blocked", "docs/implementation/native-can-tests-plan-2026-09-30/evidence/M44-EDGE-013.json", "5b52fd166553c302ff00658c86d2dc456dc59e497c93be67b1828bc3fcadb87e", "", [], ["Preflight currently assumes Python qualification and old browser directory; checks selected archive identity and isolation"], ["default"], ["bun-prototype-env"], [], ["qualified-report", "n-receipt", "cleanup-receipt"], "")]
+/// Identity side of a complete-coverage claim against the m44 manifest:
+/// same first-only contract as the pilot claim_identity_problems, resolved
+/// by (row, case) through row_case_index. claims against blocked, missing or obsolete rows report unretained-row, and delegates are checked both directions.
+fn spec::diagnostic[] claim_m44_identity_problems
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m44_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "EDGE-006", "", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_m44_identity_problems", "case  variant default root coverage run r1", "unretained-row", "EDGE-006")]
+    match call m44_slice("m44")
+        ok row_map[] rows => match call row_case_index(rows, c.row_id, c.case_id, 0)
+            ok int at => match at is -1
+                true => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unknown-row", c.row_id)]
+                false => match call row_retained(rows, at)
+                    ok bool kept => match kept
+                        false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unretained-row", c.row_id)]
+                        true => match call job_registered(entries, c.job_id, 0)
+                            ok bool reg => match reg
+                                false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unregistered-job", c.job_id)]
+                                true => match call identity_compatible(entries, c, 0)
+                                    ok bool same => match same
+                                        false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "incompatible-identity", c.job_id)]
+                                        true => match call str_subset(rows[at].environments, c.engines, 0)
+                                            ok bool engined => match engined
+                                                false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "missing-engine", c.row_id)]
+                                                true => match call str_subset(rows[at].delegates, c.delegates, 0)
+                                                    ok bool delegated => match delegated
+                                                        false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "undeclared-delegate", c.row_id)]
+                                                        true => match call str_subset(c.delegates, rows[at].delegates, 0)
+                                                            ok bool declared => match declared
+                                                                false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "extra-delegate", c.row_id)]
+                                                                true => match call references_accepted(entries, c, 0)
+                                                                    ok bool cited => match cited
+                                                                        false => ok [spec::diagnostic("migration::claim_m44_identity_problems", call spec::reproduction_selector(call spec::context_for(c.case_id, c.variant_id, "", c.run_id), "coverage"), "unaccepted-reference", c.job_id)]
+                                                                        true => ok []
+/// Validate one complete-coverage claim against m44: identity first,
+/// then the shared credit side. Mirrors validate_claim resolved
+/// against m44_slice.
+fn spec::diagnostic[] validate_m44_claim
+    emits {}
+    given
+        job_entry[] entries
+        claim c
+    asserts
+        unknown_row: [], claim("j1", "HISTORY-999", "c", "v", "r", [], [], false, false) => ok [spec::diagnostic("migration::claim_m44_identity_problems", "case c variant v root coverage run r", "unknown-row", "HISTORY-999")]
+        unretained_hit: [], claim("j1", "EDGE-006", "", "default", "r1", ["bun-prototype-env"], [], false, false) => ok [spec::diagnostic("migration::claim_m44_identity_problems", "case  variant default root coverage run r1", "unretained-row", "EDGE-006")]
+    match call claim_m44_identity_problems(entries, c)
+        ok spec::diagnostic[] shaped => match shaped.length is 0
+            false => ok shaped
+            true => relay call claim_credit_problems(entries, c, shaped)
+/// Reviewed campaign manifest for the slice: fixed IDs plus every
+/// declared row. ID shapes are exact reviewed strings, not patterns.
+fn campaign campaign_m44_manifest
+    emits {}
+    given
+        str scope
+    asserts
+        m44: "m44" => ok campaign("z01-manifest/m44/2026-10-02", "z01-campaign/m44/attempt-1", ["EDGE-006", "EDGE-007", "EDGE-008", "EDGE-009", "EDGE-010", "EDGE-011", "EDGE-012", "EDGE-013"])
+        other: "nope" => ok campaign("", "", [])
+    match scope is "m44"
+        false => ok campaign("", "", [])
+        true => ok campaign("z01-manifest/m44/2026-10-02", "z01-campaign/m44/attempt-1", ["EDGE-006", "EDGE-007", "EDGE-008", "EDGE-009", "EDGE-010", "EDGE-011", "EDGE-012", "EDGE-013"])
