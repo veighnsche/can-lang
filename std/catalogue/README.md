@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: ad40ae93ef4ad10e90499035feed1c3f47f065aa63d36609d188342ca1ef56f6.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: bef1c272ca4f78b18d68183729793831574f21081e9e565e2e244afb774e7457.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -171,6 +171,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | codec::json_array | record |  | codec::json_value[] values | true |
 | codec::json_object | record |  | codec::json_member[] members | true |
 | codec::json_member | record |  | str name, codec::json_value value | true |
+| http::bytes_response | record |  | int status, http::header[] headers, bytes::buffer body | true |
 
 ## Domain errors
 
@@ -604,6 +605,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | image::inspect | bytes::buffer bytes, int max_pixels → image::metadata | {image::invalid_image} |  | Bun.Image, Bun.Image.prototype.metadata | Sniff actual JPEG/PNG/WebP bytes and read dimensions using Bun metadata bounded by max_pixels; reject animated WebP (VP8X animation flag or ANIM/ANMF chunks), APNG (acTL), malformed and unsupported image data. | real | I13 / A2 |
 | codec::decode_json_value | bytes::buffer buffer → codec::json_value | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
 | codec::encode_json_value | codec::json_value value → bytes::buffer | {codec::invalid_data} |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Bounded immutable JSON values; integer-spelled tokens use exact ints, fraction/exponent tokens use finite floats; reject duplicate names, invalid scalar text and cycles. | real | I14 / A2,A6 |
+| http::fetch_bytes | str method, str url, http::header[] headers, bytes::buffer body, int timeout_ms, int max_body_bytes → http::bytes_response | {http::transport_failed, http::invalid_request, http::body_limit} |  | fetch | Raw HTTP client over the shared transport: caller-supplied uppercase method, absolute http(s) URL without query, fragment or userinfo, explicit headers, raw bytes body, deadline and response cap. Every status returns an http::bytes_response envelope (never status_error); redirects are manual; deadline expiry reports transport_failed phase timeout like the JSON action client. Empty body sends no entity; a body on GET/HEAD is invalid_request. Header names use underscores (content_type), rewritten to hyphens on the wire; hyphenated or forbidden names are invalid_request. | supplied | T24 / manolea-native-tests |
 
 ## Native declaration profiles
 

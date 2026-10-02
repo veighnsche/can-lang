@@ -137,6 +137,18 @@
     "transport/body.ts": [
       "./deadline.ts"
     ],
+    "transport/client.ts": [
+      "../assert/context.ts",
+      "../assert/provider.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./deadline.ts",
+      "./fetch.ts",
+      "./request.ts"
+    ],
     "transport/request.ts": [
       "./deadline.ts",
       "./media.ts"

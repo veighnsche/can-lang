@@ -1,0 +1,231 @@
+package http_client_qual
+    provides [main]
+    uses [bytes, checks, clock, codec, http, text]
+
+/// Liveness probe for http::fetch_bytes. Without arguments main only
+/// builds the router and server config (sandbox-safe: no bind, no fetch).
+/// With ["live", port] it serves in-process and runs every client leg plus
+/// refusal controls: raw bytes round-trip, response headers, non-2xx as
+/// data, refused connection, bad method, and deadline expiry.
+fn http::server_response ping
+    emits {}
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::status_ok()
+        ok http::body_status st => match call http::empty_server_headers()
+            ok http::server_headers hd => match call http::response_text(st, hd, "pong")
+                ok http::server_response res => ok res
+
+/// Slow route for the deadline control: the client fetches with a 50 ms
+/// budget against this fixed 500 ms sleep.
+fn http::server_response slow
+    emits {}
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call clock::sleep_millis(500)
+        when
+            sample: 500 => ok
+        clock::invalid_duration => match call http::status_ok()
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_text(st, hd, "slow")
+                    ok http::server_response res => ok res
+        ok => match call http::status_ok()
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_text(st, hd, "slow")
+                    ok http::server_response res => ok res
+
+/// Echo route: returns the raw request body unchanged.
+fn http::server_response echo
+    emits {}
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::request_body(req, 65536)
+        when
+            sample: req, 65536 => ok call bytes::empty()
+        http::body_limit => match call http::status_ok()
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_text(st, hd, "too big")
+                    ok http::server_response res => ok res
+        ok bytes::buffer seen => match call http::status_ok()
+            ok http::body_status st => match call http::empty_server_headers()
+                ok http::server_headers hd => match call http::response_bytes(st, hd, seen)
+                    ok http::server_response res => ok res
+
+/// Header route: answers with one marker response header.
+fn http::server_response hdr
+    emits {}
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::status_ok()
+        ok http::body_status st => match call http::make_server_headers([http::header("x-probe", "yes")])
+            http::invalid_request => match call http::empty_server_headers()
+                ok http::server_headers plain => match call http::response_text(st, plain, "h")
+                    ok http::server_response res => ok res
+            ok http::server_headers hd => match call http::response_text(st, hd, "h")
+                ok http::server_response res => ok res
+
+/// Body-text verdicts. Each row pins its mismatch refusal with real
+/// evaluation; the live row overrides the decode result so the pinned
+/// path reaches ok, while matching content only proves live, where
+/// bodies carry real bytes.
+fn void check_pong
+    emits {checks::failed}
+    given
+        bytes::buffer body
+    asserts
+        bad: call bytes::empty() => checks::failed{"body mismatch"}
+    match call bytes::to_utf8(body)
+        when
+            live: body => ok "pong"
+        codec::invalid_data => checks::failed{"body text"}
+        ok str said => match said is "pong"
+            false => checks::failed{"body mismatch"}
+            true => ok
+
+fn void check_hello
+    emits {checks::failed}
+    given
+        bytes::buffer body
+    asserts
+        bad: call bytes::empty() => checks::failed{"body mismatch"}
+    match call bytes::to_utf8(body)
+        when
+            live: body => ok "hello"
+        codec::invalid_data => checks::failed{"body text"}
+        ok str said => match said is "hello"
+            false => checks::failed{"body mismatch"}
+            true => ok
+
+/// Marker-header predicate for the client-side header search.
+fn bool is_probe_header
+    emits {}
+    given
+        http::header found
+    asserts
+        yes: http::header("x-probe", "yes") => ok true
+        no: http::header("content-type", "text/plain") => ok false
+    match found.name is "x-probe"
+        true => ok true
+        false => ok false
+
+/// Build the four-legged router. Router construction is real: invalid
+/// routes fail here, before any socket exists.
+fn http::router build_router
+    emits {http::invalid_route, http::duplicate_route, http::ambiguous_route}
+    asserts
+        sample: => ok
+    match call http::route_get("/ping", callable ping)
+        http::invalid_route
+        ok http::route pinged => match call http::route_post("/echo", callable echo)
+            http::invalid_route
+            ok http::route echoed => match call http::route_get("/slow", callable slow)
+                http::invalid_route
+                ok http::route slowed => match call http::route_get("/hdr", callable hdr)
+                    http::invalid_route
+                    ok http::route headed => match call http::make_router([pinged, echoed, slowed, headed])
+                        http::duplicate_route
+                        http::ambiguous_route
+                        ok http::router built => ok built
+
+fn void main
+    emits {checks::failed}
+    given
+        str[] args
+    asserts
+        offline: [] => ok
+        live: ["live", "18337"] => ok
+    match args.length is 2
+        false => match call build_router()
+            http::invalid_route => checks::failed{"router invalid"}
+            http::duplicate_route => checks::failed{"router duplicate"}
+            http::ambiguous_route => checks::failed{"router ambiguous"}
+            ok http::router built => match call http::make_server_config("127.0.0.1", 18337, 1048576, 5000)
+                http::invalid_server_config => checks::failed{"config invalid"}
+                ok http::server_config config => ok
+        true => match args[0] is "live"
+            false => checks::failed{"usage: client live <port>"}
+            true => match call text::to_int(args[1])
+                text::invalid_number => checks::failed{"bad port"}
+                ok int port => match call build_router()
+                    http::invalid_route => checks::failed{"router invalid"}
+                    http::duplicate_route => checks::failed{"router duplicate"}
+                    http::ambiguous_route => checks::failed{"router ambiguous"}
+                    ok http::router built => match call http::make_server_config("127.0.0.1", port, 1048576, 5000)
+                        http::invalid_server_config => checks::failed{"config invalid"}
+                        ok http::server_config config => match call http::server_start(config, built)
+                            when
+                                live: config, built => ok
+                            http::bind_failed => checks::failed{"bind failed"}
+                            ok http::server srv => match call bytes::empty()
+                                ok bytes::buffer bare => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/ping", [], bare, 5000, 65536)
+                                    when
+                                        live: "GET", "http://127.0.0.1:18337/ping", [], bare, 5000, 65536 => ok http::bytes_response(200, [], call bytes::empty())
+                                    http::transport_failed => checks::failed{"ping transport"}
+                                    http::invalid_request => checks::failed{"ping request"}
+                                    http::body_limit => checks::failed{"ping limit"}
+                                    ok http::bytes_response pong => match pong.status is 200
+                                        false => checks::failed{"ping status"}
+                                        true => match call check_pong(pong.body)
+                                            checks::failed => checks::failed{"ping body"}
+                                            ok => match call bytes::from_utf8("hello")
+                                                codec::invalid_data => checks::failed{"hello bytes"}
+                                                ok bytes::buffer hello => match call http::fetch_bytes("POST", "http://127.0.0.1:" + args[1] + "/echo", [http::header("content_type", "text/plain")], hello, 5000, 65536)
+                                                    when
+                                                        live: "POST", "http://127.0.0.1:18337/echo", [http::header("content_type", "text/plain")], hello, 5000, 65536 => ok http::bytes_response(200, [], call bytes::empty())
+                                                    http::transport_failed => checks::failed{"echo transport"}
+                                                    http::invalid_request => checks::failed{"echo request"}
+                                                    http::body_limit => checks::failed{"echo limit"}
+                                                    ok http::bytes_response back => match back.status is 200
+                                                        false => checks::failed{"echo status"}
+                                                        true => match call check_hello(back.body)
+                                                            checks::failed => checks::failed{"echo body"}
+                                                            ok => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/hdr", [], bare, 5000, 65536)
+                                                                when
+                                                                    live: "GET", "http://127.0.0.1:18337/hdr", [], bare, 5000, 65536 => ok http::bytes_response(200, [http::header("x-probe", "yes")], call bytes::empty())
+                                                                http::transport_failed => checks::failed{"hdr transport"}
+                                                                http::invalid_request => checks::failed{"hdr request"}
+                                                                http::body_limit => checks::failed{"hdr limit"}
+                                                                ok http::bytes_response marked => match marked.status is 200
+                                                                    false => checks::failed{"hdr status"}
+                                                                    true => match call marked.headers.filter(callable is_probe_header)
+                                                                        ok http::header[] found => match found.length is 1
+                                                                            false => checks::failed{"hdr marker"}
+                                                                            true => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/missing", [], bare, 5000, 65536)
+                                                                                when
+                                                                                    live: "GET", "http://127.0.0.1:18337/missing", [], bare, 5000, 65536 => ok http::bytes_response(404, [], call bytes::empty())
+                                                                                http::transport_failed => checks::failed{"missing transport"}
+                                                                                http::invalid_request => checks::failed{"missing request"}
+                                                                                http::body_limit => checks::failed{"missing limit"}
+                                                                                ok http::bytes_response gone => match gone.status is 404
+                                                                                    false => checks::failed{"missing status"}
+                                                                                    true => match call http::fetch_bytes("GET", "http://127.0.0.1:9/ping", [], bare, 2000, 65536)
+                                                                                        when
+                                                                                            live: "GET", "http://127.0.0.1:9/ping", [], bare, 2000, 65536 => http::transport_failed{"connect"}
+                                                                                        http::transport_failed => match call http::fetch_bytes("get", "http://127.0.0.1:" + args[1] + "/ping", [], bare, 5000, 65536)
+                                                                                            when
+                                                                                                live: "get", "http://127.0.0.1:18337/ping", [], bare, 5000, 65536 => http::invalid_request{"method"}
+                                                                                            http::invalid_request => match call http::fetch_bytes("GET", "http://127.0.0.1:" + args[1] + "/slow", [], bare, 50, 65536)
+                                                                                                when
+                                                                                                    live: "GET", "http://127.0.0.1:18337/slow", [], bare, 50, 65536 => http::transport_failed{"timeout"}
+                                                                                                http::transport_failed => match call http::server_stop(srv)
+                                                                                                    when
+                                                                                                        live: srv => ok
+                                                                                                    http::shutdown_failed => checks::failed{"stop failed"}
+                                                                                                    ok => ok
+                                                                                                http::invalid_request => checks::failed{"slow request"}
+                                                                                                http::body_limit => checks::failed{"slow limit"}
+                                                                                                ok http::bytes_response patient => checks::failed{"slow answered"}
+                                                                                            http::transport_failed => checks::failed{"method transport"}
+                                                                                            http::body_limit => checks::failed{"method limit"}
+                                                                                            ok http::bytes_response lowered => checks::failed{"method accepted"}
+                                                                                        http::invalid_request => checks::failed{"refused request"}
+                                                                                        http::body_limit => checks::failed{"refused limit"}
+                                                                                        ok http::bytes_response reachable => checks::failed{"refused reachable"}

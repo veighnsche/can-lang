@@ -57,3 +57,37 @@ func (builder *stateBuilder) declareFetchState() {
 func (builder *stateBuilder) initializeFetchState() {
 	fmt.Fprintf(&builder.out, "$canActionFetch=$canCreateActionFetch($canDomain,{transport:%s,invalidRequest:%s,bodyLimit:%s,statusError:%s,invalidData:%s,header:%s});\n", quote(builder.numberIDs["can.std.http@1::transport_failed"]), quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.http@1::status_error"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.http@1::header"]))
 }
+
+// clientOperationBindings maps the raw-bytes HTTP client operation to its
+// state-module target.
+func clientOperationBindings() bindingContribution {
+	functions := map[string]string{
+		"can.std.http@1::fetch_bytes": "$canHTTPClient.fetchBytes",
+	}
+	return bindingContribution{domain: "http-client", functions: functions}
+}
+
+// clientStateImports lists the raw client factory module the shared state
+// module needs.
+func (assembly *programAssembly) clientStateImports(runtime string) []ModuleImport {
+	return []ModuleImport{
+		{Target: runtime + "/transport/client.ts", Names: []ImportName{{"createHTTPClient", "$canCreateHTTPClient"}}},
+	}
+}
+
+// clientStateValueImportNames lists the raw client factory value authored and
+// assertion modules import from the state module.
+func clientStateValueImportNames() []ImportName {
+	return []ImportName{{"$canHTTPClient", "$canHTTPClient"}}
+}
+
+// declareClientState emits the raw client factory binding.
+func (builder *stateBuilder) declareClientState() {
+	builder.out.WriteString("export let $canHTTPClient:ReturnType<typeof $canCreateHTTPClient>;\n")
+}
+
+// initializeClientState constructs the raw client factory inside the shared
+// initializer, after the domain runtime exists.
+func (builder *stateBuilder) initializeClientState() {
+	fmt.Fprintf(&builder.out, "$canHTTPClient=$canCreateHTTPClient($canDomain,{invalid:%s,transport:%s,limit:%s,header:%s,bytesResponse:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::transport_failed"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.http@1::header"]), quote(builder.numberIDs["can.std.http@1::bytes_response"]))
+}

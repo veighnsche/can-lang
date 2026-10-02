@@ -151,6 +151,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		formOperationBindings(),
 		assembly.formSpecializationBindings(),
 		assembly.fetchSpecializationBindings(),
+		clientOperationBindings(),
 		assembly.actionBindings(),
 		browserOperationBindings(),
 		assembly.browserSpecializationBindings(),

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "ad40ae93ef4ad10e90499035feed1c3f47f065aa63d36609d188342ca1ef56f6"
+const GeneratedSourceSHA256 = "bef1c272ca4f78b18d68183729793831574f21081e9e565e2e244afb774e7457"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -119,6 +119,7 @@ const TypeCodecJsonString = "codec::json_string"
 const TypeCodecJsonArray = "codec::json_array"
 const TypeCodecJsonObject = "codec::json_object"
 const TypeCodecJsonMember = "codec::json_member"
+const TypeHttpBytesResponse = "http::bytes_response"
 const ErrorAllFailedName = "all_failed"
 const ErrorAllFailedIdentity = "can.prelude@1::all_failed"
 const ErrorNumberInexactName = "number::inexact"
@@ -647,3 +648,4 @@ const OpActionPost = "action::post"
 const OpImageInspect = "image::inspect"
 const OpCodecDecodeJsonValue = "codec::decode_json_value"
 const OpCodecEncodeJsonValue = "codec::encode_json_value"
+const OpHttpFetchBytes = "http::fetch_bytes"

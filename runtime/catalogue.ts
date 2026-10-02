@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "ad40ae93ef4ad10e90499035feed1c3f47f065aa63d36609d188342ca1ef56f6";
+export const catalogueSHA256 = "bef1c272ca4f78b18d68183729793831574f21081e9e565e2e244afb774e7457";
 export const catalogue = freeze({
  "schemaVersion": 1,
  "revision": 1,
@@ -2121,6 +2121,29 @@ export const catalogue = freeze({
     {
      "name": "value",
      "type": "codec::json_value"
+    }
+   ],
+   "leaves": [],
+   "projections": [],
+   "constructible": true
+  },
+  {
+   "name": "http::bytes_response",
+   "identity": "can.std.http@1::bytes_response",
+   "kind": "record",
+   "parameters": [],
+   "fields": [
+    {
+     "name": "status",
+     "type": "int"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
     }
    ],
    "leaves": [],
@@ -14562,6 +14585,59 @@ export const catalogue = freeze({
     "A2",
     "A6"
    ]
+  },
+  {
+   "name": "http::fetch_bytes",
+   "identity": "can.std.http@1::fetch_bytes",
+   "kind": "function",
+   "receiver": "",
+   "parameters": [],
+   "inputs": [
+    {
+     "name": "method",
+     "type": "str"
+    },
+    {
+     "name": "url",
+     "type": "str"
+    },
+    {
+     "name": "headers",
+     "type": "http::header[]"
+    },
+    {
+     "name": "body",
+     "type": "bytes::buffer"
+    },
+    {
+     "name": "timeout_ms",
+     "type": "int"
+    },
+    {
+     "name": "max_body_bytes",
+     "type": "int"
+    }
+   ],
+   "staticInputs": [],
+   "result": "http::bytes_response",
+   "callbacks": [],
+   "emits": [
+    "http::transport_failed",
+    "http::invalid_request",
+    "http::body_limit"
+   ],
+   "callbackErrors": [],
+   "lowering": {
+    "native": [
+     "fetch"
+    ],
+    "adapter": "Raw HTTP client over the shared transport: caller-supplied uppercase method, absolute http(s) URL without query, fragment or userinfo, explicit headers, raw bytes body, deadline and response cap. Every status returns an http::bytes_response envelope (never status_error); redirects are manual; deadline expiry reports transport_failed phase timeout like the JSON action client. Empty body sends no entity; a body on GET/HEAD is invalid_request. Header names use underscores (content_type), rewritten to hyphens on the wire; hyphenated or forbidden names are invalid_request.",
+    "task": "T24"
+   },
+   "assertion": "supplied",
+   "refs": [
+    "manolea-native-tests"
+   ]
   }
  ],
  "nativeDeclarations": [
@@ -17131,6 +17207,41 @@ export const catalogueTypeShapes = freeze([
         "name": "value",
         "type": {
           "name": "codec::json_value",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::bytes_response",
+    "identity": "can.std.http@1::bytes_response",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "status",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::header",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "bytes::buffer",
           "arguments": null
         }
       }
