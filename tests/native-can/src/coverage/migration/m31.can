@@ -30,7 +30,8 @@ fn row_map[] m31_slice
 /// resolved by (row, case) through row_case_index, so each of the nine
 /// ported cases is addressable and case drift reports unknown-row. A
 /// resolved but unretained row reports unretained-row (claims against
-/// blocked, missing or obsolete rows are categorically invalid), and
+/// blocked, missing, obsolete, preserve or retain-fixture rows are
+/// categorically invalid), and
 /// delegates are checked both directions (required subset of offered
 /// plus no offered extra), closing the pilot's one-directional subset
 /// limitation for new slices.

@@ -32,9 +32,10 @@ fn int row_case_index
             false => relay call row_case_index(rows, row_id, case_id, from + 1)
             true => ok from
 /// Whether the row at a resolved index is retained: coverage claims
-/// against blocked, missing or obsolete rows are categorically
-/// invalid, so slice claim fns gate on this right after (row, case)
-/// resolution and report unretained-row otherwise.
+/// against blocked, missing, obsolete, preserve or retain-fixture
+/// rows are categorically invalid, so slice claim fns gate on this
+/// right after (row, case) resolution and report unretained-row
+/// otherwise.
 fn bool row_retained
     emits {}
     given
@@ -44,6 +45,8 @@ fn bool row_retained
         kept: [row_map("HISTORY-061", "retained", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0 => ok true
         obsolete: [row_map("HISTORY-099", "obsolete", "s", "h", "c9", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0 => ok false
         blocked: [row_map("EDGE-001", "blocked", "s", "h", "", [], ["f"], ["v"], ["e"], [], ["qr"], "")], 0 => ok false
+        preserved: [row_map("HISTORY-118", "preserve", "s", "h", "c8", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0 => ok false
+        fixture: [row_map("HISTORY-141", "retain-fixture", "s", "h", "c1", ["x"], ["f"], ["v"], ["e"], [], ["qr"], "")], 0 => ok false
     match rows[at].disposition is "retained"
         true => ok true
         false => ok false

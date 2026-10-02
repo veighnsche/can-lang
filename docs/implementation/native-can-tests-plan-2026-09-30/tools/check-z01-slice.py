@@ -38,10 +38,14 @@ def strs(s):
     return re.findall(r'"([^"]*)"', s)
 
 
+# List items are quoted strings that may contain brackets (verbatim coverage
+# text); match item-wise since no item ever contains a quote (the
+# generated Can would not parse otherwise).
+LIST = r"\[((?:\"[^\"]*\"(?:, )?)*)\]"
 ROW_RE = re.compile(
     r'row_map\("([^"]+)", "([^"]+)", "([^"]*)", "([0-9a-f]{64}|)", "([^"]*)", '
-    r"\[([^\]]*)\], \[([^\]]*)\], \[([^\]]*)\], \[([^\]]*)\], \[([^\]]*)\], "
-    r'\[([^\]]*)\], "([^"]*)"\)'
+    rf"{LIST}, {LIST}, {LIST}, {LIST}, {LIST}, {LIST}, "
+    r'"([^"]*)"\)'
 )
 
 
@@ -218,15 +222,23 @@ def main():
             if case or strs(checks):
                 fail(f"{row_id}: blocked row must carry no case/checks")
             continue
-        blob = json.dumps(ccs)
-        if "disposition decide" in blob or "decide(" in blob:
-            disk_body = io.open(REPO / source, encoding="utf-8").read()
+        disk_body = io.open(REPO / source, encoding="utf-8").read()
+        is_decide = "provides [decide, disposition]" in disk_body and bool(
+            re.search(r"^fn disposition decide$", disk_body, re.M)
+        )
+        if is_decide:
             disk = hashlib.sha256(disk_body.encode("utf-8")).hexdigest()
             if disk != h:
                 fail(f"{row_id}: decide file hash mismatch")
-            verdict = re.search(r'"(obsolete|retained|unreviewed)"', blob)
-            if disp != (verdict.group(1) if verdict else "obsolete"):
-                fail(f"{row_id}: decide disposition must match the verdict word")
+            vm = re.search(
+                r'disposition\("' + re.escape(row_id) + r'", "([a-z-]+)"',
+                disk_body,
+            )
+            verdict = vm.group(1) if vm else None
+            if verdict not in ("obsolete", "preserve", "retain-fixture"):
+                fail(f"{row_id}: decide verdict missing or outside vocabulary")
+            elif disp != verdict:
+                fail(f"{row_id}: decide disposition {disp} != file verdict {verdict}")
             pkg = re.search(r"^package (\w+)$", disk_body, re.M)
             fn = re.search(r"^fn \w+ (\w+)$", disk_body, re.M)
             if not pkg or case != f"{pkg.group(1)}/{fn.group(1)}":
@@ -249,11 +261,10 @@ def main():
         ev_cases = {}
         for cc in ccs:
             head_txt, rest = cc.split(": ", 1)
-            # decide-style entries never reach here; port entries carry "(file, package ...)" or bare lists
+            # Port entries carry a "(file, package ...)" suffix; strip it.
             if " (" in rest and rest.rstrip().endswith(")"):
                 rest = rest[: rest.rindex(" (")]
             ev_cases[head_txt] = [x.strip() for x in rest.split(",")]
-        # evidence case head may prefix the row id ("HISTORY-099 disposition decide: ..."); port rows use bare case ids
         if case not in ev_cases:
             fail(f"{row_id}: case {case} absent from row evidence")
         elif ev_cases[case] != strs(checks):
