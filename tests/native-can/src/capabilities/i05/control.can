@@ -1,0 +1,272 @@
+package i05
+    provides [connect, send_text, send_binary, send_ping, send_pong, deliver_text, deliver_binary, deliver_ping, deliver_pong, poll_event, close_local, deliver_remote_close, read_facts]
+    uses [http_peer, option, test]
+
+/// WebSocket operation wrappers (I05): one function per
+/// operation, except ws_send and ws_deliver_event, which
+/// split one per opcode forced by the NT-I05 literal
+/// allowlist (I01 per-kind precedent). Wrappers are
+/// check-time-only: when-stubs pin the call shape and stub
+/// results; rows execute live at the Q gate. Owners are
+/// admission-first (test::owner elides in rows). Connections
+/// travel as plain string ids. Rows pin ok shapes plus the
+/// exact K21 fault verdicts (I04 style): peer_fault carries
+/// {kind, reason} with the service message verbatim,
+/// closed-handle arrives as test::closed_handle, and
+/// wrong-owner arrives as test::stale_handle.
+
+/// Connect one client to a declared destination.
+fn http_peer::ws_connection_handle connect
+    emits {test::stale_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str destination
+    asserts
+        first: "ws-a" => ok http_peer::ws_connection_handle("websocket", "w1", "grant-stub", "ws-a")
+        foreign: "ws-evil" => http_peer::peer_fault{"foreign-destination", "destination is not declared"}
+        stale: "ws-a" => test::stale_handle{"owner"}
+    match call http_peer::ws_connect(owner, destination)
+        when
+            first: owner, "ws-a" => ok http_peer::ws_connection_handle("websocket", "w1", "grant-stub", "ws-a")
+            foreign: owner, "ws-evil" => http_peer::peer_fault{"foreign-destination", "destination is not declared"}
+            stale: owner, "ws-a" => test::stale_handle{"owner"}
+        test::stale_handle
+        http_peer::peer_fault
+        ok http_peer::ws_connection_handle got => ok got
+/// Send one text frame on an open connection.
+fn http_peer::ws_send_receipt send_text
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [1, 2, 3] => ok http_peer::ws_send_receipt("text", 3, 1, 3)
+        half: "w1", [1] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+        closed: "w1", [1] => test::closed_handle{"connection"}
+    match call http_peer::ws_send(owner, connection, "text", payload)
+        when
+            first: owner, "w1", "text", [1, 2, 3] => ok http_peer::ws_send_receipt("text", 3, 1, 3)
+            half: owner, "w1", "text", [1] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+            closed: owner, "w1", "text", [1] => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_send_receipt got => ok got
+/// Send one binary frame on an open connection.
+fn http_peer::ws_send_receipt send_binary
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [1, 2, 3] => ok http_peer::ws_send_receipt("binary", 3, 1, 3)
+        half: "w1", [1] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+        closed: "w1", [1] => test::closed_handle{"connection"}
+    match call http_peer::ws_send(owner, connection, "binary", payload)
+        when
+            first: owner, "w1", "binary", [1, 2, 3] => ok http_peer::ws_send_receipt("binary", 3, 1, 3)
+            half: owner, "w1", "binary", [1] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+            closed: owner, "w1", "binary", [1] => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_send_receipt got => ok got
+/// Send one ping frame on an open connection.
+fn http_peer::ws_send_receipt send_ping
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [] => ok http_peer::ws_send_receipt("ping", 0, 1, 0)
+        half: "w1", [] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+        closed: "w1", [] => test::closed_handle{"connection"}
+    match call http_peer::ws_send(owner, connection, "ping", payload)
+        when
+            first: owner, "w1", "ping", [] => ok http_peer::ws_send_receipt("ping", 0, 1, 0)
+            half: owner, "w1", "ping", [] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+            closed: owner, "w1", "ping", [] => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_send_receipt got => ok got
+/// Send one pong frame on an open connection.
+fn http_peer::ws_send_receipt send_pong
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [] => ok http_peer::ws_send_receipt("pong", 0, 1, 0)
+        half: "w1", [] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+        closed: "w1", [] => test::closed_handle{"connection"}
+    match call http_peer::ws_send(owner, connection, "pong", payload)
+        when
+            first: owner, "w1", "pong", [] => ok http_peer::ws_send_receipt("pong", 0, 1, 0)
+            half: owner, "w1", "pong", [] => http_peer::peer_fault{"invalid-state", "connection is half-closed"}
+            closed: owner, "w1", "pong", [] => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_send_receipt got => ok got
+/// Inject one scripted remote text event.
+fn http_peer::ws_deliver_receipt deliver_text
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [9, 8] => ok http_peer::ws_deliver_receipt("text", 1, 2, 1)
+        full: "w1", [1] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+        gone: "w1", [1] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+    match call http_peer::ws_deliver_event(owner, connection, "text", payload)
+        when
+            first: owner, "w1", "text", [9, 8] => ok http_peer::ws_deliver_receipt("text", 1, 2, 1)
+            full: owner, "w1", "text", [1] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+            gone: owner, "w1", "text", [1] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_deliver_receipt got => ok got
+/// Inject one scripted remote binary event.
+fn http_peer::ws_deliver_receipt deliver_binary
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [9, 8] => ok http_peer::ws_deliver_receipt("binary", 1, 2, 1)
+        full: "w1", [1] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+        gone: "w1", [1] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+    match call http_peer::ws_deliver_event(owner, connection, "binary", payload)
+        when
+            first: owner, "w1", "binary", [9, 8] => ok http_peer::ws_deliver_receipt("binary", 1, 2, 1)
+            full: owner, "w1", "binary", [1] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+            gone: owner, "w1", "binary", [1] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_deliver_receipt got => ok got
+/// Inject one scripted remote ping event.
+fn http_peer::ws_deliver_receipt deliver_ping
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [] => ok http_peer::ws_deliver_receipt("ping", 1, 0, 1)
+        full: "w1", [] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+        gone: "w1", [] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+    match call http_peer::ws_deliver_event(owner, connection, "ping", payload)
+        when
+            first: owner, "w1", "ping", [] => ok http_peer::ws_deliver_receipt("ping", 1, 0, 1)
+            full: owner, "w1", "ping", [] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+            gone: owner, "w1", "ping", [] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_deliver_receipt got => ok got
+/// Inject one scripted remote pong event.
+fn http_peer::ws_deliver_receipt deliver_pong
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int[] payload
+    asserts
+        first: "w1", [] => ok http_peer::ws_deliver_receipt("pong", 1, 0, 1)
+        full: "w1", [] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+        gone: "w1", [] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+    match call http_peer::ws_deliver_event(owner, connection, "pong", payload)
+        when
+            first: owner, "w1", "pong", [] => ok http_peer::ws_deliver_receipt("pong", 1, 0, 1)
+            full: owner, "w1", "pong", [] => http_peer::peer_fault{"backpressure", "pending event queue is full"}
+            gone: owner, "w1", "pong", [] => http_peer::peer_fault{"invalid-state", "remote side already closed"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_deliver_receipt got => ok got
+/// Poll one queued event; empty polls return event none.
+fn http_peer::ws_poll_result poll_event
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+    asserts
+        first: "w1" => ok http_peer::ws_poll_result(option::some(http_peer::ws_event("text", [9, 8])), 0, 1, 1)
+        quiet: "w1" => ok http_peer::ws_poll_result(option::none(), 0, 0, 0)
+        closed: "w1" => test::closed_handle{"connection"}
+    match call http_peer::ws_poll_event(owner, connection)
+        when
+            first: owner, "w1" => ok http_peer::ws_poll_result(option::some(http_peer::ws_event("text", [9, 8])), 0, 1, 1)
+            quiet: owner, "w1" => ok http_peer::ws_poll_result(option::none(), 0, 0, 0)
+            closed: owner, "w1" => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_poll_result got => ok got
+/// Record the local close with code and reason.
+fn http_peer::ws_close_receipt close_local
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int close_code
+        str reason
+    asserts
+        first: "w1", 1000, "done" => ok http_peer::ws_close_receipt("local", 1000, false, 0, 0)
+        bad_code: "w1", 999, "done" => http_peer::peer_fault{"invalid-request", "close code must be an integer 1000..4999"}
+        bad_reason: "w1", 1000, "doné" => http_peer::peer_fault{"invalid-request", "close reason must be printable ASCII"}
+    match call http_peer::ws_close(owner, connection, close_code, reason)
+        when
+            first: owner, "w1", 1000, "done" => ok http_peer::ws_close_receipt("local", 1000, false, 0, 0)
+            bad_code: owner, "w1", 999, "done" => http_peer::peer_fault{"invalid-request", "close code must be an integer 1000..4999"}
+            bad_reason: owner, "w1", 1000, "doné" => http_peer::peer_fault{"invalid-request", "close reason must be printable ASCII"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_close_receipt got => ok got
+/// Inject the scripted remote close with code and reason.
+fn http_peer::ws_close_receipt deliver_remote_close
+    emits {test::stale_handle, test::closed_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+        int close_code
+        str reason
+    asserts
+        first: "w1", 1000, "bye" => ok http_peer::ws_close_receipt("remote", 1000, true, 0, 0)
+        twice: "w1", 1000, "bye" => http_peer::peer_fault{"invalid-state", "remote close already recorded"}
+        shut: "w1", 1000, "bye" => test::closed_handle{"connection"}
+    match call http_peer::ws_deliver_remote_close(owner, connection, close_code, reason)
+        when
+            first: owner, "w1", 1000, "bye" => ok http_peer::ws_close_receipt("remote", 1000, true, 0, 0)
+            twice: owner, "w1", 1000, "bye" => http_peer::peer_fault{"invalid-state", "remote close already recorded"}
+            shut: owner, "w1", 1000, "bye" => test::closed_handle{"connection"}
+        test::stale_handle
+        test::closed_handle
+        http_peer::peer_fault
+        ok http_peer::ws_close_receipt got => ok got
+/// Read connection facts; closes stay independent.
+fn http_peer::ws_connection_facts read_facts
+    emits {test::stale_handle, http_peer::peer_fault}
+    given
+        test::owner owner
+        str connection
+    asserts
+        first: "w1" => ok http_peer::ws_connection_facts("w1", "grant-stub", "ws-a", "open", option::none(), option::none(), 0, 0, 0, 0, 0, 0, 0, 0)
+        stale: "w1" => test::stale_handle{"owner"}
+    match call http_peer::ws_read_connection_facts(owner, connection)
+        when
+            first: owner, "w1" => ok http_peer::ws_connection_facts("w1", "grant-stub", "ws-a", "open", option::none(), option::none(), 0, 0, 0, 0, 0, 0, 0, 0)
+            stale: owner, "w1" => test::stale_handle{"owner"}
+        test::stale_handle
+        http_peer::peer_fault
+        ok http_peer::ws_connection_facts got => ok got
