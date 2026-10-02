@@ -2724,7 +2724,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Port structured assertion selection, source spans, sticky violations, true/false reasons and malformed/missing evidence controls into Can-owned cases. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-007; shared delegate references: none.",
       "commit": "test(native-can): add assertion-and-check-evidence cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-007"
@@ -2834,7 +2834,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise captures, generic dependency chains, located invalid edits and template fixtures through candidate builds and Can comparisons. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add callables-generics-and-templat cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -2947,7 +2947,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Map each delegated array/collection declaration and dynamic variant; test immutable copies, order and codec bytes with C adapter ingress where required. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-006, DELEGATE-008; shared delegate references: none.",
       "commit": "test(native-can): add arrays-bytes-codecs-and-collec cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-006",
@@ -3074,7 +3074,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve all/allSettled/any/race selection, losing diagnostics, same occurrence identity and lease lifetime with terminal event seals. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-009, DELEGATE-014, DELEGATE-015, DELEGATE-016; shared delegate references: none.",
       "commit": "test(native-can): add coordination-occurrence-identi cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-009",
@@ -3184,7 +3184,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Compare exact numeric bits/lexemes, rounding, Unicode/regex and URL/date cases; map delegated declarations instead of old pass counts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-010, DELEGATE-011, DELEGATE-013, DELEGATE-022, DELEGATE-030; shared delegate references: none.",
       "commit": "test(native-can): add exact-amounts-numbers-text-and cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-010",
@@ -3297,7 +3297,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run native commands and hostile file/stream cases with independent bytes, EOF/error, symlink and bounded cleanup facts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-012, DELEGATE-021; shared delegate references: none.",
       "commit": "test(native-can): add crypto-files-and-streams cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-012",
@@ -3404,7 +3404,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Use owned peers/provider fixtures to test raw requests, document formats, HTML, generation and layered recovery with Can-selected expected bytes. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add fetch-formats-generation-and-c cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -3583,7 +3583,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve server/cookie/CSRF/TLS/WS effects, malformed transport, readiness and graceful versus forced shutdown with complete native receipts. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-023, DELEGATE-024, DELEGATE-025, DELEGATE-026, DELEGATE-027, DELEGATE-028, DELEGATE-029; shared delegate references: none.",
       "commit": "test(native-can): add http-servers-tls-websocket-and cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-023",
@@ -3756,7 +3756,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Exercise argv/env/fd maps, formatter identity, input capture, native declarations, process descendants and maintained project discovery. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-017; shared delegate references: none.",
       "commit": "test(native-can): add cli-formatter-input-and-proces cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-017"
@@ -3952,7 +3952,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Check packaged Bun/runtime identity, deterministic verified build, install/update refusal, artifact manifests and strict emitted TypeScript where required. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: DELEGATE-001, DELEGATE-002, DELEGATE-003, DELEGATE-004, DELEGATE-005; shared delegate references: none.",
       "commit": "test(native-can): add distribution-verified-builds-a cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [
         "DELEGATE-001",
@@ -4081,7 +4081,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Replace authorization/environment fixture transformations with typed Can-selected byte operations; preserve exact fixture bytes and malformed-fixture refusal. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add raw-fixture-staging-mechanics cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -4181,7 +4181,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Stage four apps, run required service and browser variants, and qualify local/remote Firefox context ownership without treating absent services as passes. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add application-server-and-browser cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -6222,7 +6222,7 @@
         "QD4"
       ],
       "files": [
-        "tests/native-can/migration/m25-f02-locking-and-f03-relational/**"
+        "tests/native-can/migration/m25-f02-locking-f03-slice/**"
       ],
       "changes": "Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Retain lock/RETURNING/error facets; add sentinel rollback and confirmed settlement controls while labeling them stronger than old evidence.",
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Retain lock/RETURNING/error facets; add sentinel rollback and confirmed settlement controls while labeling them stronger than old evidence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
@@ -6356,7 +6356,7 @@
         "QF1"
       ],
       "files": [
-        "tests/native-can/migration/m26-mysql-and-sqlite-persistence/**"
+        "tests/native-can/migration/m26-mysql-sqlite-persistence/**"
       ],
       "changes": "Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Run dialect-specific Can assertions and owned seed/cleanup; keep same-connection MySQL identity and exact SQLite rows explicit.",
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Run dialect-specific Can assertions and owned seed/cleanup; keep same-connection MySQL identity and exact SQLite rows explicit. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
@@ -6500,7 +6500,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Recreate green/tainted roots, private factory boundary, forged-record rejection and guided repair diagnostics as Can cases. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add owner-factory-and-isolation-co cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -6618,7 +6618,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Preserve FIFO fixture consumption, fixed/result-data alternatives, no-retry and over-attempt mutants, and unrelated-file unchanged evidence. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add retry-convention-and-mutation- cases",
-      "status": "planned",
+      "status": "active",
       "deletion_policy": "No shared old file is deleted by this slice. The integrator may retire one only after all linked rows, delegated oracles, required variants/environments, controls, cleanup receipts and callers have complete accepted evidence.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -6761,7 +6761,7 @@
         "P23"
       ],
       "files": [
-        "tests/native-can/migration/m29-cache-ownership-reuse-and-reco/**"
+        "tests/native-can/migration/m29-cache-ownership-reuse-recovery/**"
       ],
       "changes": "Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Combine related cache mechanics only after mapping each row: key sensitivity, corruption refusal, one producer, bounded slots and conservative foreign/active recovery.",
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Combine related cache mechanics only after mapping each row: key sensitivity, corruption refusal, one producer, bounded slots and conservative foreign/active recovery. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
@@ -7080,7 +7080,7 @@
         "P23"
       ],
       "files": [
-        "tests/native-can/migration/m30-baseline-t26-and-t27-historica/**"
+        "tests/native-can/migration/m30-baseline-t26-t27-relevance/**"
       ],
       "changes": "Complete rows one at a time under this owned prefix. Per-row start/accept gates and substeps in row_gates govern progress; the group-level accept_after is only the union for finishing this whole group. For each row, map protected facets, dynamic variants, required environments, related fixtures and delegated oracle declarations; add ordinary Can actions and expectations in small commits. Review each dated/frozen assertion for current-contract relevance; retain historical records, migrate current catalogue/smoke checks, and keep broad meta-runner out of Can-owned credit.",
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review each dated/frozen assertion for current-contract relevance; retain historical records, migrate current catalogue/smoke checks, and keep broad meta-runner out of Can-owned credit. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
@@ -7492,7 +7492,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. For chart, clipboard and storage adapter declarations, decide retain/migrate/obsolete per current contract; preserve no-host-contact, mapping and opacity facts if retained. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-local-adapters cases",
-      "status": "active",
+      "status": "complete",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
@@ -7964,7 +7964,7 @@
       "acceptance": "Each retained row has an explicit case/check mapping, positive and seeded negative/missing-evidence controls, identified C/R/N/S/A inputs, required environment runs and matching cleanup receipts. Conditional historical rows require reviewed current-contract dispositions. Review companion chart/clipboard/storage protocol and bundle-size assertions individually; migrate retained semantics without freezing old sizes or prototype ABI. Independently review each new helper/case/expected-vector source closure, complete mandatory offline checks with R, and bind the new suite/artifact S/A identities before execution credit; prior P23 or I acceptance does not cover newly added tests.",
       "evidence": "Per-row source/fixture map, Can check IDs, qualified report and N receipt or recorded blocked/conditional decision. Delegate ownership: none; shared delegate references: none.",
       "commit": "test(native-can): add prototype-companion-surfaces-a cases",
-      "status": "active",
+      "status": "complete",
       "deletion_policy": "Conditional rows require per-row current-contract relevance and reviewer disposition; preserve historical records/static fixtures where still useful. The integrator alone may retire shared old files after all linked rows and callers are resolved.",
       "delegated_oracles_owned": [],
       "delegated_oracles_shared": [],
