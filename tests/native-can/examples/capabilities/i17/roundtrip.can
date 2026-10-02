@@ -1,0 +1,104 @@
+package i17_example
+    provides [session_demo, full_demo]
+    uses [bytes, i17, option, store, test]
+
+/// Tiny typed I17 example: two worked flows over the store
+/// wrappers. session_demo runs prefix open with re-read,
+/// session open, the token readout, both closes, and the
+/// shared digest; full_demo runs write stage with pending
+/// re-read, settlement, a byte-exact fetch, a bytes compare,
+/// a paged scan, removal, and the cleanup seal. Rows are
+/// offline/provisional asserts (static until qualified
+/// execution); when-stubs pin the wrapper call shapes. Empty
+/// buffers pin through the infallible bytes::empty() call
+/// (opaque results cannot be constructed literally).
+
+/// Open a prefix and session, read the token, close, digest.
+fn str session_demo
+    emits {test::stale_handle, store::store_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok "sha256:stub"
+    match call i17::open_prefix(owner, "owner-a", "tenant-a/owned")
+        when
+            fresh: owner, "owner-a", "tenant-a/owned" => ok store::prefix_receipt("tenant-a/owned", "owner-a", "prefix-handle:owner-a:tenant-a/owned", "sha256:stub", 0)
+        test::stale_handle
+        store::store_fault
+        ok store::prefix_receipt opened => match call i17::read_receipt(owner, "owner-a", "tenant-a/owned")
+            when
+                fresh: owner, "owner-a", "tenant-a/owned" => ok store::prefix_receipt("tenant-a/owned", "owner-a", "prefix-handle:owner-a:tenant-a/owned", "sha256:stub", 0)
+            test::stale_handle
+            store::store_fault
+            ok store::prefix_receipt reread => match call i17::open_session(owner, "owner-a", "tenant-a/owned", "s0")
+                when
+                    fresh: owner, "owner-a", "tenant-a/owned", "s0" => ok store::session_facts("s0", "tenant-a/owned", "owner-a", "sha256:stub", true)
+                test::stale_handle
+                store::store_fault
+                ok store::session_facts pinned => match call i17::read_token(owner, "owner-a", "tenant-a/owned", "s0")
+                    when
+                        fresh: owner, "owner-a", "tenant-a/owned", "s0" => ok "sess-stub"
+                    test::stale_handle
+                    store::store_fault
+                    ok str tok => match call i17::close_session(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub")
+                        when
+                            fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub" => ok
+                        test::stale_handle
+                        store::store_fault
+                        ok => match call i17::close_prefix(owner, "owner-a", "tenant-a/owned")
+                            when
+                                fresh: owner, "owner-a", "tenant-a/owned" => ok
+                            test::stale_handle
+                            store::store_fault
+                            ok => match call i17::shared_digest(owner)
+                                when
+                                    fresh: owner => ok "sha256:stub"
+                                test::stale_handle
+                                ok str foreign => ok foreign
+/// Stage, settle, fetch, compare, scan, remove, and seal.
+fn store::cleanup_receipt full_demo
+    emits {test::stale_handle, store::store_fault}
+    given
+        test::owner owner
+    asserts
+        fresh: => ok store::cleanup_receipt("tenant-a/owned", "owner-a", "sha256:stub", 0, 0, 0, "sha256:stub")
+    match call i17::stage_write(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a", call bytes::empty())
+        when
+            fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a", call bytes::empty() => ok store::write_facts("w1", "tenant-a/owned/a", "sha256:stub", false)
+        test::stale_handle
+        store::store_fault
+        ok store::write_facts staged => match call i17::read_pending(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub")
+            when
+                fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub" => ok store::pending_facts("tenant-a/owned", [store::write_facts("w1", "tenant-a/owned/a", "sha256:stub", false)], 1)
+            test::stale_handle
+            store::store_fault
+            ok store::pending_facts queued => match call i17::settle_write(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "w1")
+                when
+                    fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "w1" => ok store::object_facts("tenant-a/owned/a", 0, "sha256:stub")
+                test::stale_handle
+                store::store_fault
+                ok store::object_facts settled => match call i17::fetch_object(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a")
+                    when
+                        fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a" => ok store::stored_object("tenant-a/owned/a", call bytes::empty(), 0, "sha256:stub")
+                    test::stale_handle
+                    store::store_fault
+                    ok store::stored_object fetched => match call i17::same_bytes(owner, call bytes::empty(), call bytes::empty())
+                        when
+                            fresh: owner, call bytes::empty(), call bytes::empty() => ok true
+                        test::stale_handle
+                        ok bool same => match call i17::scan_page(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", 8, option::none())
+                            when
+                                fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", 8, option::none() => ok store::page_facts("tenant-a/owned", [store::object_facts("tenant-a/owned/a", 0, "sha256:stub")], 1, true, option::none(), 0, "sha256:stub")
+                            test::stale_handle
+                            store::store_fault
+                            ok store::page_facts paged => match call i17::remove_object(owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a")
+                                when
+                                    fresh: owner, "owner-a", "tenant-a/owned", "s0", "tok-stub", "tenant-a/owned/a" => ok
+                                test::stale_handle
+                                store::store_fault
+                                ok => match call i17::seal_store(owner, "owner-a", "tenant-a/owned")
+                                    when
+                                        fresh: owner, "owner-a", "tenant-a/owned" => ok store::cleanup_receipt("tenant-a/owned", "owner-a", "sha256:stub", 0, 0, 0, "sha256:stub")
+                                    test::stale_handle
+                                    store::store_fault
+                                    ok store::cleanup_receipt sealed => ok sealed

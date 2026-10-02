@@ -1,0 +1,117 @@
+package i17
+    provides [owner_ok, owner_length_ok, session_ok, prefix_ok, key_ok, key_length_ok]
+    uses [text]
+
+/// Object-store name shapes (I17). owner_ok and session_ok
+/// compile the K27 checkOwner/checkSessionName charset
+/// (^[A-Za-z0-9][A-Za-z0-9_.:-]*$, two rules sharing one
+/// shape, mirrored separately because K27 enforces them at
+/// different layers with different codes); owner_length_ok
+/// pins the shared 128-code cap. prefix_ok compiles the K27
+/// clean-prefix rule (relative path, no leading/trailing or
+/// doubled slash, every segment in the owner charset — which
+/// already excludes dot-only segments, since those start
+/// outside [A-Za-z0-9]). key_ok compiles the K27
+/// checkKeyShape rule (clean relative path, no dot-only
+/// segment, but otherwise free segment bytes — keys allow
+/// spaces where prefixes refuse them); key_length_ok pins the
+/// 512-code cap. Scope (key inside the opened grant) is a
+/// runtime relation, not a shape, and stays adapter-enforced.
+/// Regex failures relay invalid_regex/invalid_limit (patterns
+/// are static literals, so rows never see them); every assert
+/// pins a real computed answer. Length edge: the service
+/// counts UTF-16 code units while Can counts Unicode scalars;
+/// the adapter enforces the exact bound.
+
+/// K27 owner charset: ^[A-Za-z0-9][A-Za-z0-9_.:-]*$.
+fn bool owner_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str owner
+    asserts
+        plain: "owner-a" => ok true
+        dotted: "o_x:9" => ok true
+        leading_dash: "-o" => ok false
+        spaced: "o a" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^[A-Za-z0-9][A-Za-z0-9_.:-]*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, owner, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K27 owner/session length cap: at most 128 codes (scalars approximation).
+fn bool owner_length_ok
+    emits {text::invalid_unicode}
+    given
+        str owner
+    asserts
+        short: "owner-a" => ok true
+        empty: "" => ok true
+    match call text::scalars(owner)
+        text::invalid_unicode
+        ok int[] points => ok points.length <= 128
+/// K27 session charset: ^[A-Za-z0-9][A-Za-z0-9_.:-]*$.
+fn bool session_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str session
+    asserts
+        plain: "s0" => ok true
+        dotted: "job-2:retry" => ok true
+        leading_dash: "-s" => ok false
+        spaced: "s 0" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^[A-Za-z0-9][A-Za-z0-9_.:-]*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, session, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K27 clean prefix: relative path, charset segments, no dots.
+fn bool prefix_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str prefix
+    asserts
+        owned: "tenant-a/owned" => ok true
+        single: "p" => ok true
+        leading: "/tenant-a/owned" => ok false
+        trailing: "tenant-a/owned/" => ok false
+        doubled: "tenant-a//owned" => ok false
+        dotdot: "tenant-a/../x" => ok false
+        spaced: "tenant-a/ow ned" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^[A-Za-z0-9][A-Za-z0-9_.:-]*(/[A-Za-z0-9][A-Za-z0-9_.:-]*)*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, prefix, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K27 key shape: clean path, free bytes, no dot-only segment.
+fn bool key_ok
+    emits {text::invalid_regex, text::invalid_limit}
+    given
+        str key
+    asserts
+        nested: "tenant-a/owned/a" => ok true
+        spaced: "tenant-a/ow ned" => ok true
+        dots: "tenant-a/..." => ok true
+        leading: "/tenant-a/owned/a" => ok false
+        doubled: "tenant-a//a" => ok false
+        dot: "." => ok false
+        dotdot: "tenant-a/../a" => ok false
+        empty: "" => ok false
+    match call text::compile_regex("^([^/.][^/]*|\\.[^/.][^/]*|\\.\\.[^/]+)(/([^/.][^/]*|\\.[^/.][^/]*|\\.\\.[^/]+))*$", "")
+        text::invalid_regex
+        ok text::regex re => match call text::matches(re, key, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length >= 1
+/// K27 prefix/key length cap: at most 512 codes (scalars approximation).
+fn bool key_length_ok
+    emits {text::invalid_unicode}
+    given
+        str key
+    asserts
+        short: "tenant-a/owned/a" => ok true
+        empty: "" => ok true
+    match call text::scalars(key)
+        text::invalid_unicode
+        ok int[] points => ok points.length <= 512
