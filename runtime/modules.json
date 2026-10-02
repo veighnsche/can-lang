@@ -898,6 +898,124 @@
       "./peer-service.ts",
       "./peer.ts"
     ],
+    "test-support/slices/i01/native.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i02/c-service.ts": [],
+    "test-support/slices/i02/c.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./c-service.ts"
+    ],
+    "test-support/slices/i03/late-service.ts": [
+      "./late-support.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i03/late-support.ts": [],
+    "test-support/slices/i03/late.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./late-service.ts",
+      "./late-support.ts"
+    ],
+    "test-support/slices/i05/websocket-service.ts": [
+      "../i04/peer-service.ts"
+    ],
+    "test-support/slices/i05/websocket.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "../i04/support.ts",
+      "./websocket-service.ts"
+    ],
+    "test-support/slices/i11/descriptor.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i12/lease.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i13/db-core-service.ts": [
+      "node:crypto"
+    ],
+    "test-support/slices/i13/db-returning-service.ts": [
+      "./db-core-service.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i13/db.ts": [
+      "../../../bytes.ts",
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./db-core-service.ts",
+      "./db-returning-service.ts"
+    ],
+    "test-support/slices/i14/db-transaction-service.ts": [
+      "../i13/db-core-service.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i14/db_transaction.ts": [
+      "../../../bytes.ts",
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "../i13/db-core-service.ts",
+      "./db-transaction-service.ts"
+    ],
+    "test-support/slices/i15/db-poison-service.ts": [
+      "../i13/db-core-service.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i15/db_poison.ts": [
+      "../../../bytes.ts",
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "../i13/db-core-service.ts",
+      "./db-poison-service.ts"
+    ],
+    "test-support/slices/i16/db-deadline-service.ts": [
+      "../i13/db-core-service.ts",
+      "node:crypto"
+    ],
+    "test-support/slices/i16/db_deadline.ts": [
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "../i13/db-core-service.ts",
+      "./db-deadline-service.ts"
+    ],
+    "test-support/slices/i17/object-store-service.ts": [
+      "node:crypto"
+    ],
+    "test-support/slices/i17/store.ts": [
+      "../../../bytes.ts",
+      "../../../completion.ts",
+      "../../../data.ts",
+      "../../../domain.ts",
+      "../../owner.ts",
+      "./object-store-service.ts"
+    ],
     "test-support/tools.ts": [
       "../completion.ts",
       "../data.ts",
